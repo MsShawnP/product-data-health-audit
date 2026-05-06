@@ -1,0 +1,186 @@
+---
+title: "Cinderhaven Provisions · Product Data Readiness"
+subtitle: "Executive Tearsheet · May 2026"
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: scrartcl
+    classoption: ["letterpaper"]
+    geometry:
+      - left=0.55in
+      - right=0.55in
+      - top=0.55in
+      - bottom=0.55in
+    fontsize: 9pt
+    fig-align: center
+    colorlinks: true
+    linkcolor: chnavy
+    urlcolor: chnavy
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        % Cinderhaven palette (R/00_theme.R)
+        \definecolor{chnavy}{HTML}{1B2A4A}
+        \definecolor{chred}{HTML}{C0221F}
+        \definecolor{chteal}{HTML}{1E8C7E}
+        \definecolor{chcoral}{HTML}{D35830}
+        \definecolor{chbgpale}{HTML}{E8ECF0}
+        \definecolor{chtextmuted}{HTML}{636E72}
+        \definecolor{chtext}{HTML}{2D3436}
+
+        % Tight typography for a dense 2-page tearsheet.
+        \usepackage{parskip}
+        \setlength{\parskip}{2.4pt plus 0.5pt}
+        \setlength{\parindent}{0pt}
+
+        % KOMA section heading colors and tighter spacing above/below.
+        \usepackage[automark]{scrlayer-scrpage}
+        \setkomafont{section}{\color{chnavy}\large\bfseries}
+        \setkomafont{subsection}{\color{chnavy}\normalsize\bfseries}
+        \setkomafont{disposition}{\bfseries}
+        \RedeclareSectionCommand[
+          beforeskip=0.6\baselineskip,
+          afterskip=0.15\baselineskip
+        ]{section}
+        \RedeclareSectionCommand[
+          beforeskip=0.5\baselineskip,
+          afterskip=0.1\baselineskip
+        ]{subsection}
+
+        % Title block tightening.
+        \setkomafont{title}{\color{chnavy}\Large\bfseries}
+        \setkomafont{subtitle}{\color{chtextmuted}\normalsize\itshape}
+        \makeatletter
+        \renewcommand*{\@maketitle}{%
+          \par\vspace{-1.6em}%
+          {\usekomafont{title}\@title\par}%
+          \ifx\@subtitle\@empty\else
+            \vspace{0.2em}%
+            {\usekomafont{subtitle}\@subtitle\par}%
+          \fi
+          \vspace{0.2em}%
+          {\color{chnavy}\rule{\linewidth}{0.6pt}}%
+          \par\vspace{0.4em}%
+        }
+        \makeatother
+
+        % Booktabs + table tweaks for the triage list.
+        \usepackage{booktabs}
+        \usepackage{array}
+        \usepackage{colortbl}
+        \renewcommand{\arraystretch}{1.06}
+
+        % Compact lists.
+        \usepackage{enumitem}
+        \setlist{topsep=1pt, partopsep=0pt, itemsep=1pt, parsep=0pt,
+                 leftmargin=*, labelsep=0.4em}
+
+        % A "stat" macro for the page-1 lead numbers (red, bold, no break).
+        \newcommand{\stat}[1]{\textbf{\color{chred}#1}}
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    out.width: "100%"
+---
+
+```{r setup}
+#| include: false
+suppressPackageStartupMessages({
+  library(dplyr); library(knitr)
+})
+smf <- readRDS("../output/frames/sku_master_full.rds")
+```
+
+## The price of poor housekeeping
+
+\stat{\$361,000 per year} in quantifiable cost from product data defects. That breaks into \$59,000 in retailer chargebacks, \$234,000 in revenue lost to stalled launches, and \$68,000 in shelf loss from deauthorizations linked to data quality. Together, that is 12% of EBITDA.
+
+\stat{\$18.2 million in revenue at risk} at Walmart. Fifty of 90 SKUs fail Walmart's required-field check today. Those 50 carry 71% of the catalog's trailing twelve-month revenue. Costco, UNFI, and Whole Foods have similar gaps at lower thresholds.
+
+\stat{\$587,000 in projected annual chargebacks} at the growth target of \$55 million in revenue, if current defect rates hold. Each new SKU and each new retailer adds to the chargeback surface independently. The projection is linear. In practice, defect rates tend to worsen during rapid growth because data entry processes that strain at 90 SKUs break at 225.
+
+## The compliance deadline
+
+GS1 Sunrise 2027 transitions American retail barcodes to 2D codes built on validated GTINs. FSMA Rule 204 makes accurate GTINs a federal food traceability requirement. Nine of 90 SKUs carry GTINs that fail algorithmic validation today. Both deadlines are already in motion. A company that cannot pass a check digit calculation on its barcodes cannot participate in either transition.
+
+## Summary
+
+The defining feature of this problem is the asymmetry between cost and fix. The catalog loses \$361,000 a year. Correcting every data defect that generates chargebacks takes 27 hours of data entry. The defects have been present for an average of 22 months. The connection between the defects and the charges has never been visible until this audit.
+
+::: {layout-ncol=3}
+![Chargeback Pareto](../output/charts/01_chargeback_pareto.png){fig-alt="Pareto curve: 5 SKUs drive 50% of chargeback dollars; 15 drive 80%."}
+
+![Revenue at risk by retailer](../output/charts/06_retailer_readiness_revenue_at_risk.png){fig-alt="Horizontal bar chart of TTM revenue at risk per retailer."}
+
+![Growth projection of chargebacks](../output/charts/12_growth_projection_chargebacks.png){fig-alt="Projected annual chargebacks at current scale, Stage 2, and Stage 3."}
+:::
+
+\newpage
+
+## Top 10 by fix priority
+
+```{r triage-table}
+#| results: asis
+
+fmt_dollar <- function(v) {
+  ifelse(is.na(v), "—",
+   ifelse(v >= 1000,
+          paste0("\\$", formatC(round(v), big.mark = ",", format = "d")),
+          paste0("\\$", formatC(round(v), big.mark = ",", format = "d"))))
+}
+fmt_per_hr <- function(v) {
+  ifelse(is.na(v), "—",
+         paste0("\\$", formatC(round(v), big.mark = ",", format = "d"), "/hr"))
+}
+fmt_minutes <- function(hr) {
+  m <- round(hr * 60)
+  ifelse(is.na(m) | m == 0, "—", paste0(m, " min"))
+}
+# Escape LaTeX special chars in product names (we keep escape=FALSE on
+# kable so our pre-formatted dollar strings render correctly).
+latex_escape <- function(x) {
+  x <- gsub("\\\\", "\\\\textbackslash{}", x)
+  x <- gsub("([&%$#_{}])", "\\\\\\1", x)
+  x
+}
+
+triage <- smf |>
+  arrange(desc(fix_priority_score)) |>
+  slice(1:10) |>
+  transmute(
+    SKU = sku,
+    Product = latex_escape(product_name),
+    `Annual cb savings` = fmt_dollar(chargeback_total * 12 / 18),
+    `Fix time` = fmt_minutes(est_fix_hours),
+    `Savings per hour` = fmt_per_hr(savings_per_hour))
+
+# Header colored navy with white text; rows zebra-striped via colortbl.
+cat("\\rowcolors{2}{chbgpale!40}{white}\n")
+cat(kable(triage, format = "latex", booktabs = TRUE,
+          escape = FALSE,
+          align = c("l", "l", "r", "r", "r"),
+          linesep = ""),
+    "\n")
+```
+
+## Three root causes
+
+**No validation at entry.** Seven different paths into the product master, none requiring validation before the record goes live. Four of the seven produce chargebacks above \$1,300 per SKU. The broker intake checklist in the appendix defines the eight fields that should be required on every path.
+
+**The highest-revenue products have the worst data.** The top 15 SKUs by revenue average a data quality score of 66.7. The catalog averages 70.0. Data entry happens once at launch. Nobody revisits the product master after a SKU starts selling, so the products that generate the most revenue also generate the largest penalties when their data is wrong.
+
+**Margin density does not follow gross revenue.** Walmart is the largest retailer by gross dollars (\$13.1 million) and the lowest by net margin (78.4%). Whole Foods is the smallest by gross (\$2.78 million) and the highest by margin (87.0%). Trade spend is negotiated annually. Chargebacks are generated by data defects that Cinderhaven can fix any Tuesday afternoon. Every dollar recovered drops straight to net contribution.
+
+## The crown jewel
+
+CHP-0002, Spicy Arrabbiata, is the highest-revenue SKU in the catalog (\$2.71 million) and the largest single source of chargeback cost (\$12,427 over 18 months). Fifty chargeback events across all four retailers, generated by two data defects: an invalid GTIN check digit and a blank brand owner field. It fails all four retailer readiness checks. Fixing both defects takes 40 minutes and eliminates \$8,300 a year in penalties.
+
+## A 14-day turnaround
+
+- **Day 1:** Correct the nine invalid GTIN check digits. Ninety minutes. Eliminates 60% of chargeback dollars.
+- **Week 1:** Complete the remaining missing fields across the catalog: case dimensions, brand owner, country of origin (26 hours). This eliminates the rest of the data-defect chargebacks and brings all 90 SKUs to passing status at all four contracted retailers.
+- **Week 2:** Implement the broker intake checklist as a required gate on every data entry path. Deploy the Monday Morning Dashboard to replace the manual velocity report. Establish a monthly 30-minute data quality review.
+- **Result:** Chargebacks from data defects drop to zero. The ops team recovers 15 to 20 hours per month of manual reconciliation. The product master supports GS1 Sunrise 2027 compliance, FSMA Rule 204 traceability, and retailer expansion to \$55 million without compounding data debt.

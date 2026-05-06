@@ -1,0 +1,49 @@
+# R session state ----------------------------------------------------------
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# renv: never commit the package library, sandbox, or staging area; the
+# lockfile is what makes the project reproducible.
+renv/library/
+renv/staging/
+renv/sandbox/
+renv/local/
+
+# Generated analytical frames; rebuilt by R/run_all.R from the database.
+output/frames/
+output/frames/*.rds
+
+# Source database — exceeds GitHub's 100 MB per-file limit. Regenerate by
+# running scripts/build_db.py from MsShawnP/cinderhaven-data, then drop
+# the resulting cinderhaven_product_master.db into ./data/.
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db.bak
+data/*.db.bak-*
+
+# Three sibling project directories that happen to live in this folder
+# but are independent repos with their own remotes.
+MsShawnP/
+retail-velocity-decision-tool/
+velocity-tool/
+
+# Quarto / LaTeX intermediate state
+.quarto/
+*.aux
+*.log
+*.toc
+*.out
+*.synctex.gz
+
+# Python (only the inspect_db.py utility lives here)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS noise
+.DS_Store
+Thumbs.db

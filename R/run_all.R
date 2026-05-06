@@ -1,0 +1,153 @@
+# run_all.R — Full pipeline orchestrator.
+#
+# One command rebuilds everything from the SQLite database:
+#   0. Load shared theme + helpers          (R/00_theme.R, sourced by chart scripts)
+#   1. Load raw tables                      (R/01_load_raw.R)
+#   2. Build canonical analytical frames    (R/02_build_frames.R)
+#   3. Verify distributions / sanity check  (R/03_verify.R)
+#   4. Build hero charts        (PNG+HTML)  (R/04_hero_charts.R)
+#   5. Build supporting charts  (PNG+HTML)  (R/05_supporting_charts.R)
+#   6. Build Excel workbook                 (R/06_excel_workbook.R)
+#   7. Render Quarto report     (HTML+PDF)  — calls quarto CLI if installed
+#   8. Render interactive dashboard (HTML)  — calls quarto CLI if installed
+#   9. Render executive tearsheet (PDF)     — calls quarto CLI if installed
+#  10. Render shareable artifacts (PDF)     — compliance timeline + scorecard
+#
+# Steps 1–6 are pure R. Steps 7–10 shell out to `quarto`. If quarto isn't
+# on PATH the script logs a skip and continues — the analytical outputs
+# are still valid.
+
+ROOT <- normalizePath(
+  Sys.getenv("PROJECT_ROOT", unset = "."),
+  winslash = "/", mustWork = FALSE)
+
+R_SCRIPTS <- c(
+  "R/01_load_raw.R",
+  "R/02_build_frames.R",
+  "R/03_verify.R",
+  "R/04_hero_charts.R",
+  "R/05_supporting_charts.R",
+  "R/06_excel_workbook.R"
+)
+
+step_banner <- function(msg) {
+  cat("\n", strrep("=", 70), "\n>>> ", msg, "\n", strrep("=", 70), "\n",
+      sep = "")
+}
+
+t0 <- Sys.time()
+
+# ---- R steps -------------------------------------------------------------
+
+for (s in R_SCRIPTS) {
+  step_banner(s)
+  source(file.path(ROOT, s), echo = FALSE)
+}
+
+# ---- Quarto render -------------------------------------------------------
+
+step_banner("Quarto render — quarto/report.qmd")
+
+# Locate quarto. On Windows it's commonly at
+# "C:/Program Files/Quarto/bin/quarto.exe". Fall back to PATH.
+quarto_exe <- {
+  candidates <- c(
+    Sys.which("quarto"),
+    "C:/Program Files/Quarto/bin/quarto.exe",
+    "C:/Program Files/Quarto/bin/quarto"
+  )
+  hit <- candidates[nzchar(candidates) & file.exists(candidates)]
+  if (length(hit)) hit[[1]] else ""
+}
+
+# Render a .qmd. `fmt` is passed via --to; for the dashboard, use NA to
+# omit --to so Quarto picks up `format: dashboard` from the YAML. (Passing
+# `--to html` overrides the YAML format and silently degrades the dashboard
+# to a plain HTML doc — value boxes print as raw R lists and the row/column
+# layout directives leak through as visible <h2>/<h3> headings.)
+render_qmd <- function(qmd_rel, fmt, out_name, out_dir_rel = NULL) {
+  qmd <- file.path(ROOT, qmd_rel)
+  args <- c("render", shQuote(qmd))
+  if (!is.na(fmt))           args <- c(args, "--to", fmt)
+  if (!is.null(out_dir_rel)) args <- c(args, "--output-dir", out_dir_rel)
+  cat(sprintf("\n  rendering %s%s ...\n", basename(qmd),
+              if (is.na(fmt)) "" else paste0(" -> ", fmt)))
+  rc <- system2(quarto_exe, args = args, stdout = TRUE, stderr = TRUE)
+  rc_status <- attr(rc, "status")
+  if (is.null(rc_status) || rc_status == 0) {
+    base_dir <- if (is.null(out_dir_rel)) dirname(qmd)
+                else normalizePath(file.path(dirname(qmd), out_dir_rel),
+                                    mustWork = FALSE)
+    out_file <- file.path(base_dir, out_name)
+    sz <- if (file.exists(out_file))
+            sprintf(" (%.0f KB)", file.info(out_file)$size / 1024) else ""
+    cat(sprintf("  %s OK%s\n",
+                if (is.na(fmt)) "render" else paste0(fmt, " render"), sz))
+  } else {
+    cat(sprintf("  render FAILED (exit %s) — see output above\n", rc_status))
+  }
+}
+
+if (!nzchar(quarto_exe)) {
+  cat("Quarto not found on PATH — skipping render step.\n",
+      "Install from https://quarto.org and re-run, or render manually with:\n",
+      "  quarto render quarto/report.qmd\n",
+      "  quarto render quarto/dashboard.qmd\n",
+      "  quarto render quarto/tearsheet.qmd\n",
+      "  quarto render quarto/compliance_timeline.qmd\n",
+      "  quarto render quarto/scorecard.qmd\n", sep = "")
+} else {
+  render_qmd("quarto/report.qmd",    "html", "report.html")
+  render_qmd("quarto/report.qmd",    "pdf",  "report.pdf")
+  step_banner("Quarto render — quarto/dashboard.qmd")
+  # NA → omit --to so YAML's `format: dashboard` is respected.
+  render_qmd("quarto/dashboard.qmd", NA,     "dashboard.html")
+
+  # Executive tearsheet (Phase 5). Output stays next to the qmd source.
+  step_banner("Quarto render — quarto/tearsheet.qmd")
+  render_qmd("quarto/tearsheet.qmd", "pdf", "tearsheet.pdf")
+
+  # Scrollytelling pareto walkthrough (Phase 8 nice-to-have). Uses the
+  # closeread-html format from the qmd-lab/closeread Quarto extension.
+  # NA → omit --to so YAML's `format: closeread-html` is respected.
+  step_banner("Quarto render — quarto/pareto_scrollytell.qmd")
+  render_qmd("quarto/pareto_scrollytell.qmd", NA, "pareto_scrollytell.html")
+
+  # Shareable artifacts (Phase 7). Output to project-level output/ so they
+  # sit alongside the Excel workbook rather than next to the qmd source.
+  step_banner("Quarto render — quarto/compliance_timeline.qmd")
+  render_qmd("quarto/compliance_timeline.qmd", "pdf",
+             "compliance_timeline.pdf", out_dir_rel = "../output")
+  step_banner("Quarto render — quarto/scorecard.qmd")
+  render_qmd("quarto/scorecard.qmd", "pdf",
+             "scorecard.pdf", out_dir_rel = "../output")
+}
+
+# ---- Wrap up -------------------------------------------------------------
+
+elapsed <- round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
+cat(sprintf("\n%s\nFull pipeline completed in %s seconds.\n%s\n",
+            strrep("=", 70), elapsed, strrep("=", 70)))
+
+cat("\nKey outputs:\n")
+key_outputs <- c(
+  "output/frames/sku_master_full.rds",
+  "output/canonical_numbers.md",
+  "output/cinderhaven_audit.xlsx",
+  "output/charts/01_chargeback_pareto.png",
+  "output/compliance_timeline.pdf",
+  "output/scorecard.pdf",
+  "quarto/report.html",
+  "quarto/report.pdf",
+  "quarto/dashboard.html",
+  "quarto/tearsheet.pdf",
+  "quarto/pareto_scrollytell.html"
+)
+for (f in key_outputs) {
+  full <- file.path(ROOT, f)
+  if (file.exists(full)) {
+    cat(sprintf("  %-50s %6.0f KB\n", f, file.info(full)$size / 1024))
+  } else {
+    cat(sprintf("  %-50s (missing)\n", f))
+  }
+}

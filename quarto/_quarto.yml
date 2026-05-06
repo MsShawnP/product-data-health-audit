@@ -1,0 +1,29 @@
+# _quarto.yml — project-level Quarto configuration.
+# Sets defaults shared by report.qmd, dashboard.qmd, and tearsheet.qmd.
+# Anything per-document still overrides via the document's own YAML header.
+
+project:
+  type: default
+  output-dir: .
+
+# Defaults that apply across every .qmd in this directory.
+execute:
+  echo: false
+  warning: false
+  message: false
+  freeze: false
+
+# Project-wide HTML theming (the report uses cosmo + assets/report.css; the
+# dashboard inherits cosmo from its own header). PDF theming is per-document.
+format:
+  html:
+    theme: cosmo
+    fig-align: center
+
+# Knitr defaults — every chart uses these unless a chunk overrides.
+knitr:
+  opts_chunk:
+    fig.width: 9
+    fig.height: 5.5
+    dpi: 200
+    out.width: "100%"

@@ -1,0 +1,10 @@
+name: data-debt-calculator
+title:
+username: lailarallc
+account: lailarallc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17312426
+bundleId: 11960092
+url: https://lailarallc.shinyapps.io/data-debt-calculator/
+version: 1

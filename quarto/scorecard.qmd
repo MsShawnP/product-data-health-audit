@@ -1,0 +1,204 @@
+---
+title: "Product Data Health Scorecard"
+subtitle: "Score your product master against eight dimensions. If you score below 50, your data will break before you hit \\$50 million."
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: scrartcl
+    classoption: ["letterpaper"]
+    geometry:
+      - left=0.5in
+      - right=0.5in
+      - top=0.45in
+      - bottom=0.4in
+    fontsize: 8pt
+    fig-align: center
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \definecolor{chnavy}{HTML}{1B2A4A}
+        \definecolor{chred}{HTML}{C0221F}
+        \definecolor{chteal}{HTML}{1E8C7E}
+        \definecolor{chcoral}{HTML}{D35830}
+        \definecolor{chbluemuted}{HTML}{576D91}
+        \definecolor{chbgpale}{HTML}{E8ECF0}
+        \definecolor{chbgpaler}{HTML}{F4F6F8}
+        \definecolor{chtext}{HTML}{2D3436}
+        \definecolor{chtextmuted}{HTML}{636E72}
+
+        \usepackage{parskip}
+        \setlength{\parskip}{0.8pt plus 0.2pt}
+        \setlength{\parindent}{0pt}
+
+        \usepackage[automark]{scrlayer-scrpage}
+        \setkomafont{title}{\color{chnavy}\Large\bfseries}
+        \setkomafont{subtitle}{\color{chtextmuted}\small\itshape}
+        \makeatletter
+        \renewcommand*{\@maketitle}{%
+          \par\vspace{-1.2em}%
+          {\usekomafont{title}\@title\par}%
+          \ifx\@subtitle\@empty\else
+            \vspace{0.1em}%
+            {\usekomafont{subtitle}\@subtitle\par}%
+          \fi
+          \vspace{0.2em}%
+          {\color{chnavy}\rule{\linewidth}{0.6pt}}%
+          \par\vspace{0.3em}%
+        }
+        \makeatother
+
+        \usepackage{booktabs}
+        \usepackage{array}
+        \usepackage{colortbl}
+        \usepackage{enumitem}
+        \setlist{topsep=0pt, partopsep=0pt, itemsep=0pt, parsep=0pt}
+        \renewcommand{\arraystretch}{0.92}
+
+        % Compact dimension heading: navy, bold, with a colored chip for the score range.
+        \newcommand{\dimhead}[2]{%
+          {\color{chnavy}\bfseries\small #1}\hspace{0.6em}%
+          \colorbox{chbgpale}{\color{chnavy}\scriptsize\bfseries\strut\,#2\,}\par%
+          \vspace{1pt}}
+
+        \newcommand{\whatmeas}[1]{%
+          {\itshape\scriptsize\color{chtextmuted}#1}\par\vspace{0pt}}
+
+        \newcommand{\whymatters}[1]{%
+          \par\vspace{0pt}{\scriptsize\color{chtext}\textbf{Why it matters:} #1}\par}
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+**Instructions.** Answer each question using the data in your product master or ERP system. For each dimension, circle the score that matches your current state. Add the scores. The total tells you where you stand and what to prioritize.
+
+\vspace{2pt}
+
+\noindent\begin{minipage}[t]{0.49\textwidth}
+\dimhead{1. GTIN validity}{0–15}
+\whatmeas{What it measures: Do your barcodes pass algorithmic validation?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & Don't know, or have never checked \\
+                     5 & Checked, and more than 10\% of GTINs fail \\
+\rowcolor{chbgpaler} 10 & Checked, and fewer than 10\% fail \\
+                    15 & All GTINs pass mod-10 check digit validation \\
+\end{tabular}
+\whymatters{An invalid GTIN triggers automated chargebacks at every retailer, every month, until it's fixed. It also blocks GS1 Sunrise 2027 compliance and FSMA 204 traceability. This is the single highest-leverage data quality dimension.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\dimhead{2. Required field completeness}{0–15}
+\whatmeas{What it measures: Are the fields retailers require actually populated?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & Don't know which fields each retailer requires \\
+                     5 & Know the requirements, fewer than 50\% of SKUs pass \\
+\rowcolor{chbgpaler} 10 & 50–80\% of SKUs pass all required fields \\
+                    15 & More than 80\% of SKUs pass all retailer required-field checks \\
+\end{tabular}
+\whymatters{A SKU that fails a required-field check cannot be onboarded, reauthorized, or expanded at that retailer. The fields are usually simple: brand owner, country of origin, case dimensions, case weight. The gap between failing and passing is typically one to three fields per SKU.}
+\end{minipage}
+
+\vspace{4pt}
+
+\noindent\begin{minipage}[t]{0.49\textwidth}
+\dimhead{3. Case dimensions and weights}{0–15}
+\whatmeas{What it measures: Are physical product specifications populated and plausible?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & More than 30\% of SKUs have blank or implausible case dimensions \\
+                     5 & 10–30\% have gaps \\
+\rowcolor{chbgpaler} 10 & Fewer than 10\% have gaps \\
+                    15 & All SKUs have populated, verified case dimensions and weights \\
+\end{tabular}
+\whymatters{Blank or wrong case dimensions cause warehouse receiving errors, chargeback penalties for dimension mismatches, and delays in distribution center slot assignment. These are physical measurements that require someone to measure the actual product. They cannot be guessed or defaulted.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\dimhead{4. Data pool registration (OneWorldSync / 1WorldSync)}{0–10}
+\whatmeas{What it measures: Are your products registered and complete in a GS1-certified data pool?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & No data pool registration, or don't know \\
+                     3 & Some SKUs registered, most incomplete \\
+\rowcolor{chbgpaler} 7 & Most SKUs registered, some incomplete \\
+                    10 & All active SKUs registered with status ``Complete'' \\
+\end{tabular}
+\whymatters{Data pool registration is the mechanism that synchronizes your product data with retailers. Without it, retailers maintain their own copy of your product data, which drifts from yours over time. Registration is a prerequisite for GS1 Sunrise 2027.}
+\end{minipage}
+
+\vspace{4pt}
+
+\noindent\begin{minipage}[t]{0.49\textwidth}
+\dimhead{5. Data entry governance}{0–10}
+\whatmeas{What it measures: Is there a gate between data entry and the live product master?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & Anyone can enter or edit product records with no validation \\
+                     3 & Some entry paths have validation, others do not \\
+\rowcolor{chbgpaler} 7 & All entry paths require validation, but it's not consistently enforced \\
+                    10 & All entry paths require validation before a record goes live, with an audit trail \\
+\end{tabular}
+\whymatters{Every product data problem starts at the moment of entry. If there is no check between ``someone typed this'' and ``retailers are ordering against it,'' every defect becomes a chargeback, a stalled launch, or a deauthorization. The cost of an intake checklist is five minutes per SKU. The cost of skipping it is months of accumulated penalties that nobody traces back to the entry.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\dimhead{6. Chargeback traceability}{0–10}
+\whatmeas{What it measures: Can you trace a chargeback to the specific field in the product master that caused it?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & Chargebacks are not tracked, or are tracked only as a total dollar amount \\
+                     3 & Chargebacks are tracked by SKU but not linked to specific data fields \\
+\rowcolor{chbgpaler} 7 & Chargebacks are linked to reason codes and can be matched to data defects manually \\
+                    10 & Automated reconciliation links each chargeback to the specific field that caused it \\
+\end{tabular}
+\whymatters{If you cannot trace a chargeback to its cause, you cannot fix the cause. Chargebacks arrive on settlement statements as line items categorized under generic headings. Without a reconciliation process, the charges look like dozens of separate problems. They are usually a handful of fields, repeated.}
+\end{minipage}
+
+\vspace{4pt}
+
+\noindent\begin{minipage}[t]{0.49\textwidth}
+\dimhead{7. Velocity and performance monitoring}{0–10}
+\whatmeas{What it measures: Do you have a reliable, consistent view of product performance across retailers?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & No velocity reporting, or reports are built manually from retailer exports \\
+                     3 & Manual reports exist but definitions vary across retailers \\
+\rowcolor{chbgpaler} 7 & Consistent reporting across retailers, updated weekly \\
+                    10 & Automated reporting with data quality flags and trend alerts \\
+\end{tabular}
+\whymatters{A velocity report built from four different retailer CSVs with four different column headers and four different store count definitions is not a report. It is a reconciliation exercise. The time spent reconciling is time not spent acting on what the data says.}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.49\textwidth}
+\dimhead{8. Regulatory readiness}{0–15}
+\whatmeas{What it measures: Are you prepared for GS1 Sunrise 2027 and FSMA Rule 204?}
+\footnotesize\begin{tabular}{@{}r@{\hspace{0.7em}}p{0.83\linewidth}@{}}
+\rowcolor{chbgpaler} 0 & Have not assessed readiness for either transition \\
+                     5 & Aware of the deadlines, no action plan \\
+\rowcolor{chbgpaler} 10 & Action plan in place, partially implemented \\
+                    15 & Fully prepared: valid GTINs, registered data pool, 2D barcodes on packaging, lot-level traceability operational \\
+\end{tabular}
+\whymatters{These are not future concerns. GS1 Sunrise transition is active now. FSMA 204 compliance is required by July 2028. Both depend on accurate product identifiers. Preparing for one prepares you for both.}
+\end{minipage}
+
+\vspace{6pt}
+
+\noindent{\color{chnavy}\bfseries\normalsize Scoring interpretation \hfill Total max: 100}
+
+\vspace{2pt}
+
+```{r}
+#| results: asis
+library(knitr)
+interp <- data.frame(
+  `Total score` = c("80–100", "60–79", "40–59", "Below 40"),
+  `What it means` = c(
+    "Strong. Your product master supports current operations and upcoming transitions. Focus on maintaining governance and monitoring for drift.",
+    "Adequate with gaps. You likely have specific dimensions pulling the score down. Identify them and prioritize. The fixes are usually bounded and specific.",
+    "At risk. Your product data will generate increasing costs as you grow and as compliance deadlines arrive. A focused cleanup, typically 2 to 4 weeks of effort, can move you into the adequate range.",
+    "Your data will break before you hit \\$50 million. The cost of inaction compounds with every new SKU, every new retailer, and every month closer to the 2027 and 2028 deadlines. Start with GTIN validation and required field completeness. Those two dimensions unlock the most value fastest."),
+  check.names = FALSE,
+  stringsAsFactors = FALSE)
+cat("\\rowcolors{2}{chbgpaler}{white}\n")
+cat(kable(interp, format = "latex", booktabs = TRUE, escape = FALSE,
+          align = c("r", "p{6.6in}"), linesep = ""), "\n")
+```
+
+\vspace{4pt}
+
+\noindent{\color{chnavy}\bfseries What to do with your score.}\,\, This scorecard is a starting point, not a diagnosis. A score tells you where to look. A product data audit tells you what to fix, in what order, and what it's worth. If your score is below 60, the next step is to run the GTIN validation check across your catalog. It takes less than an hour and immediately surfaces the highest-cost defects.
+
+\vspace{2pt}
+\noindent\textit{\footnotesize\color{chtextmuted}\textbf{Source note:} Scoring dimensions are based on observed patterns across specialty food companies at \$10 million to \$100 million in revenue. Thresholds are directional. Your specific situation may warrant different weights depending on your retailer mix, growth trajectory, and regulatory exposure.}

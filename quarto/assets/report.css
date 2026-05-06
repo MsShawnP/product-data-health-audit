@@ -1,0 +1,58 @@
+/* report.css — Economist-flavored type and table styling.
+   Targets HTML output only; PDF uses the LaTeX defaults. */
+
+:root {
+  --body-color:    #1a1a1a;
+  --muted-color:   #555;
+  --rule-color:    #d8d8d8;
+  --accent-color:  #c0392b;
+  --link-color:    #1f4e79;
+}
+
+body {
+  font-family: "Georgia", "Source Serif Pro", serif;
+  color: var(--body-color);
+  line-height: 1.55;
+  font-size: 16px;
+  max-width: 820px;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Helvetica Neue", "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--body-color);
+}
+
+h1 { font-size: 1.85rem; border-bottom: 2px solid var(--rule-color); padding-bottom: 0.3rem; }
+h2 { font-size: 1.4rem;  margin-top: 2rem; }
+h3 { font-size: 1.15rem; color: var(--muted-color); }
+
+a       { color: var(--link-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+p, li { font-size: 1rem; }
+
+strong { color: #000; }
+
+blockquote, .callout {
+  border-left: 3px solid var(--accent-color);
+  background: #fafafa;
+  padding: 0.6rem 1rem;
+  margin: 1rem 0;
+}
+
+table {
+  font-family: "Helvetica Neue", "Inter", system-ui, sans-serif;
+  font-size: 0.92rem;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+th { border-bottom: 2px solid #333; text-align: left; padding: 0.4rem 0.6rem; }
+td { border-bottom: 1px solid var(--rule-color); padding: 0.35rem 0.6rem; }
+
+figure { margin: 1.5rem 0; }
+figcaption { font-size: 0.88rem; color: var(--muted-color); font-style: italic; }
+
+/* Subtle hr */
+hr { border: 0; border-top: 1px solid var(--rule-color); margin: 2rem 0; }

@@ -1,0 +1,8 @@
+library(openxlsx2)
+cat("version:", as.character(packageVersion("openxlsx2")), "\n")
+wb <- wb_workbook()
+wb$add_worksheet("test")
+cat("\nadd_filter formals:\n")
+print(formals(wb$add_filter))
+cat("\nMethods on wb:\n")
+print(grep("filter", ls(envir = wb), value = TRUE))

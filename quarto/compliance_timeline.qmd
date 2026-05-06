@@ -1,0 +1,181 @@
+---
+title: "Product Data Compliance Timeline"
+subtitle: "What's Coming and What It Requires"
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: scrartcl
+    classoption: ["letterpaper","landscape"]
+    geometry:
+      - left=0.4in
+      - right=0.4in
+      - top=0.4in
+      - bottom=0.35in
+    fontsize: 8pt
+    fig-align: center
+    include-in-header:
+      text: |
+        \usepackage{xcolor}
+        \definecolor{chnavy}{HTML}{1B2A4A}
+        \definecolor{chred}{HTML}{C0221F}
+        \definecolor{chteal}{HTML}{1E8C7E}
+        \definecolor{chcoral}{HTML}{D35830}
+        \definecolor{chbluemuted}{HTML}{576D91}
+        \definecolor{chbgpale}{HTML}{E8ECF0}
+        \definecolor{chbgpaler}{HTML}{F4F6F8}
+        \definecolor{chtext}{HTML}{2D3436}
+        \definecolor{chtextmuted}{HTML}{636E72}
+
+        \usepackage{parskip}
+        \setlength{\parskip}{1.2pt plus 0.2pt}
+        \setlength{\parindent}{0pt}
+
+        \usepackage[automark]{scrlayer-scrpage}
+        \setkomafont{title}{\color{chnavy}\Large\bfseries}
+        \setkomafont{subtitle}{\color{chtextmuted}\normalsize\itshape}
+        \makeatletter
+        \renewcommand*{\@maketitle}{%
+          \par\vspace{-1.4em}%
+          {\usekomafont{title}\@title\par}%
+          \ifx\@subtitle\@empty\else
+            \vspace{0.15em}%
+            {\usekomafont{subtitle}\@subtitle\par}%
+          \fi
+          \vspace{0.25em}%
+          {\color{chnavy}\rule{\linewidth}{0.6pt}}%
+          \par\vspace{0.4em}%
+        }
+        \makeatother
+
+        \usepackage{booktabs}
+        \usepackage{array}
+        \usepackage{colortbl}
+        \usepackage{enumitem}
+        \setlist{topsep=0pt, partopsep=0pt, itemsep=0pt, parsep=0pt,
+                 leftmargin=1.2em, labelsep=0.4em}
+        \renewcommand{\arraystretch}{1.05}
+
+        % Date marker macro: a small navy chip with white bold text.
+        \newcommand{\datechip}[1]{%
+          \colorbox{chnavy}{\color{white}\bfseries\strut\,#1\,}%
+        }
+        \newcommand{\datechipred}[1]{%
+          \colorbox{chred}{\color{white}\bfseries\strut\,#1\,}%
+        }
+        \newcommand{\datechipcoral}[1]{%
+          \colorbox{chcoral}{\color{white}\bfseries\strut\,#1\,}%
+        }
+        \newcommand{\datechipteal}[1]{%
+          \colorbox{chteal}{\color{white}\bfseries\strut\,#1\,}%
+        }
+
+        % Section label inside a column.
+        \newcommand{\collabel}[1]{%
+          \par\vspace{1pt}{\color{chnavy}\bfseries\small #1}\par\vspace{1pt}}
+
+        % Tagline (the "Label:" line).
+        \newcommand{\tagline}[1]{%
+          \par{\color{chtext}\itshape #1}\par\vspace{2pt}}
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+Two industry transitions are already underway. Both depend on clean product data. This timeline shows the key dates, what each transition requires, and what needs to be true about your product master before each deadline arrives.
+
+\vspace{4pt}
+
+\noindent
+\begin{minipage}[t]{0.22\textwidth}
+\datechipteal{NOW (2026)}\\[3pt]
+\tagline{You are here.}
+\collabel{What's happening}
+GS1 Sunrise transition period is active. Retailers are upgrading point-of-sale systems to accept 2D barcodes alongside traditional UPCs. Some retailers, including Walmart, have communicated supplier requirements ahead of the 2027 target. Dual-marking (1D + 2D barcodes on the same package) is the current best practice during transition.
+
+\collabel{What your product master needs today}
+\begin{itemize}
+\item Every GTIN-14 and UPC-12 must pass mod-10 check digit validation
+\item Brand owner field must contain the legal brand name (not ``NA'', not blank)
+\item OneWorldSync registration must be complete for every active SKU
+\end{itemize}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.24\textwidth}
+\datechipred{DEC 31, 2027 — GS1 Sunrise}\\[3pt]
+\tagline{Retail POS systems must accept 2D barcodes.}
+\collabel{What happens}
+Retailers' point-of-sale systems must be capable of scanning and processing 2D barcodes, including GS1 Digital Link QR codes, at checkout. UPC barcodes will continue to work. But the 2D barcode becomes the primary carrier of product data at point of sale.
+
+\collabel{What this requires from you}
+\begin{itemize}
+\item Valid GTINs. A GS1 Digital Link QR code is built on a GTIN. If the GTIN is wrong, the QR code is wrong. There is no workaround.
+\item Product data registered in GS1-certified data pools (OneWorldSync, 1WorldSync, or equivalent). The QR code points to a resolver that looks up product data. If the product data isn't registered, the resolver returns nothing.
+\item Packaging updated to include 2D barcodes. This requires artwork changes with lead times of 3 to 12 months depending on your packaging supply chain.
+\end{itemize}
+
+\collabel{If you're not ready}
+Your products can still scan via UPC. But retailers that have moved to 2D-first workflows may flag non-compliant products. Retailer-specific mandates may be more stringent than the GS1 baseline. Products without 2D barcodes lose access to the enhanced data capabilities (batch tracking, expiration dates, promotional linking) that retailers are building into their systems.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.34\textwidth}
+\datechipcoral{JUL 20, 2028 — FSMA Rule 204}\\[3pt]
+\tagline{FDA food traceability compliance deadline.}
+\collabel{What happens}
+All covered entities in the food supply chain must maintain and share Key Data Elements (KDEs) at Critical Tracking Events (CTEs) for foods on the FDA's Food Traceability List. Records must be producible in electronic, sortable format within 24 hours of an FDA request. This deadline was originally January 20, 2026. FDA extended it by 30 months in March 2025 to allow industry-wide coordination.
+
+\collabel{What this requires from you}
+\begin{itemize}
+\item Accurate GTINs as the product identifier backbone. The traceability system tracks products by GTIN. If the GTIN is wrong, the traceability chain breaks.
+\item Lot-level tracking capability tied to accurate product identifiers
+\item Systems that can capture and share traceability data with supply chain partners and FDA on request
+\item The ability to trace any covered product from source to point of sale within 24 hours
+\end{itemize}
+
+\collabel{Who is covered}
+Any entity that manufactures, processes, packs, or holds foods on the FDA's Food Traceability List. This includes many specialty food categories: fresh and fresh-cut produce, soft cheeses, shell eggs, fresh herbs, certain seafood, nut butters, and foods containing these as ingredients in their listed form.
+
+\collabel{If you're not ready}
+Non-compliance with a federal regulation. FDA enforcement actions. Beyond enforcement, retailers are already adding ``FSMA 204 ready'' as a qualification criterion in supplier evaluations. Non-compliance is not just a regulatory risk. It is a market access risk.
+\end{minipage}\hfill
+\begin{minipage}[t]{0.16\textwidth}
+\datechip{2028–2029 — Post-compliance}\\[3pt]
+\tagline{The new baseline.}
+\collabel{What's true after both transitions}
+Product data quality is no longer optional infrastructure. It is the foundation for barcode scanning, food traceability, and retailer compliance. Companies that fixed their product master for GS1 Sunrise simultaneously built the infrastructure for FSMA 204 compliance, because both transitions depend on the same thing: valid, complete, registered product identifiers.
+\end{minipage}
+
+\vspace{6pt}
+
+\noindent{\color{chnavy}\bfseries Prerequisites checklist — before either deadline, your product master must have:}
+
+```{r}
+#| results: asis
+library(knitr)
+chk <- data.frame(
+  `\\#` = 1:10,
+  Requirement = c(
+    "Valid GTIN-14 check digits on all SKUs",
+    "Valid UPC-12 check digits on all SKUs",
+    "Brand owner field populated (legal name)",
+    "Case dimensions populated (L x W x H)",
+    "Case weight populated",
+    "Country of origin populated",
+    "OneWorldSync registration complete",
+    "Lot-level tracking operational",
+    "2D barcode on packaging",
+    "24-hour traceability response capability"),
+  `GS1 Sunrise` = c("Required","Required","Required","Required","Required",
+                    "Required","Required","—","Required","—"),
+  `FSMA 204`    = c("Required","Required","—","—","—","Required","—",
+                    "Required","—","Required"),
+  Status = rep("$\\square$", 10),
+  check.names = FALSE,
+  stringsAsFactors = FALSE)
+
+cat("\\rowcolors{2}{chbgpaler}{white}\n")
+cat(kable(chk, format = "latex", booktabs = TRUE, escape = FALSE,
+          align = c("c","l","c","c","c"),
+          linesep = "") , "\n")
+```
+
+\vspace{4pt}
+\noindent\textit{\small\color{chtextmuted}\textbf{Source note:} GS1 Sunrise dates from GS1 US (gs1us.org). FSMA 204 dates from FDA (fda.gov). The FSMA 204 compliance date was extended from January 20, 2026 to July 20, 2028 by FDA notice dated March 20, 2025. Requirements are summarized for specialty food manufacturers. Consult the full regulations and your legal counsel for applicability to your specific products and operations.}

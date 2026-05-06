@@ -1,0 +1,392 @@
+- The project is out-of-sync -- use `renv::status()` for details.
+
+======================================================================
+>>> R/01_load_raw.R
+======================================================================
+Tables found: 9 
+
+--- Row counts ---
+  chargebacks                   381 rows    5 cols
+  distribution_log            12507 rows    4 cols
+  price_history                 398 rows    4 cols
+  product_master                 90 rows   25 cols
+  promotions                    198 rows    9 cols
+  retailer_requirements          29 rows    4 cols
+  scan_data                 1118009 rows    5 cols
+  sku_costs                      90 rows   16 cols
+  stores                        902 rows    7 cols
+
+Wrote: C:/Users/mssha/OneDrive/Desktop/product-data-health-audit/output/frames/raw_tables.rds
+
+======================================================================
+>>> R/02_build_frames.R
+======================================================================
+
+--- Wrote analytical frames ---
+  chargebacks_enriched.rds                 5.1 KB
+  deauth_summary.rds                       1.0 KB
+  process_debt.rds                         0.7 KB
+  promo_effectiveness.rds                  4.8 KB
+  raw_tables.rds                        1499.8 KB
+  retailer_pnl.rds                         0.7 KB
+  retailer_readiness_long.rds              2.0 KB
+  retailer_readiness_summary.rds           0.9 KB
+  sku_chargebacks.rds                      1.1 KB
+  sku_dim.rds                             12.7 KB
+  sku_master_full.rds                     17.9 KB
+  sku_retailer_revenue.rds                 4.7 KB
+  sku_revenue.rds                          1.7 KB
+  time_to_shelf_sku.rds                    1.2 KB
+  time_to_shelf_sku_store.rds             50.6 KB
+
+======================================================================
+>>> R/03_verify.R
+======================================================================
+
+======================================================================
+1. CHARGEBACK CONCENTRATION (Pareto check)
+======================================================================
+Total chargeback dollars (18mo): $88,045 across 50 SKUs (of 90 in catalog)
+  Top  10% of SKUs (n= 9) =  69.7% of chargeback dollars
+  Top  20% of SKUs (n=18) =  84.1% of chargeback dollars
+  Top  30% of SKUs (n=27) =  92.4% of chargeback dollars
+  Top  50% of SKUs (n=45) =  99.4% of chargeback dollars
+
+By retailer:
+  Walmart         $42,934      48.8% of total  (135 records)
+  UNFI            $26,103      29.6% of total  (169 records)
+  Whole Foods     $9,950       11.3% of total  (45 records)
+  Costco          $9,058       10.3% of total  (32 records)
+
+By reason:
+  Invalid GTIN/UPC               $52,661      59.8%  (205)
+  Dimension mismatch             $15,938      18.1%  (72)
+  Missing product data           $15,533      17.6%  (88)
+  Late delivery                  $2,255        2.6%  (10)
+  Short shipment                 $1,658        1.9%  (6)
+
+======================================================================
+2. MISSINGNESS BY FIELD (product_master, n=90)
+======================================================================
+  case_weight_lbs            32.2%  ##########
+  case_length_in             32.2%  ##########
+  case_width_in              32.2%  ##########
+  case_height_in             32.2%  ##########
+  brand_owner                18.9%  ######
+  updated_by                 10.0%  ###
+  country_of_origin           6.7%  ##
+  calories_per_serving        4.4%  #
+  upc                         3.3%  #
+  sku                         0.0%  
+  product_name                0.0%  
+  product_line                0.0%  
+  subcategory                 0.0%  
+  gtin14                      0.0%  
+  case_pack_qty               0.0%  
+  unit_weight_lbs             0.0%  
+  msrp                        0.0%  
+  serving_size                0.0%  
+  total_fat_g                 0.0%  
+  sodium_mg                   0.0%  
+  total_carb_g                0.0%  
+  protein_g                   0.0%  
+  active_retailers            0.0%  
+  oneworldsync_status         0.0%  
+  last_updated                0.0%  
+
+Data quality score distribution (sku_dim):
+  min=37.5  q25=62.5  median=75.0  mean=70.0  q75=75.0  max=100.0
+Issue-count histogram:
+
+ 0  1  2  3  4  5 
+ 1 14 35 29 10  1 
+
+GTIN-14 failures: 9 / 90 (10.0%)
+UPC-12 failures:  3 / 90 (3.3%)
+OneWorldSync incomplete: 81 / 90 (90.0%)
+
+======================================================================
+3. REVENUE DISTRIBUTION (TTM, 90 SKUs)
+======================================================================
+Total TTM revenue: $25,546,492
+  min=$237  q25=$19,268  median=$102,343  mean=$283,850  q75=$249,280  max=$2,705,914
+  Top  10% of SKUs = 52.6% of revenue
+  Top  20% of SKUs = 74.5% of revenue
+  Top  30% of SKUs = 84.3% of revenue
+  Top  50% of SKUs = 95.3% of revenue
+
+Revenue by product line:
+  Artisan Sauces         $10,346,215    40.5%  n=30  mean_quality=71.2  cb=$31,170
+  Pantry Staples         $6,487,566     25.4%  n=30  mean_quality=69.6  cb=$16,258
+  Specialty Condiments   $8,712,711     34.1%  n=30  mean_quality=69.2  cb=$40,618
+
+======================================================================
+4. QUALITY vs. CHARGEBACK CORRELATION
+======================================================================
+  Spearman(quality_score, chargeback_$): -0.478
+  Spearman(issue_count,  chargeback_$): +0.478  (positive = issues -> $$)
+# A tibble: 4 × 5
+  q_bin     n mean_cb median_cb cb_share
+  <int> <int>   <dbl>     <dbl>    <dbl>
+1     1    23  1912.       855.   0.500 
+2     2    23  1354.       376.   0.354 
+3     3    22   499.         0    0.125 
+4     4    22    87.8        0    0.0220
+
+======================================================================
+5. RETAILER P&L SHAPE
+======================================================================
+# A tibble: 10 × 10
+   retailer gross_revenue trade_spend_total revenue_after_trade chargeback_total
+   <chr>            <dbl>             <dbl>               <dbl>            <dbl>
+ 1 Walmart       13096133           2786407           10309726.            42934
+ 2 UNFI           4270517            646390            3624127.            26103
+ 3 Whole F…       2784822            347346            2437476.             9950
+ 4 Costco         2254476            369854            1884622.             9058
+ 5 DTC             828838                 0             828838.                0
+ 6 Green B…        508810                 0             508810.                0
+ 7 Southsi…        491724                 0             491724.                0
+ 8 Prairie…        447565                 0             447565.                0
+ 9 Mountai…        439156                 0             439156.                0
+10 Harbor …        424450                 0             424450.                0
+# ℹ 5 more variables: chargeback_count <int>, net_contribution <dbl>,
+#   chargeback_pct_of_revenue <dbl>, trade_spend_pct_of_revenue <dbl>,
+#   net_margin_pct_of_gross_revenue <dbl>
+
+======================================================================
+6. RETAILER READINESS — pass/fail by retailer
+======================================================================
+# A tibble: 4 × 5
+  retailer    n_skus n_pass pass_rate mean_failed_fields
+  <chr>        <int>  <int>     <dbl>              <dbl>
+1 Walmart         90     40     0.444              1.72 
+2 Costco          90     42     0.467              1.68 
+3 UNFI            90     49     0.544              1.51 
+4 Whole Foods     90     63     0.7                0.333
+
+======================================================================
+7. TIME-TO-SHELF (days from authorized_date to first_scan_week)
+======================================================================
+  n=12354 SKU×store auths with a matched scan
+  min=5  q25=12  median=26  mean=24.5  q75=33  q95=40  max=47
+
+======================================================================
+8. DEAUTHORIZATION
+======================================================================
+Overall deauth rate: 0.6% of SKU×store authorizations
+
+Deauth-rate distribution by SKU:
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000000 0.0000000 0.0008251 0.0073170 0.0088703 0.1428571 
+
+======================================================================
+9. PROCESS DEBT — by updated_by source
+======================================================================
+# A tibble: 7 × 8
+  updated_by       n_skus mean_quality_score mean_issue_count total_chargebacks
+  <chr>             <int>              <dbl>            <dbl>             <dbl>
+1 quality_mgr          10               66.2             2.7              14445
+2 broker_upload        13               68.3             2.54             18652
+3 import_script        12               68.8             2.5              16950
+4 inventory_admin      17               66.9             2.65             22826
+5 production_admin     19               74.3             2.05              9741
+6 <NA>                  9               72.2             2.22              2737
+7 ops_coordinator      10               72.5             2.2               2695
+# ℹ 3 more variables: chargeback_per_sku <dbl>, total_revenue <dbl>,
+#   chargeback_pct_of_rev <dbl>
+
+======================================================================
+10. PROMO EFFECTIVENESS — lift_pct distribution
+======================================================================
+  promotions with computable lift: 60 / 198
+  median lift=-0.8%  mean=3.0%  q25=-4.4%  q75=4.4%
+
+Mean lift by SKU quality tier:
+# A tibble: 3 × 3
+  q_bin     n mean_lift
+  <int> <int>     <dbl>
+1     1    20   -0.0394
+2     2    20    0.0936
+3     3    20    0.0357
+
+======================================================================
+VERIFICATION COMPLETE
+======================================================================
+If anything above looks degenerate (no Pareto, zero variance,
+all-NA fields, no correlation, impossible date gaps) — investigate
+before building hero charts.
+
+======================================================================
+>>> R/04_hero_charts.R
+======================================================================
+
+[1/4] Chargeback Pareto
+  01_chargeback_pareto.rds (362.1 KB)  +  01_chargeback_pareto.png (  28 KB)
+
+[2/4] Time-to-shelf by quality tier
+  02_time_to_shelf.rds (339.1 KB)  +  02_time_to_shelf.png (  32 KB)
+
+[3/4] True net margin by retailer (stacked composition)
+  03_retailer_net_margin.rds (323.4 KB)  +  03_retailer_net_margin.png (  62 KB)
+
+[4/4] Fix ROI
+  04_fix_roi.rds (305.0 KB)  +  04_fix_roi.png (  32 KB)
+
+Done. 4 ggplot objects + 4 PNGs in: C:/Users/mssha/OneDrive/Desktop/product-data-health-audit/output/charts
+
+======================================================================
+>>> R/05_supporting_charts.R
+======================================================================
+
+[5] Revenue-weighted field completeness
+  png:  05_revenue_weighted_completeness.png           (   41 KB)
+  html: 05_revenue_weighted_completeness.html          (   19 KB)
+
+[6] Retailer readiness — revenue at risk
+  png:  06_retailer_readiness_revenue_at_risk.png      (   29 KB)
+  html: 06_retailer_readiness_revenue_at_risk.html     (   11 KB)
+
+[7] Data debt by product line
+  png:  07_data_debt_by_product_line.png               (   31 KB)
+  html: 07_data_debt_by_product_line.html              (   12 KB)
+
+[8] Chargeback cost as % of gross margin — top 15 SKUs
+  png:  08_chargeback_pct_of_gross_margin_top15.png    (   52 KB)
+  html: 08_chargeback_pct_of_gross_margin_top15.html   (   24 KB)
+
+[9] Time-to-shelf by data completeness
+  png:  09_time_to_shelf_by_quality.png                (   24 KB)
+  html: 09_time_to_shelf_by_quality.html               (   52 KB)
+
+[11] Deauth rate by quality tier
+  png:  11_deauth_rate_by_quality_tier.png             (   33 KB)
+  html: 11_deauth_rate_by_quality_tier.html            (   12 KB)
+
+[12] Growth projection — chargebacks at 1x / 2.5x / 5x SKU count
+  png:  12_growth_projection_chargebacks.png           (   35 KB)
+  html: 12_growth_projection_chargebacks.html          (   11 KB)
+
+[13] GTIN/UPC pass/fail by product line
+  png:  13_gtin_upc_pass_fail_by_line.png              (   26 KB)
+  html: 13_gtin_upc_pass_fail_by_line.html             (   80 KB)
+
+[14] Chargeback dollars by reason
+  png:  14_chargeback_by_reason.png                    (   26 KB)
+  html: 14_chargeback_by_reason.html                   (   12 KB)
+
+[15] Monthly chargeback trend
+  png:  15_monthly_chargeback_trend.png                (   25 KB)
+  html: 15_monthly_chargeback_trend.html               (   19 KB)
+
+[16] Monthly chargebacks overlaid on scan revenue
+  png:  16_monthly_chargebacks_vs_scan.png             (   52 KB)
+  html: 16_monthly_chargebacks_vs_scan.html            (   20 KB)
+
+[17] Process debt — quality + chargebacks by updated_by
+  png:  17_process_debt_by_updated_by.png              (   49 KB)
+  html: 17_process_debt_by_updated_by.html             (   14 KB)
+
+[19] OneWorldSync status distribution
+  png:  19_oneworldsync_status.png                     (   23 KB)
+  html: 19_oneworldsync_status.html                    (   11 KB)
+
+[20] Retailer item-setup readiness — stacked bar
+  png:  20_retailer_setup_readiness_stacked.png        (   25 KB)
+  html: 20_retailer_setup_readiness_stacked.html       (   14 KB)
+
+[21] Data staleness distribution
+  png:  21_data_staleness_distribution.png             (   24 KB)
+  html: 21_data_staleness_distribution.html            (   52 KB)
+
+[22] Serving size variants
+  png:  22_serving_size_variants.png                   (   31 KB)
+  html: 22_serving_size_variants.html                  (   18 KB)
+
+[23] SKU risk distribution
+  png:  23_sku_risk_distribution.png                   (   69 KB)
+  html: 23_sku_risk_distribution.html                  (   55 KB)
+
+----------------------------------------------------------------------
+SKIPPED CHARTS (data does not support a clear finding):
+----------------------------------------------------------------------
+Chart 10 — New vs. old SKU data quality trend
+  Spearman(days_since_update, data_quality_score) = -0.033.
+  No monotonic trend by age. Scope says 'only include if finding is
+  clear' — flagged in PHASE1_DATA_FINDINGS.md and skipped.
+
+Chart 18 — Cost-of-doing-nothing EBITDA waterfall
+  Requires lost-sales, manual-rework hours, and trade-spend-erosion
+  estimates that aren't in the dataset. Building this honestly
+  requires assumptions the narrative needs to settle first. Defer
+  to Phase 4 once the prose has committed to specific assumption
+  values; build then with explicit sensitivity table.
+
+Done. Outputs in: C:/Users/mssha/OneDrive/Desktop/product-data-health-audit/output/charts
+
+======================================================================
+>>> R/06_excel_workbook.R
+======================================================================
+[1/7] Velocity Summary
+[2/7] SKU Master + Data Quality Scores
+[3/7] Retailer Readiness Matrix
+[4/7] Chargeback Detail
+[5/7] Revenue by SKU × Retailer
+[6/7] Triage List
+[7/7] Data Dictionary
+
+Writing: C:/Users/mssha/OneDrive/Desktop/product-data-health-audit/output/cinderhaven_audit.xlsx
+
+Wrote cinderhaven_audit.xlsx (216 KB)
+
+Tab row counts:
+  Velocity Summary                  317 rows ×  17 cols
+  SKU Master + DQ                    90 rows ×  44 cols
+  Retailer Readiness Matrix        2610 rows ×   9 cols
+  Chargeback Detail                 381 rows ×  11 cols
+  Revenue SKU x Retailer            317 rows ×  13 cols
+  Triage List                        90 rows ×  15 cols
+  Data Dictionary                    38 rows ×   3 cols
+Warning messages:
+1: package 'RSQLite' was built under R version 4.5.3 
+2: In annotate("label", x = n50, y = 0.5, label = sprintf("%d SKUs · 50%%",  :
+  Ignoring unknown parameters: `label.size`
+3: In annotate("label", x = n80, y = 0.8, label = sprintf("%d SKUs · 80%%",  :
+  Ignoring unknown parameters: `label.size`
+4: package 'ggiraph' was built under R version 4.5.3 
+5: package 'htmlwidgets' was built under R version 4.5.3 
+6: package 'openxlsx2' was built under R version 4.5.3 
+
+======================================================================
+>>> Quarto render — quarto/report.qmd
+======================================================================
+
+  rendering report.qmd -> html ...
+  render FAILED (exit 1) — see output above
+
+  rendering report.qmd -> pdf ...
+  render FAILED (exit 1) — see output above
+
+======================================================================
+>>> Quarto render — quarto/dashboard.qmd
+======================================================================
+
+  rendering dashboard.qmd ...
+  render OK (234 KB)
+Warning messages:
+1: In system2(quarto_exe, args = args, stdout = TRUE, stderr = TRUE) :
+  running command '"C:\PROGRA~1\Quarto\bin\quarto.exe" render "C:/Users/mssha/OneDrive/Desktop/product-data-health-audit/quarto/report.qmd" --to html' had status 1
+2: In system2(quarto_exe, args = args, stdout = TRUE, stderr = TRUE) :
+  running command '"C:\PROGRA~1\Quarto\bin\quarto.exe" render "C:/Users/mssha/OneDrive/Desktop/product-data-health-audit/quarto/report.qmd" --to pdf' had status 1
+
+======================================================================
+Full pipeline completed in 100.1 seconds.
+======================================================================
+
+Key outputs:
+  output/frames/sku_master_full.rds                      18 KB
+  output/canonical_numbers.md                             8 KB
+  output/cinderhaven_audit.xlsx                         216 KB
+  output/charts/01_velocity_vs_quality.png           (missing)
+  quarto/report.html                                    120 KB
+  quarto/report.pdf                                     869 KB
+  quarto/dashboard.html                                 234 KB
