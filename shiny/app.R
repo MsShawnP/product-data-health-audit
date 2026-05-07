@@ -122,6 +122,10 @@ cost_of_delay <- function(N, R, C, P, A) {
                         stalled_accrued + fix_cost)
 }
 
+# URL for the case-study link in the top-right of the navbar. Points at the
+# rendered HTML report on the project's GitHub Pages site.
+CASE_STUDY_URL <- "https://msshawnp.github.io/product-data-health-audit/quarto/report.html"
+
 dollar_short <- function(x) {
   vapply(x, function(v) {
     if (is.na(v))            "—"
@@ -181,6 +185,8 @@ theme_bs <- bs_theme(
             font-size: 0.78rem; font-weight: 600; color: white; }
     .interp { background: %s; padding: 14px 18px; border-radius: 6px;
               border-left: 4px solid %s; line-height: 1.55; }
+    .footer-link { color: %s; font-weight: 600; }
+    .footer-link:hover { color: %s; }
     .sr-only-focusable:focus { outline: 2px solid %s; outline-offset: 2px; }
     label.control-label { font-weight: 600; color: %s; }
     .form-text { color: %s; font-size: 0.78rem; }
@@ -188,6 +194,7 @@ theme_bs <- bs_theme(
   PAL$bg_paler, PAL$navy, PAL$red, PAL$text_muted, PAL$text_muted,
   PAL$red, PAL$text_muted,
   PAL$bg_pale, PAL$navy,
+  PAL$navy, PAL$red,
   PAL$navy, PAL$text, PAL$text_muted))
 
 ui <- page_navbar(
@@ -373,6 +380,14 @@ ui <- page_navbar(
         )
       )
     )
+  ),
+  nav_spacer(),
+  nav_item(
+    tags$a(href = CASE_STUDY_URL,
+           class = "footer-link",
+           target = "_blank", rel = "noopener",
+           style = sprintf("color:%s; font-weight:600;", PAL$white),
+           "See what a complete product data audit looks like →")
   )
 )
 

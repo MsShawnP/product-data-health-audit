@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Data Readiness Audit — Cinderhaven Provisions</title>
+  <meta name="description" content="A complete product data health audit for a fictional specialty food company. Five artifacts from one R+Quarto pipeline.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:        #1B2A4A;
+      --red:         #C0221F;
+      --coral:       #D35830;
+      --teal:        #1E8C7E;
+      --blue-muted:  #576D91;
+      --text:        #2D3436;
+      --text-muted:  #636E72;
+      --bg-pale:     #E8ECF0;
+      --bg-paler:    #F4F6F8;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+      color: var(--text);
+      background: #ffffff;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 56px 28px 64px;
+    }
+    header {
+      border-bottom: 2px solid var(--navy);
+      padding-bottom: 18px;
+      margin-bottom: 28px;
+    }
+    h1 {
+      color: var(--navy);
+      font-size: 1.95rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      margin: 0 0 6px 0;
+      line-height: 1.15;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 0;
+    }
+    .description {
+      font-size: 1.05rem;
+      color: var(--text);
+      margin: 0 0 36px 0;
+    }
+    .description strong { color: var(--red); font-weight: 600; }
+    h2 {
+      color: var(--navy);
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin: 36px 0 12px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .container { padding: 36px 20px 48px; }
+      h1 { font-size: 1.6rem; }
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 14px 18px;
+      background: var(--bg-paler);
+      border-left: 3px solid var(--navy);
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--text);
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+    .card:hover, .card:focus {
+      background: var(--bg-pale);
+      border-left-color: var(--red);
+      outline: none;
+    }
+    .card:focus-visible {
+      box-shadow: 0 0 0 2px var(--red);
+    }
+    .card-title {
+      color: var(--navy);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .card-meta {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .card-meta .ext {
+      display: inline-block;
+      margin-left: 4px;
+      color: var(--blue-muted);
+    }
+    footer {
+      margin-top: 48px;
+      padding-top: 18px;
+      border-top: 1px solid var(--bg-pale);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    footer a { color: var(--navy); text-decoration: none; font-weight: 500; }
+    footer a:hover { color: var(--red); }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Product Data Readiness Audit</h1>
+      <p class="subtitle">Cinderhaven Provisions · A portfolio piece</p>
+    </header>
+
+    <p class="description">
+      A complete product data health audit for a fictional $25 million specialty food company, demonstrating how dirty product data costs a growing brand <strong>$361,000 a year</strong> in chargebacks, stalled launches, and lost shelf space, and how <strong>27 hours of data entry</strong> fixes nearly all of it. The project produces an interactive HTML report, a two-page executive tearsheet, an operational dashboard, an Excel workbook with triage list and broker intake checklist, and a standalone Data Debt Calculator that any specialty food brand can use to estimate their own exposure. Built with R, Quarto, and SQLite. One command reproduces everything.
+    </p>
+
+    <h2>The audit</h2>
+    <div class="grid">
+      <a class="card" href="quarto/report.html">
+        <span class="card-title">Audit report →</span>
+        <span class="card-meta">Interactive HTML · 8-page case study</span>
+      </a>
+      <a class="card" href="quarto/dashboard.html">
+        <span class="card-title">Monday Morning Dashboard →</span>
+        <span class="card-meta">Interactive HTML · velocity, P&amp;L, triage</span>
+      </a>
+      <a class="card" href="quarto/tearsheet.pdf">
+        <span class="card-title">Executive tearsheet →</span>
+        <span class="card-meta">PDF · 2-page board summary</span>
+      </a>
+      <a class="card" href="https://lailarallc.shinyapps.io/data-debt-calculator/" target="_blank" rel="noopener">
+        <span class="card-title">Data Debt Calculator →</span>
+        <span class="card-meta">Live R/Shiny app<span class="ext">↗</span></span>
+      </a>
+    </div>
+
+    <h2>Companion artifacts</h2>
+    <div class="grid">
+      <a class="card" href="output/compliance_timeline.pdf">
+        <span class="card-title">GS1 Sunrise / FSMA 204 timeline →</span>
+        <span class="card-meta">PDF · 1-page shareable</span>
+      </a>
+      <a class="card" href="output/scorecard.pdf">
+        <span class="card-title">Product Data Health Scorecard →</span>
+        <span class="card-meta">PDF · 1-page fillable template</span>
+      </a>
+      <a class="card" href="quarto/pareto_scrollytell.html">
+        <span class="card-title">Pareto scrollytelling →</span>
+        <span class="card-meta">Interactive HTML · chart walkthrough</span>
+      </a>
+    </div>
+
+    <footer>
+      <span>The dataset is synthetic. The methodology is real. Everything regenerates from <code>Rscript R/run_all.R</code>.</span>
+      <a href="https://github.com/MsShawnP/product-data-health-audit" target="_blank" rel="noopener">Source on GitHub →</a>
+    </footer>
+  </main>
+</body>
+</html>
