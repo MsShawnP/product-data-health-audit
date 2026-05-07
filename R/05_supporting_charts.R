@@ -205,7 +205,7 @@ p6_base <- function(use_interactive) {
     geom_text(aes(label = paste0(dollar_short(rev_at_risk),
                                  "  ·  ",
                                  percent(rev_at_risk_pct, accuracy = 1),
-                                 " of catalog rev  ·  pass ",
+                                 " of catalog revenue  ·  pass ",
                                  percent(pass_rate, accuracy = 1))),
               hjust = -0.02, size = 3.4, color = cinderhaven_palette$text) +
     scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
