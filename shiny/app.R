@@ -554,17 +554,14 @@ server <- function(input, output, session) {
   # ---- Sensitivity bar ----
   output$sensitivity_plot <- renderPlot({
     base <- cc()$total
+    # Apply a +10% relative change to a single input and return the new
+    # total annual cost. Pass rate uses the same +10% relative bump as
+    # every other input — but it's capped at 1.0, since a probability
+    # can't exceed certainty.
     bump <- function(field) {
       v <- inp()
       v[[field]] <- v[[field]] * 1.10
-      cost_components(v$N, v$R, v$C, v$P, v$A)$total
-    }
-    # Pass rate gets bumped down (going higher = more passing = less cost
-    # is the *good* direction; we want sensitivity to be the magnitude of
-    # cost movement from a -10% pass rate, i.e. things getting worse).
-    bump_P <- function() {
-      v <- inp()
-      v$P <- max(0, v$P - 0.10)
+      if (field == "P") v$P <- min(1, v$P)
       cost_components(v$N, v$R, v$C, v$P, v$A)$total
     }
 
@@ -573,7 +570,7 @@ server <- function(input, output, session) {
       "SKU count (+10%)",      bump("N"),
       "Retailer count (+10%)", bump("R"),  # retailer count doesn't enter base cost
       "Chargebacks (+10%)",    bump("C"),
-      "Pass rate (-10pp)",     bump_P(),
+      "Pass rate (+10%)",      bump("P"),
       "Revenue per SKU (+10%)",bump("A")
     )
     df$delta_pct <- (df$new - base) / base

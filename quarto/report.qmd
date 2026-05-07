@@ -1,7 +1,7 @@
 ---
 title: "Product Data Readiness Audit"
 subtitle: "Cinderhaven Provisions  ·  May 2026"
-author: "Audit prepared by Cinderhaven advisory engagement"
+author: "Shawn Phillips | Lailara LLC"
 date: "2026-05-03"
 format:
   html:
@@ -84,10 +84,6 @@ Five SKUs generate half of that bill. Fifteen generate 80%. Forty of your 90 SKU
 | CHP-0086 | Toasted Sesame Oil | $5,527 | GTIN check digit, case weight implausible |
 
 ![Chargeback Pareto: a small number of SKUs drive most of the cost.](../output/charts/01_chargeback_pareto.png){fig-alt="Pareto curve showing 5 SKUs account for 50% of chargeback dollars and 15 SKUs account for 80%."}
-
-::: {.callout-tip appearance="minimal" icon=false}
-*Walk through this chart one SKU at a time:* [**Read the Pareto as a scrollytelling story →**](pareto_scrollytell.html)
-:::
 
 Every one of these has an invalid GTIN-14 check digit. Every one has at least one other defect layered on top. And every one of these defects is present in the product master right now. Not last year. Not at the time of the last audit. Right now. The charges arrived last month because the same wrong digit that generated the charge the month before is still wrong.
 

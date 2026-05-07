@@ -127,8 +127,8 @@ c5_long <- c5 |>
                names_to = "metric", values_to = "value") |>
   mutate(metric = factor(recode(metric,
                                 pct_skus    = "% of SKUs",
-                                pct_revenue = "% of TTM revenue"),
-                         levels = c("% of TTM revenue", "% of SKUs")),
+                                pct_revenue = "% of annual revenue"),
+                         levels = c("% of annual revenue", "% of SKUs")),
          tooltip = paste0(
            "<b>", defect, "</b><br>",
            metric, ": ", percent(value, accuracy = 0.1),
@@ -136,7 +136,7 @@ c5_long <- c5 |>
            "<br>Revenue at risk: ",
            dollar_short(c5$rev_at_risk[match(defect, c5$defect)])))
 
-c5_palette <- c("% of SKUs" = "#D0D0D0", "% of TTM revenue" = cinderhaven_palette$red)
+c5_palette <- c("% of SKUs" = "#D0D0D0", "% of annual revenue" = cinderhaven_palette$red)
 
 p5_base <- function(use_interactive) {
   dodge <- position_dodge(width = 0.75)
@@ -156,7 +156,7 @@ p5_base <- function(use_interactive) {
                        limits = c(0, max(c5_long$value) * 1.18),
                        expand = expansion(mult = c(0, 0.02))) +
     scale_fill_manual(values = c5_palette, name = NULL,
-                      breaks = c("% of SKUs", "% of TTM revenue")) +
+                      breaks = c("% of SKUs", "% of annual revenue")) +
     labs(title    = "The defects concentrate in higher-revenue SKUs",
          subtitle = "Red bar longer than grey = defect concentrated in higher-revenue SKUs",
          x = NULL, y = NULL,
@@ -218,7 +218,7 @@ p6_base <- function(use_interactive) {
       "Whole Foods" = "#B0B0B0"),
       guide = "none") +
     labs(title    = "$18M of revenue rides on data Walmart could reject today",
-         subtitle = "Bar = TTM revenue from SKUs that fail at least one required field for that retailer",
+         subtitle = "Bar = annual revenue from SKUs that fail at least one required field for that retailer",
          x = "Revenue at risk", y = NULL,
          caption = "Source: retailer_readiness_summary + sku_master_full, audit run 2026-05-03") +
     theme_audit()
@@ -242,7 +242,7 @@ c7 <- sku_master_full |>
   mutate(issues_per_million = total_issues / (ttm_revenue / 1e6),
          tooltip = paste0(
            "<b>", product_line, "</b><br>",
-           n_skus, " SKUs · TTM rev ", dollar_short(ttm_revenue), "<br>",
+           n_skus, " SKUs · Annual revenue ", dollar_short(ttm_revenue), "<br>",
            "Total issues: ", total_issues, " (mean per SKU ",
            round(total_issues / n_skus, 2), ")<br>",
            "Mean quality score: ", round(mean_quality, 1), "<br>",
@@ -269,7 +269,7 @@ p7_base <- function(use_interactive) {
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
     labs(title    = "Pantry Staples carries 70% more data debt per dollar than Artisan Sauces",
-         subtitle = "Issues per $1M of TTM revenue. Higher = more data debt per dollar earned.",
+         subtitle = "Issues per $1M of annual revenue. Higher = more data debt per dollar earned.",
          x = NULL, y = "Issues per $1M revenue",
          caption = "Source: sku_master_full, audit run 2026-05-03") +
     theme_audit()
@@ -294,7 +294,7 @@ c8 <- sku_master_full |>
            "<b>", sku, " — ", product_name, "</b><br>",
            product_line, "<br>",
            "Chargebacks: ", dollar_short(chargeback_total), "<br>",
-           "Gross margin (TTM): ", dollar_short(annual_gross_margin), "<br>",
+           "Annual gross margin: ", dollar_short(annual_gross_margin), "<br>",
            "Cb as % of GM: ", percent(chargeback_pct_of_gm, accuracy = 0.1),
            "<br>Issues: ", issue_count, " of 8"))
 
@@ -915,7 +915,7 @@ c21 <- sku_dim |>
     "<b>", sku, " — ", product_name, "</b><br>",
     "Days since last update: ", days_since_update, "<br>",
     "Quality score: ", round(data_quality_score, 1), "<br>",
-    "TTM revenue: ", dollar_short(ttm_revenue)))
+    "Annual revenue: ", dollar_short(ttm_revenue)))
 
 p21_base <- function(use_interactive) {
   # Bins beyond 365 days are the finding — color them red, the rest grey.
@@ -1021,7 +1021,7 @@ c23 <- sku_master_full |>
     "<b>", sku, " — ", product_name, "</b><br>",
     "Fix priority: ", round(fix_priority_score, 0), "<br>",
     "Issues: ", issue_count, " of 8<br>",
-    "TTM revenue: ", dollar_short(ttm_revenue), "<br>",
+    "Annual revenue: ", dollar_short(ttm_revenue), "<br>",
     "Chargebacks: ", dollar_short(chargeback_total)))
 
 # Buckets used by §18 triage in the report. Plain-English labels (no score

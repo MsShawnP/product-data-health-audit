@@ -76,7 +76,6 @@ jobs:
             quarto/report.pdf
             quarto/dashboard.html
             quarto/tearsheet.pdf
-            quarto/pareto_scrollytell.html
           retention-days: 30
           if-no-files-found: warn
 
@@ -94,8 +93,7 @@ jobs:
             quarto/report.html \
             quarto/report.pdf \
             quarto/dashboard.html \
-            quarto/tearsheet.pdf \
-            quarto/pareto_scrollytell.html ; do
+            quarto/tearsheet.pdf ; do
             if [ -f "$f" ]; then
               size=$(du -h "$f" | cut -f1)
               echo "| \`$f\` | $size |" >> "$GITHUB_STEP_SUMMARY"

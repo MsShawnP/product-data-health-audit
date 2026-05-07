@@ -107,12 +107,6 @@ if (!nzchar(quarto_exe)) {
   step_banner("Quarto render — quarto/tearsheet.qmd")
   render_qmd("quarto/tearsheet.qmd", "pdf", "tearsheet.pdf")
 
-  # Scrollytelling pareto walkthrough (Phase 8 nice-to-have). Uses the
-  # closeread-html format from the qmd-lab/closeread Quarto extension.
-  # NA → omit --to so YAML's `format: closeread-html` is respected.
-  step_banner("Quarto render — quarto/pareto_scrollytell.qmd")
-  render_qmd("quarto/pareto_scrollytell.qmd", NA, "pareto_scrollytell.html")
-
   # Shareable artifacts (Phase 7). Output to project-level output/ so they
   # sit alongside the Excel workbook rather than next to the qmd source.
   step_banner("Quarto render — quarto/compliance_timeline.qmd")
@@ -140,8 +134,7 @@ key_outputs <- c(
   "quarto/report.html",
   "quarto/report.pdf",
   "quarto/dashboard.html",
-  "quarto/tearsheet.pdf",
-  "quarto/pareto_scrollytell.html"
+  "quarto/tearsheet.pdf"
 )
 for (f in key_outputs) {
   full <- file.path(ROOT, f)

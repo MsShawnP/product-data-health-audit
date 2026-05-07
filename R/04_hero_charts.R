@@ -301,7 +301,7 @@ p3 <- ggplot(c3_long,
                      expand = expansion(mult = c(0, 0.20))) +
 
   labs(title    = "Walmart wins on dollars; Whole Foods wins on margin",
-       subtitle = "Gross revenue → trade spend → chargebacks → net contribution, by retailer (TTM)",
+       subtitle = "Annual gross revenue → trade spend → chargebacks → net contribution, by retailer",
        x        = NULL,
        y        = NULL,
        caption  = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
