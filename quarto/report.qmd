@@ -24,8 +24,8 @@ format:
     fontsize: 10pt
     fig-align: center
     fig-pos: "H"
-    fig-width: 5.7
-    fig-height: 3.4
+    fig-width: 6.3
+    fig-height: 2.4
     tbl-pos: "H"
     colorlinks: true
     linkcolor: cinderhaven
@@ -65,8 +65,22 @@ format:
           \def\endlongtable{\oldendlongtable\end{minipage}\par}%
         }
 
-        % ---- Force callout (tcolorbox) blocks to stay on one page. ----
-        \tcbset{breakable=false}
+        % ---- Callout box behavior. ----
+        % Quarto emits each callout as
+        %   \begin{tcolorbox}[..., breakable, ...]
+        % so neither global \tcbset nor \AtBeginEnvironment can win —
+        % the per-instance `breakable` is parsed before either fires.
+        % Workaround: redefine the tcolorbox environment to append
+        % `breakable=false` to the option list. Because tcolorbox keys
+        % are evaluated in order with later values winning, the
+        % appended setting overrides the inline `breakable`. PDF-only
+        % \newpage blocks before tall Part 4 callouts give each one a
+        % fresh page of room.
+        \let\origtcolorbox\tcolorbox
+        \let\endorigtcolorbox\endtcolorbox
+        \renewenvironment{tcolorbox}[1][]%
+          {\origtcolorbox[#1, breakable=false]}%
+          {\endorigtcolorbox}
 execute:
   echo: false
   warning: false
@@ -603,6 +617,10 @@ The three most revealing rows are Invalid GTIN-14, Missing brand owner, and Miss
 One exception runs the other direction. Implausible case weight affects 46.7% of SKUs but only 31.2% of revenue. This defect concentrates in smaller, lower-revenue products. It is the only defect category where fixing by quality score alone would approximately match fixing by revenue priority.
 :::
 
+::: {.content-visible when-format="pdf"}
+\newpage
+:::
+
 ::: {.callout-note collapse="true" appearance="simple"}
 ## Retailer readiness: per-retailer breakdown
 
@@ -622,6 +640,10 @@ The pass rates track directly with how many fields each retailer requires. Walma
 The "mean fields short" column matters for planning. Fix brand owner and GTIN across the catalog and Walmart's pass rate jumps from 44% to approximately 80%. The same two fields move the needle at Costco and UNFI. Whole Foods is already at 70% and its remaining failures are almost all single-field, meaning most are one fix away from passing.
 :::
 
+::: {.content-visible when-format="pdf"}
+\newpage
+:::
+
 ::: {.callout-note collapse="true" appearance="simple"}
 ## Chargeback trend analysis
 
@@ -634,6 +656,10 @@ Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is s
 ![Monthly chargebacks overlaid on monthly scan revenue.](../output/charts/16_monthly_chargebacks_vs_scan.png){fig-alt="Dual-axis line chart of monthly chargebacks and monthly scan revenue showing no correlation."}
 
 This lack of correlation is itself a finding. It means chargebacks will not self-correct with growth. Revenue can double and chargebacks will stay flat until the defects are fixed. It also means chargebacks will not decline with a sales downturn. They are a fixed cost disguised as a variable one.
+:::
+
+::: {.content-visible when-format="pdf"}
+\newpage
 :::
 
 ::: {.callout-note collapse="true" appearance="simple"}
