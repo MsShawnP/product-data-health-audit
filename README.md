@@ -59,15 +59,16 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 ## How to reproduce
 
+**Prerequisites:** [R](https://cran.r-project.org/) and [Python 3](https://www.python.org/downloads/). R runs the analysis pipeline; Python 3 is required to build the SQLite database from the generation scripts.
+
 ```bash
-git clone https://github.com/MsShawnP/product-data-health-audit
+git clone --recurse-submodules https://github.com/MsShawnP/product-data-health-audit.git
 cd product-data-health-audit
+./setup.sh
 Rscript R/run_all.R
 ```
 
-The pipeline loads the SQLite database, builds all canonical data frames, generates 21 charts, renders the Excel workbook, and produces the Quarto HTML report, PDF report, dashboard, tearsheet, compliance timeline, and scorecard. Total run time: approximately two minutes.
-
-The 165 MB SQLite database (`data/cinderhaven_product_master.db`) is not committed here — it exceeds GitHub's per-file size limit. Regenerate it by cloning [MsShawnP/cinderhaven-data](https://github.com/MsShawnP/cinderhaven-data) and running `python scripts/build_db.py`, then drop the resulting `.db` into `data/` here.
+`setup.sh` pulls the [`cinderhaven-data`](https://github.com/MsShawnP/cinderhaven-data) submodule and builds the database into `data/cinderhaven_product_master.db` (~5-10 minutes on first run). The R pipeline then loads the database, builds all canonical data frames, generates 21 charts, renders the Excel workbook, and produces the Quarto HTML report, PDF report, dashboard, tearsheet, compliance timeline, and scorecard. Total R run time: approximately two minutes.
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
@@ -75,8 +76,10 @@ The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
 ```
 product-data-health-audit/
+├── setup.sh                                # One-step database build
 ├── data/
-│   └── cinderhaven_product_master.db    # Source database
+│   ├── cinderhaven-data/                   # Submodule: generation pipeline
+│   └── cinderhaven_product_master.db       # Built by setup.sh (gitignored)
 ├── R/
 │   ├── 00_theme.R                       # Custom ggplot2 theme + color palette
 │   ├── 01_load_raw.R                    # Load raw tables from SQLite
