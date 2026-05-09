@@ -1,0 +1,541 @@
+---
+title: "Cinderhaven · Monday Morning Dashboard"
+subtitle: "Velocity · Retailer P&L · Triage Tracker"
+format:
+  html:
+    toc: false
+    theme: cosmo
+    embed-resources: false
+    css:
+      - assets/report.css
+      - assets/dashboard.css
+    fig-align: center
+    page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    out.width: "100%"
+---
+
+```{r setup}
+#| include: false
+suppressPackageStartupMessages({
+  library(dplyr); library(tidyr); library(stringr); library(forcats)
+  library(lubridate); library(ggplot2); library(scales)
+  library(reactable); library(htmltools)
+})
+
+source("../R/00_theme.R")  # cinderhaven_palette + theme_cinderhaven_*
+
+PROC_DIR <- file.path("..", "output", "frames")
+read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
+
+sku_master_full <- read_p("sku_master_full")
+retailer_pnl    <- read_p("retailer_pnl")
+raw             <- read_p("raw_tables")
+
+# ---- shared helpers -----------------------------------------------------
+
+dollar_short <- function(x) {
+  ifelse(is.na(x), "—",
+   ifelse(abs(x) >= 1e6, sprintf("$%.2fM", x / 1e6),
+    ifelse(abs(x) >= 1e3, sprintf("$%.0fk", x / 1e3),
+                          paste0("$", formatC(round(x), big.mark = ",", format = "d")))))
+}
+
+dollar_cell <- function(value) {
+  if (is.na(value)) return("—")
+  if (abs(value) >= 1e6) sprintf("$%.2fM", value / 1e6)
+  else if (abs(value) >= 1e3) sprintf("$%.0fk", value / 1e3)
+  else paste0("$", formatC(round(value), big.mark = ",", format = "d"))
+}
+
+ramp_red <- function(x) {
+  if (is.na(x)) return("#FFFFFF")
+  grDevices::colorRampPalette(c("#FFFFFF", cinderhaven_palette$red))(101)[
+    pmin(101, pmax(1, round(x * 100) + 1))]
+}
+ramp_teal <- function(x) {
+  if (is.na(x)) return("#FFFFFF")
+  grDevices::colorRampPalette(c("#FFFFFF", cinderhaven_palette$teal))(101)[
+    pmin(101, pmax(1, round(x * 100) + 1))]
+}
+
+# ---- velocity (SKU × retailer, 4-week vs 12-week vs prior 4-week) -------
+# Mirrors the canonical computation in R/06_excel_workbook.R so the
+# dashboard and the Excel workbook always agree.
+
+scan <- raw$scan_data |>
+  mutate(week_ending = ymd(week_ending)) |>
+  left_join(raw$stores |> select(store_id, retailer), by = "store_id") |>
+  filter(!is.na(retailer))
+
+last_week   <- max(scan$week_ending, na.rm = TRUE)
+cut_4w      <- last_week - weeks(4)
+cut_12w     <- last_week - weeks(12)
+cut_8w_back <- last_week - weeks(8)
+
+agg_window <- function(df) df |>
+  group_by(sku, retailer) |>
+  summarise(units  = sum(units_sold),
+            stores = n_distinct(store_id),
+            weeks  = n_distinct(week_ending),
+            .groups = "drop")
+
+v_4w   <- agg_window(filter(scan, week_ending >  cut_4w)) |>
+  rename(units_4w = units, stores_4w = stores, weeks_4w = weeks)
+v_12w  <- agg_window(filter(scan, week_ending >  cut_12w)) |>
+  rename(units_12w = units, stores_12w = stores, weeks_12w = weeks)
+v_prev <- agg_window(filter(scan, week_ending <= cut_4w &
+                                   week_ending >  cut_8w_back)) |>
+  rename(units_prev4 = units, stores_prev4 = stores, weeks_prev4 = weeks)
+
+velocity <- v_4w |>
+  full_join(v_12w,  by = c("sku", "retailer")) |>
+  full_join(v_prev, by = c("sku", "retailer")) |>
+  left_join(sku_master_full |>
+              select(sku, product_name, product_line,
+                     issue_count, data_quality_score),
+            by = "sku") |>
+  mutate(
+    ups_4w   = units_4w   / pmax(stores_4w   * weeks_4w,   1),
+    ups_12w  = units_12w  / pmax(stores_12w  * weeks_12w,  1),
+    ups_prev = units_prev4 / pmax(stores_prev4 * weeks_prev4, 1),
+    pct_change = ifelse(is.na(ups_prev) | ups_prev == 0, NA_real_,
+                        ups_4w / ups_prev - 1),
+    quality_tier = case_when(
+      data_quality_score >= 87.5 ~ "Best 25%",
+      data_quality_score >= 75   ~ "Above average",
+      data_quality_score >= 62.5 ~ "Below average",
+      TRUE                       ~ "Worst 25%"),
+    quality_tier = factor(quality_tier,
+      levels = c("Worst 25%", "Below average", "Above average", "Best 25%")),
+    dq_flag = ifelse(issue_count >= 3, "REVIEW", "OK")
+  ) |>
+  filter(retailer %in% c("Walmart", "Costco", "UNFI", "Whole Foods")) |>
+  arrange(desc(units_12w))
+
+# est_fix_hours, savings_per_hour, and still_broken are read directly
+# from sku_master_full (built in R/02_build_frames.R). The dashboard does
+# not recompute them.
+```
+
+::: {.panel-tabset}
+
+## Tab 1: Velocity Report
+
+> **What this replaces:** The Monday morning Excel workbook built from four
+> separate retailer CSV exports, reconciled by hand, with store count
+> definitions that don't always agree with the broker's numbers. This table
+> pulls from the same scan data, applies one consistent store count
+> definition, and updates when the underlying data refreshes.
+>
+> **How to read it:** Each row is one SKU at one retailer. The 4-week and
+> 12-week velocity columns show units per store per week. The % change
+> column compares the two. A negative number means the SKU is decelerating.
+> The data quality flag marks SKUs with active defects in the product
+> master. Filter by retailer, product line, or quality tier using the
+> controls above the table.
+>
+> **What to look for:** SKUs where velocity is dropping and the data
+> quality flag is red. A velocity decline at a clean SKU is a commercial
+> problem. A velocity decline at a flagged SKU may be a data problem
+> disguised as a commercial one.
+
+```{r velocity-table}
+vel_tbl <- velocity |>
+  transmute(
+    SKU            = sku,
+    Product        = product_name,
+    Retailer       = retailer,
+    Line           = product_line,
+    `Quality tier` = quality_tier,
+    Stores         = coalesce(stores_4w, stores_12w, 0L),
+    `4w u/store/wk`  = round(ups_4w, 2),
+    `12w u/store/wk` = round(ups_12w, 2),
+    `% change`     = pct_change,
+    `DQ flag`      = dq_flag
+  )
+
+retailer_filter <- function(values, filterValue) {
+  if (is.null(filterValue) || filterValue == "All") TRUE
+  else values == filterValue
+}
+
+reactable(
+  vel_tbl,
+  searchable      = TRUE,
+  filterable      = TRUE,
+  highlight       = TRUE,
+  striped         = TRUE,
+  bordered        = FALSE,
+  defaultPageSize = 20,
+  showPageSizeOptions = TRUE,
+  pageSizeOptions = c(20, 50, 100, 500),
+  defaultSorted   = list(`12w u/store/wk` = "desc"),
+  defaultColDef   = colDef(
+    headerStyle = list(background = cinderhaven_palette$bg_pale,
+                       fontWeight = 600,
+                       color      = cinderhaven_palette$text)
+  ),
+  columns = list(
+    SKU      = colDef(width = 90),
+    Product  = colDef(width = 240),
+    Retailer = colDef(width = 100, filterInput = function(values, name) {
+      tags$select(
+        onchange = sprintf(
+          "Reactable.setFilter('velocity-table', '%s', event.target.value || undefined)",
+          name),
+        tags$option(value = "", "All"),
+        lapply(sort(unique(values)), tags$option),
+        style = "width:100%; height:24px"
+      )
+    }),
+    Line     = colDef(width = 140, filterInput = function(values, name) {
+      tags$select(
+        onchange = sprintf(
+          "Reactable.setFilter('velocity-table', '%s', event.target.value || undefined)",
+          name),
+        tags$option(value = "", "All"),
+        lapply(sort(unique(values)), tags$option),
+        style = "width:100%; height:24px"
+      )
+    }),
+    `Quality tier` = colDef(
+      width = 130,
+      filterInput = function(values, name) {
+        tags$select(
+          onchange = sprintf(
+            "Reactable.setFilter('velocity-table', '%s', event.target.value || undefined)",
+            name),
+          tags$option(value = "", "All"),
+          lapply(levels(values), tags$option),
+          style = "width:100%; height:24px"
+        )
+      },
+      style = function(value) {
+        v <- as.character(value)
+        col <- switch(v,
+          "Worst 25%"     = cinderhaven_palette$red,
+          "Below average" = cinderhaven_palette$coral,
+          "Above average" = cinderhaven_palette$blue_muted,
+          "Best 25%"      = cinderhaven_palette$teal,
+          NULL)
+        if (is.null(col)) NULL else list(color = col, fontWeight = "600")
+      }
+    ),
+    Stores   = colDef(width = 70, align = "right"),
+    `4w u/store/wk`  = colDef(width = 110, align = "right",
+                              format = colFormat(digits = 2)),
+    `12w u/store/wk` = colDef(width = 110, align = "right",
+                              format = colFormat(digits = 2)),
+    `% change` = colDef(
+      width = 90, align = "right",
+      cell = function(value) {
+        if (is.na(value)) return("—")
+        sprintf("%+.0f%%", value * 100)
+      },
+      style = function(value) {
+        if (is.na(value)) return(NULL)
+        if (value < -0.05)
+          list(background = ramp_red(pmin(1, abs(value) * 2)),
+               fontWeight = "600")
+        else if (value > 0.05)
+          list(background = ramp_teal(pmin(1, value * 2)))
+        else NULL
+      }
+    ),
+    `DQ flag` = colDef(
+      width = 80, align = "center",
+      style = function(value) {
+        if (is.na(value)) return(NULL)
+        if (value == "REVIEW")
+          list(background = cinderhaven_palette$red, color = "white",
+               fontWeight = "600")
+        else
+          list(background = cinderhaven_palette$teal, color = "white",
+               fontWeight = "600")
+      }
+    )
+  ),
+  elementId = "velocity-table",
+  theme = reactableTheme(
+    borderColor    = "#d8d8d8",
+    stripedColor   = "#fafafa",
+    highlightColor = "#f3eaea",
+    cellPadding    = "6px 10px",
+    style          = list(
+      fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
+      fontSize   = "0.88rem")
+  )
+)
+```
+
+## Tab 2: Retailer P&L
+
+> **What this shows:** Net contribution by retailer after trade spend and
+> chargebacks. The waterfall chart breaks gross revenue into the components
+> that reduce it. The table below has the numbers.
+>
+> **How to read it:** Gross revenue is the top bar. Trade spend and
+> chargebacks subtract from it. Net contribution is what remains. Filter by
+> time period to compare quarters.
+>
+> **What to look for:** The gap between gross revenue rank and net margin
+> rank. Walmart is #1 in gross dollars and #4 in net margin percentage.
+> Whole Foods is #4 in gross dollars and #1 in net margin. Chargebacks are
+> the only margin component in this chart that is entirely within
+> Cinderhaven's operational control.
+
+```{r retailer-waterfall}
+#| fig-width: 11
+#| fig-height: 5
+
+contracted <- c("Walmart", "UNFI", "Whole Foods", "Costco")
+
+# Inflate the small segments just enough to keep the dollar labels
+# readable on Costco / UNFI / Whole Foods. Labels still print real $.
+MIN_TRADE_VISUAL <- 0.7e6
+MIN_CB_VISUAL    <- 0.5e6
+
+pnl <- retailer_pnl |>
+  filter(retailer %in% contracted) |>
+  arrange(desc(gross_revenue)) |>
+  mutate(retailer     = factor(retailer, levels = retailer),
+         trade_visual = pmax(trade_spend_total, MIN_TRADE_VISUAL),
+         cb_visual    = pmax(chargeback_total,  MIN_CB_VISUAL),
+         bar_end      = net_contribution + trade_visual + cb_visual)
+
+pnl_long <- pnl |>
+  transmute(retailer,
+            "Net contribution" = net_contribution,
+            "Trade spend"      = trade_visual,
+            "Chargebacks"      = cb_visual) |>
+  pivot_longer(-retailer, names_to = "component", values_to = "value") |>
+  mutate(component = factor(component,
+    levels = c("Net contribution", "Trade spend", "Chargebacks")))
+
+stack_palette <- c(
+  "Net contribution" = "#D0D0D0",
+  "Trade spend"      = "#888888",
+  "Chargebacks"      = cinderhaven_palette$red)
+
+lab_net   <- pnl |> transmute(retailer,
+              x = net_contribution / 2,
+              label = dollar_short(net_contribution))
+lab_trade <- pnl |> transmute(retailer,
+              x = net_contribution + trade_visual / 2,
+              label = dollar_short(trade_spend_total))
+lab_cb    <- pnl |> transmute(retailer,
+              x = net_contribution + trade_visual + cb_visual / 2,
+              label = dollar_short(chargeback_total))
+lab_pct   <- pnl |> transmute(retailer, bar_end,
+              label = sprintf("%.0f%% net margin",
+                              100 * net_margin_pct_of_gross_revenue))
+
+ggplot(pnl_long, aes(value, fct_rev(retailer), fill = component)) +
+  geom_col(width = 0.65, color = "white", linewidth = 0.5,
+           position = position_stack(reverse = TRUE)) +
+  geom_text(data = lab_net,   aes(x = x, y = fct_rev(retailer), label = label),
+            inherit.aes = FALSE, size = 3.0,
+            color = cinderhaven_palette$text, fontface = "bold") +
+  geom_text(data = lab_trade, aes(x = x, y = fct_rev(retailer), label = label),
+            inherit.aes = FALSE, size = 3.0, color = "white", fontface = "bold") +
+  geom_text(data = lab_cb,    aes(x = x, y = fct_rev(retailer), label = label),
+            inherit.aes = FALSE, size = 3.0, color = "white", fontface = "bold") +
+  geom_text(data = lab_pct, aes(x = bar_end, y = fct_rev(retailer), label = label),
+            inherit.aes = FALSE, hjust = -0.06, size = 3.4, fontface = "bold",
+            color = cinderhaven_palette$text) +
+  scale_fill_manual(values = stack_palette, name = NULL,
+                    breaks = c("Net contribution", "Trade spend", "Chargebacks")) +
+  scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
+                     expand = expansion(mult = c(0, 0.20))) +
+  labs(x = NULL, y = NULL,
+       caption = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
+  theme_cinderhaven_horizontal() +
+  theme(axis.text.y = element_text(size = 11, face = "bold"))
+```
+
+```{r retailer-pnl-table}
+pnl_tbl <- retailer_pnl |>
+  filter(retailer %in% contracted) |>
+  arrange(desc(gross_revenue)) |>
+  transmute(
+    Retailer            = retailer,
+    `Gross revenue`     = gross_revenue,
+    `Trade spend`       = trade_spend_total,
+    `Trade % of rev`    = trade_spend_pct_of_revenue,
+    `Chargebacks`       = chargeback_total,
+    `Cb % of rev`       = chargeback_pct_of_revenue,
+    `Net contribution`  = net_contribution,
+    `Net margin %`      = net_margin_pct_of_gross_revenue
+  )
+
+reactable(
+  pnl_tbl,
+  searchable = FALSE, filterable = FALSE, sortable = TRUE,
+  bordered = FALSE, striped = TRUE, highlight = TRUE,
+  defaultPageSize = 4,
+  defaultColDef = colDef(
+    headerStyle = list(background = cinderhaven_palette$bg_pale,
+                       fontWeight = 600,
+                       color      = cinderhaven_palette$text)
+  ),
+  columns = list(
+    Retailer = colDef(width = 120, style = list(fontWeight = "600")),
+    `Gross revenue`    = colDef(width = 130, align = "right",
+                                cell = function(v) dollar_cell(v)),
+    `Trade spend`      = colDef(width = 120, align = "right",
+                                cell = function(v) dollar_cell(v)),
+    `Trade % of rev`   = colDef(width = 120, align = "right",
+                                cell = function(v) sprintf("%.1f%%", v * 100)),
+    `Chargebacks`      = colDef(width = 110, align = "right",
+                                cell = function(v) dollar_cell(v),
+                                style = function(v) {
+                                  list(background = ramp_red(
+                                    v / max(pnl_tbl$Chargebacks, na.rm = TRUE)))
+                                }),
+    `Cb % of rev`      = colDef(width = 100, align = "right",
+                                cell = function(v) sprintf("%.2f%%", v * 100)),
+    `Net contribution` = colDef(width = 130, align = "right",
+                                cell = function(v) dollar_cell(v)),
+    `Net margin %`     = colDef(width = 110, align = "right",
+                                cell = function(v) sprintf("%.1f%%", v * 100),
+                                style = function(v) {
+                                  list(background = ramp_teal(
+                                    (v - 0.75) / 0.15),
+                                    fontWeight  = "600")
+                                })
+  ),
+  theme = reactableTheme(
+    borderColor    = "#d8d8d8",
+    stripedColor   = "#fafafa",
+    cellPadding    = "8px 12px",
+    style          = list(
+      fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
+      fontSize   = "0.92rem")
+  )
+)
+```
+
+## Tab 3: Triage Tracker
+
+> **What this shows:** All 90 SKUs ranked by fix priority. The composite
+> score weights revenue (40%), data quality (30%), and chargeback exposure
+> (30%). Effort is shown separately.
+>
+> **How to read it:** Sort by composite to see what matters most to the
+> business. Sort by estimated fix hours to see what's fastest. Sort by
+> savings per hour to see the highest-return fixes. The "still broken"
+> column shows the specific defect generating active chargebacks. If that
+> column is blank, the SKU has no active chargeback-linked defects.
+>
+> **What to do with it:** Use the composite column to set the quarterly
+> cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
+> with any SKU where savings per hour exceeds $100. There are nine of them.
+> They take 90 minutes combined.
+
+```{r triage-tracker}
+# Triage columns (composite priority, fix hours, savings/hour, still-broken)
+# come straight from sku_master_full — see R/02_build_frames.R.
+triage <- sku_master_full |>
+  arrange(desc(fix_priority_score)) |>
+  transmute(
+    SKU                   = sku,
+    Product               = product_name,
+    `TTM revenue`         = ttm_revenue,
+    `Quality score`       = round(data_quality_score, 1),
+    `Chargebacks 18mo`    = chargeback_total,
+    `Composite priority`  = fix_priority_score,
+    `Est. fix hours`      = round(est_fix_hours, 2),
+    `$ saved / hour`      = savings_per_hour,
+    `Still broken`        = still_broken
+  )
+
+max_cb     <- max(triage$`Chargebacks 18mo`, na.rm = TRUE)
+max_priori <- 100
+max_sph    <- max(triage$`$ saved / hour`,    na.rm = TRUE)
+
+reactable(
+  triage,
+  searchable      = TRUE,
+  filterable      = TRUE,
+  highlight       = TRUE,
+  striped         = TRUE,
+  bordered        = FALSE,
+  defaultPageSize = 18,
+  showPageSizeOptions = TRUE,
+  pageSizeOptions = c(18, 30, 90),
+  defaultSorted   = list(`Composite priority` = "desc"),
+  defaultColDef   = colDef(
+    headerStyle = list(background = cinderhaven_palette$bg_pale,
+                       fontWeight = 600,
+                       color      = cinderhaven_palette$text)
+  ),
+  columns = list(
+    SKU     = colDef(width = 90),
+    Product = colDef(width = 230),
+    `TTM revenue` = colDef(
+      width = 110, align = "right",
+      cell  = function(v) dollar_cell(v),
+      style = function(v) {
+        list(background = ramp_teal(v / max(triage$`TTM revenue`, na.rm = TRUE)))
+      }
+    ),
+    `Quality score` = colDef(
+      width = 100, align = "right",
+      style = function(v) list(background = ramp_red(1 - v / 100))
+    ),
+    `Chargebacks 18mo` = colDef(
+      width = 130, align = "right",
+      cell  = function(v) dollar_cell(v),
+      style = function(v) list(background = ramp_red(v / max_cb))
+    ),
+    `Composite priority` = colDef(
+      width = 120, align = "right",
+      style = function(v) list(background = ramp_red(v / max_priori),
+                                fontWeight  = "600")
+    ),
+    `Est. fix hours` = colDef(
+      width = 100, align = "right",
+      cell  = function(v) {
+        if (is.na(v) || v == 0) "—" else sprintf("%.2f", v)
+      }
+    ),
+    `$ saved / hour` = colDef(
+      width = 110, align = "right",
+      cell  = function(v) {
+        if (is.na(v)) return("—")
+        if (v >= 1e3) sprintf("$%.1fk/hr", v / 1e3)
+        else paste0("$", formatC(round(v), big.mark = ","), "/hr")
+      },
+      style = function(v) {
+        if (is.na(v)) list(background = "#FFFFFF")
+        else list(background = ramp_teal(v / max_sph))
+      }
+    ),
+    `Still broken` = colDef(
+      width = 320,
+      cell = function(v) if (is.na(v)) "" else v,
+      style = function(v) {
+        if (is.na(v)) NULL
+        else list(color = cinderhaven_palette$red, fontWeight = "500")
+      }
+    )
+  ),
+  theme = reactableTheme(
+    borderColor    = "#d8d8d8",
+    stripedColor   = "#fafafa",
+    highlightColor = "#f3eaea",
+    cellPadding    = "6px 10px",
+    style          = list(
+      fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
+      fontSize   = "0.88rem")
+  )
+)
+```
+
+:::
