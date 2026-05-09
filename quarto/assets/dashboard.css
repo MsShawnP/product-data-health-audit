@@ -1,12 +1,22 @@
 /* dashboard.css — overrides report.css for the wide-table dashboard layout.
    Loaded AFTER report.css so these rules win. */
 
-/* Blow out the narrow 820px prose column — dashboard needs the full viewport */
+/* Kill Quarto's grid layout entirely — it caps body content at ~850px
+   even with page-layout: full. Replace with simple block layout. */
+.page-columns {
+  display: block !important;
+}
+
+/* Override report.css narrow column and give full width with padding */
 main.content,
 #quarto-document-content {
   max-width: 100% !important;
-  padding-left: 3rem !important;
-  padding-right: 3rem !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+  box-sizing: border-box !important;
 }
 
 /* Prevent any horizontal scrollbar on the page */
@@ -14,8 +24,20 @@ html, body {
   overflow-x: hidden !important;
 }
 
-/* Make reactable tables fill their container without overflowing */
+/* Panel tabset and tab panes fill available width */
+.panel-tabset,
+.tab-content,
+.tab-pane {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Reactable tables fill their container */
 .reactable {
   width: 100% !important;
-  overflow-x: auto !important;
+}
+
+/* Blockquotes (the "how to read it" boxes) — cap for readability */
+blockquote {
+  max-width: 960px;
 }
