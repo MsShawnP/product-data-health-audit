@@ -6,7 +6,9 @@ format:
     toc: false
     theme: cosmo
     embed-resources: false
-    css: assets/report.css
+    css:
+      - assets/report.css
+      - assets/dashboard.css
     fig-align: center
     page-layout: full
 execute:
