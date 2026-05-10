@@ -1,5 +1,7 @@
-/* dashboard.css — overrides report.css for the wide-table dashboard layout.
+/* dashboard.css — executive dashboard overrides for report.css.
    Loaded AFTER report.css so these rules win. */
+
+/* ── Layout: kill Quarto grid, center content ─────────────────────── */
 
 #quarto-content.page-columns {
   display: block !important;
@@ -18,10 +20,181 @@ html, body {
   overflow-x: hidden !important;
 }
 
-.reactable {
-  width: fit-content !important;
+/* ── Title block: dark bar, full width ────────────────────────────── */
+
+#title-block-header {
+  background: #2D3436 !important;
+  color: #fff !important;
+  margin: 0 -2rem 1.5rem -2rem !important;
+  padding: 1.8rem 2.5rem 1.4rem !important;
+  border: none !important;
 }
 
+#title-block-header h1.title,
+#title-block-header .title {
+  color: #fff !important;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0.25rem !important;
+  font-size: 1.7rem !important;
+  letter-spacing: -0.02em !important;
+}
+
+#title-block-header .subtitle,
+#title-block-header p.subtitle {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 1rem !important;
+  margin: 0 !important;
+}
+
+/* ── Tabs: clean underline style ──────────────────────────────────── */
+
+.panel-tabset .nav-tabs {
+  border-bottom: 2px solid #e0e0e0 !important;
+  gap: 0 !important;
+}
+
+.panel-tabset .nav-tabs .nav-link {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #666 !important;
+  font-family: "Helvetica Neue", Inter, system-ui, sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  padding: 0.6rem 1.2rem !important;
+  margin-bottom: -2px !important;
+  transition: color 0.15s, border-color 0.15s !important;
+}
+
+.panel-tabset .nav-tabs .nav-link:hover {
+  color: #1E8C7E !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #1E8C7E !important;
+}
+
+.panel-tabset .nav-tabs .nav-link.active {
+  color: #1E8C7E !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid #1E8C7E !important;
+  font-weight: 600 !important;
+}
+
+/* ── Blockquotes: teal-bordered card ──────────────────────────────── */
+
 blockquote {
-  max-width: 780px;
+  max-width: 780px !important;
+  background: #f7f8f9 !important;
+  border-left: 4px solid #1E8C7E !important;
+  border-radius: 0 6px 6px 0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  padding: 0.8rem 1.2rem !important;
+  margin: 1rem 0 1.5rem 0 !important;
+  font-size: 0.85rem !important;
+  line-height: 1.5 !important;
+  color: #444 !important;
+}
+
+blockquote p {
+  font-size: 0.85rem !important;
+  margin: 0.4rem 0 !important;
+}
+
+blockquote strong {
+  color: #2D3436 !important;
+}
+
+/* ── Reactable tables: card wrapper + dark header ─────────────────── */
+
+.reactable {
+  width: fit-content !important;
+  border: 1px solid #ddd !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden !important;
+}
+
+/* Header row */
+.reactable .rt-thead .rt-th,
+.reactable .rt-thead .rt-td {
+  background: #2D3436 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  padding: 8px 10px !important;
+  border-bottom: none !important;
+}
+
+/* Header sort arrows */
+.reactable .rt-thead .rt-th .rt-sort-header {
+  color: #fff !important;
+}
+
+.reactable .rt-thead .rt-th[aria-sort] .rt-sort-header::after {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Filter inputs in header */
+.reactable .rt-thead .rt-th input,
+.reactable .rt-thead .rt-th select {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 3px !important;
+  font-size: 0.78rem !important;
+  padding: 2px 4px !important;
+}
+
+.reactable .rt-thead .rt-th input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.reactable .rt-thead .rt-th select option {
+  background: #fff !important;
+  color: #333 !important;
+}
+
+/* Body rows */
+.reactable .rt-tbody .rt-td {
+  padding: 5px 10px !important;
+  font-size: 0.85rem !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+/* Striped rows */
+.reactable .rt-tr-striped {
+  background: #fafbfc !important;
+}
+
+/* Hover */
+.reactable .rt-tbody .rt-tr:hover {
+  background: #f0f7f6 !important;
+}
+
+/* Pagination */
+.reactable .rt-pagination {
+  padding: 6px 10px !important;
+  font-size: 0.8rem !important;
+  border-top: 1px solid #eee !important;
+}
+
+/* Search box */
+.reactable .rt-search {
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+  font-size: 0.82rem !important;
+}
+
+/* ── Tab panes fill width ─────────────────────────────────────────── */
+
+.panel-tabset,
+.tab-content,
+.tab-pane {
+  width: 100% !important;
+  max-width: 100% !important;
 }
