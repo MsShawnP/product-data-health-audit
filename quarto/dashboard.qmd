@@ -478,8 +478,8 @@ reactable(
                        color      = cinderhaven_palette$text)
   ),
   columns = list(
-    SKU     = colDef(width = 95),
-    Product = colDef(width = 220),
+    SKU     = colDef(width = 90),
+    Product = colDef(width = 280),
     `TTM revenue` = colDef(
       align = "right",
       cell  = function(v) dollar_cell(v),

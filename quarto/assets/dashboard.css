@@ -85,7 +85,7 @@ html, body {
 /* ── Blockquotes: teal-bordered card ──────────────────────────────── */
 
 blockquote {
-  max-width: 780px !important;
+  max-width: 100% !important;
   background: #f7f8f9 !important;
   border-left: 4px solid #1E8C7E !important;
   border-radius: 0 6px 6px 0 !important;
@@ -110,6 +110,8 @@ blockquote strong {
 
 .reactable {
   width: fit-content !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
   border: 1px solid #ddd !important;
   border-radius: 6px !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
