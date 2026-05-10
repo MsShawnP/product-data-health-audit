@@ -171,7 +171,8 @@ reactable(
   filterable      = TRUE,
   highlight       = TRUE,
   striped         = TRUE,
-  bordered        = FALSE,
+  fullWidth       = FALSE,
+  bordered        = TRUE,
   defaultPageSize = 20,
   showPageSizeOptions = TRUE,
   pageSizeOptions = c(20, 50, 100, 500),
@@ -183,7 +184,7 @@ reactable(
   ),
   columns = list(
     SKU      = colDef(width = 95),
-    Product  = colDef(minWidth = 180),
+    Product  = colDef(width = 220),
     Retailer = colDef(width = 110, filterInput = function(values, name) {
       tags$select(
         onchange = sprintf(
@@ -377,7 +378,7 @@ pnl_tbl <- retailer_pnl |>
 reactable(
   pnl_tbl,
   searchable = FALSE, filterable = FALSE, sortable = TRUE,
-  bordered = FALSE, striped = TRUE, highlight = TRUE,
+  fullWidth = FALSE, bordered = TRUE, striped = TRUE, highlight = TRUE,
   defaultPageSize = 4,
   defaultColDef = colDef(
     headerStyle = list(background = cinderhaven_palette$bg_pale,
@@ -465,7 +466,8 @@ reactable(
   filterable      = TRUE,
   highlight       = TRUE,
   striped         = TRUE,
-  bordered        = FALSE,
+  fullWidth       = FALSE,
+  bordered        = TRUE,
   defaultPageSize = 18,
   showPageSizeOptions = TRUE,
   pageSizeOptions = c(18, 30, 90),
@@ -477,7 +479,7 @@ reactable(
   ),
   columns = list(
     SKU     = colDef(width = 95),
-    Product = colDef(minWidth = 170),
+    Product = colDef(width = 220),
     `TTM revenue` = colDef(
       align = "right",
       cell  = function(v) dollar_cell(v),
@@ -518,7 +520,7 @@ reactable(
       }
     ),
     `Still broken` = colDef(
-      minWidth = 220,
+      width = 310,
       cell = function(v) if (is.na(v)) "" else v,
       style = function(v) {
         if (is.na(v)) NULL
