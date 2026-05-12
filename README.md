@@ -123,4 +123,4 @@ product-data-health-audit/
 
 ## License
 
-This project is a portfolio piece. The methodology is freely reusable. The Cinderhaven name and dataset are fictional.
+MIT — see [LICENSE](LICENSE).
