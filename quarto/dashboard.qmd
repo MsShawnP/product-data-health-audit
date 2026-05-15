@@ -35,16 +35,10 @@ read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
 
 sku_master_full <- read_p("sku_master_full")
 retailer_pnl    <- read_p("retailer_pnl")
-raw             <- read_p("raw_tables")
 
 # ---- shared helpers -----------------------------------------------------
 
-dollar_short <- function(x) {
-  ifelse(is.na(x), "—",
-   ifelse(abs(x) >= 1e6, sprintf("$%.2fM", x / 1e6),
-    ifelse(abs(x) >= 1e3, sprintf("$%.0fk", x / 1e3),
-                          paste0("$", formatC(round(x), big.mark = ",", format = "d")))))
-}
+dollar_short <- fmt_dollar_short
 
 dollar_cell <- function(value) {
   if (is.na(value)) return("—")
@@ -64,48 +58,12 @@ ramp_teal <- function(x) {
     pmin(101, pmax(1, round(x * 100) + 1))]
 }
 
-# ---- velocity (SKU × retailer, 4-week vs 12-week vs prior 4-week) -------
-# Mirrors the canonical computation in R/06_excel_workbook.R so the
-# dashboard and the Excel workbook always agree.
+# ---- velocity (canonical frame from R/02_build_frames.R) ----------------
 
-scan <- raw$scan_data |>
-  mutate(week_ending = ymd(week_ending)) |>
-  left_join(raw$stores |> select(store_id, retailer), by = "store_id") |>
-  filter(!is.na(retailer))
-
-last_week   <- max(scan$week_ending, na.rm = TRUE)
-cut_4w      <- last_week - weeks(4)
-cut_12w     <- last_week - weeks(12)
-cut_8w_back <- last_week - weeks(8)
-
-agg_window <- function(df) df |>
-  group_by(sku, retailer) |>
-  summarise(units  = sum(units_sold),
-            stores = n_distinct(store_id),
-            weeks  = n_distinct(week_ending),
-            .groups = "drop")
-
-v_4w   <- agg_window(filter(scan, week_ending >  cut_4w)) |>
-  rename(units_4w = units, stores_4w = stores, weeks_4w = weeks)
-v_12w  <- agg_window(filter(scan, week_ending >  cut_12w)) |>
-  rename(units_12w = units, stores_12w = stores, weeks_12w = weeks)
-v_prev <- agg_window(filter(scan, week_ending <= cut_4w &
-                                   week_ending >  cut_8w_back)) |>
-  rename(units_prev4 = units, stores_prev4 = stores, weeks_prev4 = weeks)
-
-velocity <- v_4w |>
-  full_join(v_12w,  by = c("sku", "retailer")) |>
-  full_join(v_prev, by = c("sku", "retailer")) |>
-  left_join(sku_master_full |>
-              select(sku, product_name, product_line,
-                     issue_count, data_quality_score),
-            by = "sku") |>
+velocity <- read_p("velocity") |>
+  rename(ups_4w = ups_per_w_4w, ups_12w = ups_per_w_12w,
+         ups_prev = ups_per_w_prev4, pct_change = ups_pct_change_4w_vs_prev) |>
   mutate(
-    ups_4w   = units_4w   / pmax(stores_4w   * weeks_4w,   1),
-    ups_12w  = units_12w  / pmax(stores_12w  * weeks_12w,  1),
-    ups_prev = units_prev4 / pmax(stores_prev4 * weeks_prev4, 1),
-    pct_change = ifelse(is.na(ups_prev) | ups_prev == 0, NA_real_,
-                        ups_4w / ups_prev - 1),
     quality_tier = case_when(
       data_quality_score >= 87.5 ~ "Best 25%",
       data_quality_score >= 75   ~ "Above average",
@@ -116,11 +74,7 @@ velocity <- v_4w |>
     dq_flag = ifelse(issue_count >= 3, "REVIEW", "OK")
   ) |>
   filter(retailer %in% c("Walmart", "Costco", "UNFI", "Whole Foods")) |>
-  arrange(desc(units_12w))
-
-# est_fix_hours, savings_per_hour, and still_broken are read directly
-# from sku_master_full (built in R/02_build_frames.R). The dashboard does
-# not recompute them.
+  arrange(desc(dollars_12w))
 ```
 
 ::: {.panel-tabset}

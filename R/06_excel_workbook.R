@@ -14,9 +14,10 @@ suppressPackageStartupMessages({
 ROOT     <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
+cfg      <- yaml::read_yaml(file.path(ROOT, "config.yml"))
 PROC_DIR <- file.path(ROOT, "output", "frames")
 OUT_DIR  <- file.path(ROOT, "output")
-OUT_FILE <- file.path(OUT_DIR, "cinderhaven_audit.xlsx")
+OUT_FILE <- file.path(OUT_DIR, paste0(cfg$data$output_prefix, "_audit.xlsx"))
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
 read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
@@ -25,7 +26,7 @@ sku_master_full  <- read_p("sku_master_full")
 sku_retailer_rev <- read_p("sku_retailer_revenue")
 chargebacks_e    <- read_p("chargebacks_enriched")
 retailer_rs_long <- read_p("retailer_readiness_long")
-raw              <- read_p("raw_tables")
+velocity         <- read_p("velocity")
 
 # ---- helpers --------------------------------------------------------------
 
@@ -57,55 +58,6 @@ gen_date <- format(Sys.Date(), "%Y-%m-%d")
 # distribution proxy (store count), and a data-quality flag.
 
 cat("[1/8] Velocity Summary\n")
-
-scan <- raw$scan_data |>
-  mutate(week_ending = ymd(week_ending)) |>
-  left_join(raw$stores |> select(store_id, retailer), by = "store_id") |>
-  filter(!is.na(retailer))
-
-last_week    <- max(scan$week_ending, na.rm = TRUE)
-cut_4w       <- last_week - weeks(4)   # weeks > cut_4w  → most recent 4 wk
-cut_12w      <- last_week - weeks(12)
-cut_8w_back  <- last_week - weeks(8)   # the 4w window prior to most recent 4w
-
-agg <- function(df) df |>
-  group_by(sku, retailer) |>
-  summarise(units = sum(units_sold), dollars = sum(dollars_sold),
-            stores = n_distinct(store_id),
-            weeks  = n_distinct(week_ending), .groups = "drop")
-
-v_4w   <- agg(filter(scan, week_ending >  cut_4w))                  |>
-  rename(units_4w = units, dollars_4w = dollars,
-         stores_4w = stores, weeks_4w = weeks)
-v_12w  <- agg(filter(scan, week_ending >  cut_12w))                 |>
-  rename(units_12w = units, dollars_12w = dollars,
-         stores_12w = stores, weeks_12w = weeks)
-v_prev <- agg(filter(scan, week_ending <= cut_4w & week_ending > cut_8w_back)) |>
-  rename(units_prev4 = units, dollars_prev4 = dollars,
-         stores_prev4 = stores, weeks_prev4 = weeks)
-
-velocity <- v_4w |>
-  full_join(v_12w,  by = c("sku", "retailer")) |>
-  full_join(v_prev, by = c("sku", "retailer")) |>
-  left_join(sku_dim |>
-              transmute(sku, product_name, product_line,
-                        data_quality_score, issue_count,
-                        data_quality_flag = ifelse(issue_count >= 3,
-                                                    "REVIEW", "OK")),
-            by = "sku") |>
-  mutate(
-    ups_per_w_4w     = units_4w   / pmax(stores_4w   * weeks_4w,   1),
-    ups_per_w_12w    = units_12w  / pmax(stores_12w  * weeks_12w,  1),
-    ups_per_w_prev4  = units_prev4 / pmax(stores_prev4 * weeks_prev4, 1),
-    ups_pct_change_4w_vs_prev = ifelse(
-      is.na(ups_per_w_prev4) | ups_per_w_prev4 == 0, NA_real_,
-      ups_per_w_4w / ups_per_w_prev4 - 1)) |>
-  select(sku, product_name, product_line, retailer,
-         units_4w, dollars_4w, stores_4w, ups_per_w_4w,
-         units_12w, dollars_12w, stores_12w, ups_per_w_12w,
-         ups_per_w_prev4, ups_pct_change_4w_vs_prev,
-         data_quality_score, issue_count, data_quality_flag) |>
-  arrange(desc(dollars_12w))
 
 # ---- TAB 2: SKU Master + Data Quality Scores -----------------------------
 
@@ -340,7 +292,7 @@ intake_rows <- tribble(
 
 cat("\nWriting: ", OUT_FILE, "\n", sep = "")
 
-wb <- wb_workbook(creator = "Cinderhaven Audit Pipeline")
+wb <- wb_workbook(creator = paste(cfg$company$short_name, "Audit Pipeline"))
 
 # Cinderhaven palette (must match R/00_theme.R).
 PAL_NAVY     <- "1B2A4A"

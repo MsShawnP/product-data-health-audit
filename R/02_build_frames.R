@@ -442,12 +442,83 @@ promo_effectiveness <- bind_cols(promotions, promo_lift_metrics) |>
                               data_quality_score, issue_count),
             by = "sku")
 
+# ---- F12. velocity (SKU × retailer, 4-week / 12-week / prior-4-week) ------
+# Single source of truth consumed by the Excel workbook and the dashboard.
+
+scan_vel <- scan_data |>
+  mutate(week_ending = ymd(week_ending)) |>
+  left_join(stores |> select(store_id, retailer), by = "store_id") |>
+  filter(!is.na(retailer))
+
+vel_last_week <- max(scan_vel$week_ending, na.rm = TRUE)
+vel_cut_4w    <- vel_last_week - weeks(4)
+vel_cut_12w   <- vel_last_week - weeks(12)
+vel_cut_8w    <- vel_last_week - weeks(8)
+
+vel_agg <- function(df) df |>
+  group_by(sku, retailer) |>
+  summarise(units   = sum(units_sold),
+            dollars = sum(dollars_sold),
+            stores  = n_distinct(store_id),
+            weeks   = n_distinct(week_ending),
+            .groups = "drop")
+
+vel_4w   <- vel_agg(filter(scan_vel, week_ending >  vel_cut_4w)) |>
+  rename(units_4w = units, dollars_4w = dollars,
+         stores_4w = stores, weeks_4w = weeks)
+vel_12w  <- vel_agg(filter(scan_vel, week_ending >  vel_cut_12w)) |>
+  rename(units_12w = units, dollars_12w = dollars,
+         stores_12w = stores, weeks_12w = weeks)
+vel_prev <- vel_agg(filter(scan_vel, week_ending <= vel_cut_4w &
+                                      week_ending >  vel_cut_8w)) |>
+  rename(units_prev4 = units, dollars_prev4 = dollars,
+         stores_prev4 = stores, weeks_prev4 = weeks)
+
+velocity <- vel_4w |>
+  full_join(vel_12w,  by = c("sku", "retailer")) |>
+  full_join(vel_prev, by = c("sku", "retailer")) |>
+  left_join(sku_dim |>
+              transmute(sku, product_name, product_line,
+                        data_quality_score, issue_count,
+                        data_quality_flag = ifelse(issue_count >= 3,
+                                                    "REVIEW", "OK")),
+            by = "sku") |>
+  mutate(
+    ups_per_w_4w    = units_4w    / pmax(stores_4w    * weeks_4w,    1),
+    ups_per_w_12w   = units_12w   / pmax(stores_12w   * weeks_12w,   1),
+    ups_per_w_prev4 = units_prev4 / pmax(stores_prev4 * weeks_prev4, 1),
+    ups_pct_change_4w_vs_prev = ifelse(
+      is.na(ups_per_w_prev4) | ups_per_w_prev4 == 0, NA_real_,
+      ups_per_w_4w / ups_per_w_prev4 - 1)) |>
+  select(sku, product_name, product_line, retailer,
+         units_4w, dollars_4w, stores_4w, ups_per_w_4w,
+         units_12w, dollars_12w, stores_12w, ups_per_w_12w,
+         ups_per_w_prev4, ups_pct_change_4w_vs_prev,
+         data_quality_score, issue_count, data_quality_flag) |>
+  arrange(desc(dollars_12w))
+
+rm(scan_vel, vel_last_week, vel_cut_4w, vel_cut_12w, vel_cut_8w,
+   vel_agg, vel_4w, vel_12w, vel_prev)
+
 # ---- write everything ------------------------------------------------------
 
 write_pair <- function(df, name) {
   saveRDS(df, file.path(OUT_DIR, paste0(name, ".rds")))
   write_csv(df, file.path(OUT_DIR, paste0(name, ".csv")))
 }
+
+# Sanity: every frame must have rows, and key frames must match SKU count.
+n_skus <- nrow(sku_dim)
+stopifnot(n_skus > 0)
+stopifnot(nrow(sku_revenue) > 0)
+stopifnot(nrow(sku_retailer_revenue) > 0)
+stopifnot(nrow(chargebacks_enriched) > 0)
+stopifnot(nrow(retailer_readiness_long) > 0)
+stopifnot(nrow(retailer_pnl) > 0)
+stopifnot(nrow(time_to_shelf) > 0)
+stopifnot(nrow(deauth_summary) > 0)
+stopifnot(nrow(sku_master_full) == n_skus)
+stopifnot(nrow(velocity) > 0)
 
 write_pair(sku_dim,                    "sku_dim")
 write_pair(sku_revenue,                "sku_revenue")
@@ -463,6 +534,7 @@ write_pair(deauth_summary,             "deauth_summary")
 write_pair(sku_master_full,            "sku_master_full")
 write_pair(process_debt,               "process_debt")
 write_pair(promo_effectiveness,        "promo_effectiveness")
+write_pair(velocity,                   "velocity")
 
 cat("\n--- Wrote analytical frames ---\n")
 for (f in list.files(OUT_DIR, pattern = "\\.rds$")) {

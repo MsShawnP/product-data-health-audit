@@ -88,11 +88,24 @@ approximately two minutes.
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
+## Running this for a different company
+
+The R pipeline reads company-specific parameters from `config.yml`: database path, output filename prefix, and company name. To reuse this audit methodology for a different company:
+
+1. **Replace `config.yml` values** with the new company's name and output prefix.
+2. **Populate a Postgres database** with the same 8-table schema (`product_master`, `sku_costs`, `chargebacks`, `stores`, `distribution_log`, `scan_data`, `promotions`, `retailer_requirements`) and set `DATABASE_URL` in `.Renviron`.
+3. **Update Quarto front matter** — title, subtitle, author, and date in `quarto/report.qmd`, `dashboard.qmd`, and `tearsheet.qmd`. These are per-engagement metadata, not auto-generated.
+4. **Rewrite report prose** — the body text in the `.qmd` files is written for Cinderhaven's specific findings. New data produces new numbers through the pipeline, but the narrative interpretation is always per-engagement.
+5. **Run `Rscript R/run_all.R`** — the pipeline, charts, Excel workbook, and all rendered artifacts rebuild from the new data.
+
+The R scripts, chart logic, Excel workbook structure, and analytical frameworks carry over unchanged. The Shiny Data Debt Calculator is already company-agnostic.
+
 ## Directory structure
 
 ```
 product-data-health-audit/
-├── .Renviron.example                       # DATABASE_URL template
+├── config.yml                           # Company-specific parameters
+├── .Renviron.example                    # DATABASE_URL template
 ├── data/
 │   └── (legacy SQLite artifacts gitignored)
 ├── R/
@@ -103,39 +116,29 @@ product-data-health-audit/
 │   ├── 04_hero_charts.R                 # 4 hero charts
 │   ├── 05_supporting_charts.R           # 17 supporting charts
 │   ├── 06_excel_workbook.R              # 8-tab Excel workbook
-│   ├── _emit_canonical_numbers.R        # Generate canonical_numbers.md
 │   └── run_all.R                        # Pipeline orchestrator
 ├── quarto/
+│   ├── _quarto.yml                      # Quarto project config
 │   ├── report.qmd                       # Audit report (HTML + PDF)
 │   ├── tearsheet.qmd                    # Executive tearsheet (PDF)
 │   ├── dashboard.qmd                    # Monday Morning Dashboard (HTML)
 │   ├── compliance_timeline.qmd          # Shareable compliance timeline (PDF)
-│   ├── scorecard.qmd                    # Shareable scorecard template (PDF)
-│   └── _quarto.yml                      # Quarto project config
+│   └── scorecard.qmd                    # Shareable scorecard template (PDF)
 ├── shiny/
 │   └── app.R                            # Data Debt Calculator
-├── output/
+├── output/                              # All generated (gitignored, rebuilt by pipeline)
 │   ├── frames/                          # Canonical .rds data frames
-│   ├── charts/                          # All chart PNGs
+│   ├── charts/                          # All chart PNGs + interactive HTML
 │   ├── cinderhaven_audit.xlsx           # Excel workbook
-│   ├── canonical_numbers.md             # Single source of truth for all numbers
 │   ├── compliance_timeline.pdf          # Shareable artifact
 │   └── scorecard.pdf                    # Shareable artifact
+├── docs/process/                        # Build-process documentation
 ├── data_generation_log.md               # How the synthetic data was built
-├── cinderhaven_rebuild_plan.md          # Master project spec
-├── cinderhaven_full_report_prose_v2.md  # Approved report prose
-├── executive_tearsheet_prose.md         # Approved tearsheet prose
+├── .github/workflows/render.yml         # CI pipeline
 ├── renv.lock                            # Dependency snapshot
 └── README.md                            # This file
 ```
 
-## Companion artifacts
-
-- **GTIN Validator** — live web tool for validating GS1 barcodes: [link]
-- **SQL diagnostic query library** — 53 queries covering every analytical frame: [GitHub link]
-- **HTML audit report** — Python-generated fast diagnostic: [GitHub link]
-- **Data Debt Calculator** — estimate your own data debt: [link when deployed]
-
 ## License
 
-This project is a portfolio piece. The methodology is freely reusable. The Cinderhaven name and dataset are fictional.
+MIT — see [LICENSE](LICENSE).

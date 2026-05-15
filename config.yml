@@ -1,0 +1,29 @@
+# config.yml — Company-specific parameters for the audit pipeline.
+#
+# This file is the single place where company identity is defined.
+# To run this audit methodology for a different company:
+#   1. Replace these values with the new company's details
+#   2. Build the SQLite database from the new company's data
+#   3. Run: Rscript R/run_all.R
+#
+# The R pipeline reads data.output_prefix and company.short_name
+# from this file. Database connection is via DATABASE_URL in .Renviron.
+# Quarto front matter (title, subtitle, author, date) and report
+# prose are per-engagement — update those manually when switching companies.
+
+company:
+  name: "Cinderhaven Provisions"
+  short_name: "Cinderhaven"
+  revenue_description: "$25 million specialty food brand"
+
+audit:
+  date: "2026-05-03"
+  date_display: "May 2026"
+  author: "Shawn Phillips | Lailara LLC"
+
+data:
+  output_prefix: "cinderhaven"
+
+shiny:
+  delay_days: 22
+  deauth_diff: 0.0048
