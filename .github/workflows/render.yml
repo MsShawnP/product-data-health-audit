@@ -13,6 +13,8 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 env:
   R_KEEP_PKG_SOURCE: yes
@@ -112,3 +114,32 @@ jobs:
               echo "| \`$f\` | $size |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
+
+      - name: Assemble Pages site
+        if: success() && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p _site/quarto/assets _site/output
+          cp index.html .nojekyll _site/
+          cp quarto/report.html quarto/report.pdf _site/quarto/
+          cp quarto/dashboard.html quarto/tearsheet.pdf _site/quarto/
+          cp -r quarto/assets/* _site/quarto/assets/ 2>/dev/null || true
+          cp output/compliance_timeline.pdf output/scorecard.pdf _site/output/
+          cp output/cinderhaven_audit.xlsx _site/output/ 2>/dev/null || true
+
+      - name: Upload Pages artifact
+        if: success() && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: render
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

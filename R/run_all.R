@@ -104,24 +104,32 @@ if (!nzchar(quarto_exe)) {
       "  quarto render quarto/compliance_timeline.qmd\n",
       "  quarto render quarto/scorecard.qmd\n", sep = "")
 } else {
-  render_qmd("quarto/report.qmd",    "html", "report.html")
-  render_qmd("quarto/report.qmd",    "pdf",  "report.pdf")
+  # report.qmd declares both html and pdf formats — omit --to so Quarto
+  # evaluates R chunks once and produces both outputs in a single pass.
+  render_qmd("quarto/report.qmd",    NA, "report.html")
+
   step_banner("Quarto render — quarto/dashboard.qmd")
-  # NA → omit --to so YAML's `format: dashboard` is respected.
-  render_qmd("quarto/dashboard.qmd", NA,     "dashboard.html")
+  render_qmd("quarto/dashboard.qmd", NA, "dashboard.html")
 
-  # Executive tearsheet (Phase 5). Output stays next to the qmd source.
-  step_banner("Quarto render — quarto/tearsheet.qmd")
-  render_qmd("quarto/tearsheet.qmd", "pdf", "tearsheet.pdf")
+  # Three independent PDFs — render in parallel when possible.
+  step_banner("Quarto render — tearsheet + compliance timeline + scorecard")
+  pdf_jobs <- list(
+    list(qmd = "quarto/tearsheet.qmd",
+         fmt = "pdf", out = "tearsheet.pdf", out_dir = NULL),
+    list(qmd = "quarto/compliance_timeline.qmd",
+         fmt = "pdf", out = "compliance_timeline.pdf", out_dir = "../output"),
+    list(qmd = "quarto/scorecard.qmd",
+         fmt = "pdf", out = "scorecard.pdf", out_dir = "../output")
+  )
 
-  # Shareable artifacts (Phase 7). Output to project-level output/ so they
-  # sit alongside the Excel workbook rather than next to the qmd source.
-  step_banner("Quarto render — quarto/compliance_timeline.qmd")
-  render_qmd("quarto/compliance_timeline.qmd", "pdf",
-             "compliance_timeline.pdf", out_dir_rel = "../output")
-  step_banner("Quarto render — quarto/scorecard.qmd")
-  render_qmd("quarto/scorecard.qmd", "pdf",
-             "scorecard.pdf", out_dir_rel = "../output")
+  if (requireNamespace("parallel", quietly = TRUE) &&
+      .Platform$OS.type != "windows") {
+    parallel::mclapply(pdf_jobs, function(j) {
+      render_qmd(j$qmd, j$fmt, j$out, j$out_dir)
+    }, mc.cores = 3L)
+  } else {
+    for (j in pdf_jobs) render_qmd(j$qmd, j$fmt, j$out, j$out_dir)
+  }
 }
 
 # ---- Wrap up -------------------------------------------------------------

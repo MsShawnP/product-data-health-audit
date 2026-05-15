@@ -2,7 +2,7 @@
 
 **Tier:** Medium
 **Source:** Full 4-phase audit (2026-05-15)
-**Current phase:** Session 2 complete, ready for Session 3
+**Current phase:** Session 3 complete, Session 4 (optional) remains
 
 ---
 
@@ -89,12 +89,11 @@ S1.1 goes first (everything else flows from it or is independent). S1.4, S1.5, S
 
 ## Session 3: Live Demo + Optimization (Moves 6 + 7)
 
-- [ ] Deploy Shiny calculator to shinyapps.io
-- [ ] Verify GitHub Pages serves dashboard HTML
-- [ ] Update README with live links
-- [ ] Combine two report.qmd renders into one
-- [ ] Enable freeze: auto in _quarto.yml
-- [ ] Parallelize three independent PDF renders in run_all.R
+- [ ] Redeploy Shiny calculator to shinyapps.io (needs credentials — user action)
+- [x] Add GitHub Pages deployment to CI (assembles _site/ from pipeline outputs)
+- [x] Combine two report.qmd renders into one (omit --to, both formats in single pass)
+- [x] Enable freeze: auto in _quarto.yml
+- [x] Parallelize three independent PDF renders in run_all.R (mclapply on Unix, sequential on Windows)
 
 ## Session 4 (Optional): Parameterize (Move 8)
 

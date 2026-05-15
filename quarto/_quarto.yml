@@ -11,7 +11,7 @@ execute:
   echo: false
   warning: false
   message: false
-  freeze: false
+  freeze: auto
 
 # Project-wide HTML theming (the report uses cosmo + assets/report.css; the
 # dashboard inherits cosmo from its own header). PDF theming is per-document.
