@@ -41,7 +41,14 @@ t0 <- Sys.time()
 
 for (s in R_SCRIPTS) {
   step_banner(s)
-  source(file.path(ROOT, s), echo = FALSE)
+  tryCatch(
+    source(file.path(ROOT, s), echo = FALSE),
+    error = function(e) {
+      cat("\n!!! PIPELINE FAILED at ", s, " !!!\n", conditionMessage(e), "\n",
+          sep = "")
+      stop("Pipeline halted — fix the error above before continuing.",
+           call. = FALSE)
+    })
 }
 
 # ---- Quarto render -------------------------------------------------------

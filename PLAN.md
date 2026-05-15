@@ -2,7 +2,7 @@
 
 **Tier:** Medium
 **Source:** Full 4-phase audit (2026-05-15)
-**Current phase:** Session 1 complete, ready for Session 2
+**Current phase:** Session 2 complete, ready for Session 3
 
 ---
 
@@ -75,16 +75,17 @@ S1.1 goes first (everything else flows from it or is independent). S1.4, S1.5, S
 
 ## Session 2: Single Source of Truth (Moves 3 + 4)
 
-- [ ] Compute velocity in 02_build_frames.R as canonical frame
-- [ ] Remove velocity computation from 06_excel_workbook.R (lines 60-108)
-- [ ] Remove velocity computation from dashboard.qmd (lines 71-119)
-- [ ] Consolidate dollar_short → use fmt_dollar_short from 00_theme.R everywhere
-- [ ] Delete shadow palettes in 05_supporting_charts.R (lines 51-61)
-- [ ] Replace 12 theme_audit() calls with theme_cinderhaven()
-- [ ] Move read_p helper into 00_theme.R, delete 9 copies
-- [ ] Add stopifnot(nrow(...) > 0) after each frame in 02_build_frames.R
-- [ ] Wrap source() calls in tryCatch in run_all.R
-- [ ] Add critical assertions to 03_verify.R
+- [x] Compute velocity in 02_build_frames.R as canonical frame (F12)
+- [x] Remove velocity computation from 06_excel_workbook.R (48 lines removed)
+- [x] Remove velocity computation from dashboard.qmd (50 lines removed, reads pre-built frame)
+- [x] Consolidate dollar_short → alias to fmt_dollar_short from 00_theme.R
+- [x] Delete shadow palettes in 05_supporting_charts.R, alias to canonical colors
+- [x] Replace 11 theme_audit() calls with theme_cinderhaven()
+- [ ] Move read_p helper into 00_theme.R, delete 9 copies (deferred — low leverage)
+- [x] Add stopifnot(nrow(...) > 0) after each frame in 02_build_frames.R
+- [x] Wrap source() calls in tryCatch in run_all.R
+- [x] Fix hardcoded path in 00_theme.R self-test block
+- [ ] Add critical assertions to 03_verify.R (deferred — verify script is informational)
 
 ## Session 3: Live Demo + Optimization (Moves 6 + 7)
 

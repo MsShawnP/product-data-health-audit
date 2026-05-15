@@ -230,7 +230,9 @@ if (identical(Sys.getenv("CINDERHAVEN_THEME_TEST"), "1")) {
   suppressPackageStartupMessages({
     library(dplyr); library(tibble); library(patchwork)
   })
-  ROOT_TEST <- "C:/Users/mssha/OneDrive/Desktop/product-data-health-audit"
+  ROOT_TEST <- normalizePath(
+    Sys.getenv("PROJECT_ROOT", unset = "."),
+    winslash = "/", mustWork = FALSE)
   TEST_OUT  <- file.path(ROOT_TEST, "output", "charts")
   dir.create(TEST_OUT, recursive = TRUE, showWarnings = FALSE)
 
