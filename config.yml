@@ -6,10 +6,10 @@
 #   2. Build the SQLite database from the new company's data
 #   3. Run: Rscript R/run_all.R
 #
-# The R pipeline reads data.database, data.output_prefix, and
-# company.short_name from this file. Quarto front matter (title,
-# subtitle, author, date) and report prose are per-engagement —
-# update those manually when switching companies.
+# The R pipeline reads data.output_prefix and company.short_name
+# from this file. Database connection is via DATABASE_URL in .Renviron.
+# Quarto front matter (title, subtitle, author, date) and report
+# prose are per-engagement — update those manually when switching companies.
 
 company:
   name: "Cinderhaven Provisions"
@@ -22,7 +22,6 @@ audit:
   author: "Shawn Phillips | Lailara LLC"
 
 data:
-  database: "data/cinderhaven_product_master.db"
   output_prefix: "cinderhaven"
 
 shiny:

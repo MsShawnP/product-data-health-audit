@@ -49,7 +49,7 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 - **R** — data prep, analytical frames, charts, workbook generation
 - **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts
-- **SQLite** — source database (164 MB, 9 tables, 1.1M scan data rows)
+- **Postgres** — Cinderhaven Data Platform (9 tables, 1.1M scan data rows)
 - **ggplot2** — all charts, custom theme with project color palette
 - **plotly** — interactive chart versions in HTML report
 - **reactable** — interactive tables in report and dashboard
@@ -59,16 +59,32 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 ## How to reproduce
 
-**Prerequisites:** [R](https://cran.r-project.org/) and [Python 3](https://www.python.org/downloads/). R runs the analysis pipeline; Python 3 is required to build the SQLite database from the generation scripts. On Windows, run the shell commands below in WSL or Git Bash.
+**Prerequisites:** [R](https://cran.r-project.org/) with RPostgres installed.
 
 ```bash
-git clone --recurse-submodules https://github.com/MsShawnP/product-data-health-audit.git
+git clone https://github.com/MsShawnP/product-data-health-audit.git
 cd product-data-health-audit
-./setup.sh
+cp .Renviron.example .Renviron   # edit DATABASE_URL if not using local Docker
+Rscript -e "renv::restore()"
+Rscript -e "renv::install('RPostgres')"
 Rscript R/run_all.R
 ```
 
-`setup.sh` pulls the [`cinderhaven-data`](https://github.com/MsShawnP/cinderhaven-data) submodule and builds the database into `data/cinderhaven_product_master.db` (~5-10 minutes on first run). The R pipeline then loads the database, builds all canonical data frames, generates 21 charts, renders the Excel workbook, and produces the Quarto HTML report, PDF report, dashboard, tearsheet, compliance timeline, and scorecard. Total R run time: approximately two minutes.
+To run locally, start the shared Docker Postgres from
+[refactor-older-cinderhaven-projects](https://github.com/MsShawnP/refactor-older-cinderhaven-projects):
+
+```bash
+# In the refactor-older-cinderhaven-projects repo:
+docker compose up
+
+# Then in this repo:
+Rscript R/run_all.R
+```
+
+The R pipeline loads tables from the Cinderhaven Data Platform, builds
+all canonical data frames, generates 21 charts, renders the Excel
+workbook, and produces the Quarto artifacts. Total R run time:
+approximately two minutes.
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
@@ -76,8 +92,8 @@ The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
 The R pipeline reads company-specific parameters from `config.yml`: database path, output filename prefix, and company name. To reuse this audit methodology for a different company:
 
-1. **Replace `config.yml` values** with the new company's name, database path, and output prefix.
-2. **Build a new SQLite database** with the same 8-table schema (`product_master`, `sku_costs`, `chargebacks`, `stores`, `distribution_log`, `scan_data`, `promotions`, `retailer_requirements`). The data generation scripts in `data/cinderhaven-data/` show the expected schema.
+1. **Replace `config.yml` values** with the new company's name and output prefix.
+2. **Populate a Postgres database** with the same 8-table schema (`product_master`, `sku_costs`, `chargebacks`, `stores`, `distribution_log`, `scan_data`, `promotions`, `retailer_requirements`) and set `DATABASE_URL` in `.Renviron`.
 3. **Update Quarto front matter** — title, subtitle, author, and date in `quarto/report.qmd`, `dashboard.qmd`, and `tearsheet.qmd`. These are per-engagement metadata, not auto-generated.
 4. **Rewrite report prose** — the body text in the `.qmd` files is written for Cinderhaven's specific findings. New data produces new numbers through the pipeline, but the narrative interpretation is always per-engagement.
 5. **Run `Rscript R/run_all.R`** — the pipeline, charts, Excel workbook, and all rendered artifacts rebuild from the new data.
@@ -89,13 +105,12 @@ The R scripts, chart logic, Excel workbook structure, and analytical frameworks 
 ```
 product-data-health-audit/
 ├── config.yml                           # Company-specific parameters
-├── setup.sh                             # One-step database build
+├── .Renviron.example                    # DATABASE_URL template
 ├── data/
-│   ├── cinderhaven-data/                # Submodule: generation pipeline
-│   └── cinderhaven_product_master.db    # Built by setup.sh (gitignored)
+│   └── (legacy SQLite artifacts gitignored)
 ├── R/
 │   ├── 00_theme.R                       # Custom ggplot2 theme + color palette
-│   ├── 01_load_raw.R                    # Load raw tables from SQLite
+│   ├── 01_load_raw.R                    # Load tables from Postgres
 │   ├── 02_build_frames.R               # Build all canonical data frames
 │   ├── 03_verify.R                      # Distribution verification
 │   ├── 04_hero_charts.R                 # 4 hero charts
