@@ -31,6 +31,7 @@ con <- dbConnect(
   user     = m[2],
   password = m[3]
 )
+dbExecute(con, "SET search_path TO public_marts, public_staging, public_intermediate, raw, public")
 
 # Staging views (stg_*) live in public_staging; retailer_requirements
 # has no staging model and is read from the raw schema. The database
