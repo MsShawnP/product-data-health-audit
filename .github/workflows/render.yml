@@ -102,7 +102,7 @@ jobs:
           echo '| Artifact | Size |' >> "$GITHUB_STEP_SUMMARY"
           echo '|---|---:|' >> "$GITHUB_STEP_SUMMARY"
           for f in \
-            output/cinderhaven_audit.xlsx \
+            output/*_audit.xlsx \
             output/compliance_timeline.pdf \
             output/scorecard.pdf \
             quarto/report.html \
@@ -124,7 +124,7 @@ jobs:
           cp quarto/dashboard.html quarto/tearsheet.pdf _site/quarto/
           cp -r quarto/assets/* _site/quarto/assets/ 2>/dev/null || true
           cp output/compliance_timeline.pdf output/scorecard.pdf _site/output/
-          cp output/cinderhaven_audit.xlsx _site/output/ 2>/dev/null || true
+          cp output/*_audit.xlsx _site/output/ 2>/dev/null || true
 
       - name: Upload Pages artifact
         if: success() && github.ref == 'refs/heads/main'

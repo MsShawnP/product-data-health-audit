@@ -20,6 +20,7 @@
 ROOT <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
+cfg <- yaml::read_yaml(file.path(ROOT, "config.yml"))
 
 R_SCRIPTS <- c(
   "R/01_load_raw.R",
@@ -142,7 +143,7 @@ cat("\nKey outputs:\n")
 key_outputs <- c(
   "output/frames/sku_master_full.rds",
   "output/canonical_numbers.md",
-  "output/cinderhaven_audit.xlsx",
+  paste0("output/", cfg$data$output_prefix, "_audit.xlsx"),
   "output/charts/01_chargeback_pareto.png",
   "output/compliance_timeline.pdf",
   "output/scorecard.pdf",

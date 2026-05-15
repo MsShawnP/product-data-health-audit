@@ -13,7 +13,8 @@ suppressPackageStartupMessages({
 ROOT    <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
-DB_PATH <- file.path(ROOT, "data", "cinderhaven_product_master.db")
+cfg     <- yaml::read_yaml(file.path(ROOT, "config.yml"))
+DB_PATH <- file.path(ROOT, cfg$data$database)
 OUT_DIR <- file.path(ROOT, "output", "frames")
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 

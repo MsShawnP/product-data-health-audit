@@ -14,9 +14,10 @@ suppressPackageStartupMessages({
 ROOT     <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
+cfg      <- yaml::read_yaml(file.path(ROOT, "config.yml"))
 PROC_DIR <- file.path(ROOT, "output", "frames")
 OUT_DIR  <- file.path(ROOT, "output")
-OUT_FILE <- file.path(OUT_DIR, "cinderhaven_audit.xlsx")
+OUT_FILE <- file.path(OUT_DIR, paste0(cfg$data$output_prefix, "_audit.xlsx"))
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
 read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
@@ -291,7 +292,7 @@ intake_rows <- tribble(
 
 cat("\nWriting: ", OUT_FILE, "\n", sep = "")
 
-wb <- wb_workbook(creator = "Cinderhaven Audit Pipeline")
+wb <- wb_workbook(creator = paste(cfg$company$short_name, "Audit Pipeline"))
 
 # Cinderhaven palette (must match R/00_theme.R).
 PAL_NAVY     <- "1B2A4A"

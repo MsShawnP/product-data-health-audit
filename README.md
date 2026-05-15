@@ -72,10 +72,23 @@ Rscript R/run_all.R
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
+## Running this for a different company
+
+The R pipeline reads company-specific parameters from `config.yml`: database path, output filename prefix, and company name. To reuse this audit methodology for a different company:
+
+1. **Replace `config.yml` values** with the new company's name, database path, and output prefix.
+2. **Build a new SQLite database** with the same 8-table schema (`product_master`, `sku_costs`, `chargebacks`, `stores`, `distribution_log`, `scan_data`, `promotions`, `retailer_requirements`). The data generation scripts in `data/cinderhaven-data/` show the expected schema.
+3. **Update Quarto front matter** — title, subtitle, author, and date in `quarto/report.qmd`, `dashboard.qmd`, and `tearsheet.qmd`. These are per-engagement metadata, not auto-generated.
+4. **Rewrite report prose** — the body text in the `.qmd` files is written for Cinderhaven's specific findings. New data produces new numbers through the pipeline, but the narrative interpretation is always per-engagement.
+5. **Run `Rscript R/run_all.R`** — the pipeline, charts, Excel workbook, and all rendered artifacts rebuild from the new data.
+
+The R scripts, chart logic, Excel workbook structure, and analytical frameworks carry over unchanged. The Shiny Data Debt Calculator is already company-agnostic.
+
 ## Directory structure
 
 ```
 product-data-health-audit/
+├── config.yml                           # Company-specific parameters
 ├── setup.sh                             # One-step database build
 ├── data/
 │   ├── cinderhaven-data/                # Submodule: generation pipeline

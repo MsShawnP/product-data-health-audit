@@ -97,7 +97,9 @@ S1.1 goes first (everything else flows from it or is independent). S1.4, S1.5, S
 
 ## Session 4 (Optional): Parameterize (Move 8)
 
-- [ ] Extract company-specific values into config file
-- [ ] Make report prose template-aware
-- [ ] Add second demo company or blank template mode
-- [ ] Update README to describe reusability
+- [x] Extract company-specific values into config file
+- [x] Wire R pipeline (01_load_raw, 06_excel_workbook, run_all) to read from config.yml
+- [x] Update CI workflow to use config-driven output filenames
+- [x] Update README to describe reusability
+- [ ] Make report prose template-aware (deferred — prose is per-engagement by design)
+- [ ] Add second demo company or blank template mode (deferred — low leverage for portfolio)
