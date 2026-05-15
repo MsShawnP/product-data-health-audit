@@ -39,30 +39,13 @@ process_debt    <- read_p("process_debt")
 time_to_shelf_s <- read_p("time_to_shelf_sku")
 raw             <- read_p("raw_tables")
 
-# ---- shared helpers (mirrors 04_hero_charts.R) ----------------------------
+# ---- shared helpers -------------------------------------------------------
+# fmt_dollar_short, product_line_colors, retailer_colors, theme_cinderhaven,
+# theme_cinderhaven_horizontal are all provided by 00_theme.R (sourced above).
 
-dollar_short <- function(x) {
-  ifelse(is.na(x), NA_character_,
-   ifelse(x >= 1e6, sprintf("$%.2fM", x / 1e6),
-    ifelse(x >= 1e3, sprintf("$%.0fk", x / 1e3),
-                     paste0("$", formatC(round(x), big.mark = ",", format = "d")))))
-}
-
-product_line_palette <- c(
-  "Artisan Sauces"       = cinderhaven_palette$navy,
-  "Pantry Staples"       = "#2e8b57",
-  "Specialty Condiments" = cinderhaven_palette$red)
-
-retailer_palette <- c(
-  "Walmart"     = cinderhaven_palette$navy,
-  "Costco"      = cinderhaven_palette$red,
-  "Whole Foods" = "#2e8b57",
-  "UNFI"        = "#e08e2a")
-
-# Legacy alias — early drafts of this file used `theme_audit()`. The
-# canonical theme is `theme_cinderhaven()` from 00_theme.R; alias here so
-# existing chart blocks pick it up without per-chart edits.
-theme_audit <- function() theme_cinderhaven()
+dollar_short         <- fmt_dollar_short
+product_line_palette <- product_line_colors
+retailer_palette     <- retailer_colors
 
 save_pair <- function(p_static, p_interactive, name,
                       w_in = 9, h_in = 6, dpi = 200) {
@@ -221,7 +204,7 @@ p6_base <- function(use_interactive) {
          subtitle = "Bar = annual revenue from SKUs that fail at least one required field for that retailer",
          x = "Revenue at risk", y = NULL,
          caption = "Source: retailer_readiness_summary + sku_master_full, audit run 2026-05-03") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p6_base(FALSE), to_girafe(p6_base(TRUE), w_in = 10, h_in = 5),
@@ -272,7 +255,7 @@ p7_base <- function(use_interactive) {
          subtitle = "Issues per $1M of annual revenue. Higher = more data debt per dollar earned.",
          x = NULL, y = "Issues per $1M revenue",
          caption = "Source: sku_master_full, audit run 2026-05-03") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p7_base(FALSE), to_girafe(p7_base(TRUE), w_in = 8, h_in = 5),
@@ -318,7 +301,7 @@ p8_base <- function(use_interactive) {
          subtitle = "Where chargeback dollars are largest relative to the margin the SKU earns",
          x = NULL, y = NULL,
          caption = "Source: sku_master_full (annual_gross_margin = ttm_revenue − ttm_units × cogs_per_unit)") +
-    theme_audit() +
+    theme_cinderhaven() +
     theme(axis.text.y = element_text(size = 9))
 }
 
@@ -512,7 +495,7 @@ p12_base <- function(use_interactive) {
            "Baseline: $", formatC(round(current_cb_per_year), big.mark = ",", format = "d"),
            "/yr at ", current_skus, " SKUs × 4 retailers (annualized from 18mo).",
            " Real growth typically degrades defect rate — this is the floor.")) +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p12_base(FALSE), to_girafe(p12_base(TRUE), w_in = 9, h_in = 5.5),
@@ -633,7 +616,7 @@ p14_base <- function(use_interactive) {
          subtitle = "Three data-defect reasons (red) account for 93.7% of chargeback dollars.",
          x = NULL, y = NULL,
          caption = "Source: chargebacks_enriched") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p14_base(FALSE), to_girafe(p14_base(TRUE), w_in = 9, h_in = 4.5),
@@ -673,7 +656,7 @@ p15_base <- function(use_interactive) {
          subtitle = "Eighteen months of chargeback dollars; trend line is essentially flat",
          x = NULL, y = "Chargeback $",
          caption = "Source: chargebacks_enriched") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p15_base(FALSE), to_girafe(p15_base(TRUE), w_in = 10, h_in = 5),
@@ -733,7 +716,7 @@ p16_base <- function(use_interactive) {
          subtitle = "Grey bars = monthly scan revenue. Red line = monthly chargebacks (right axis).",
          x = NULL,
          caption = "Source: scan_data + chargebacks_enriched. Months with <$1M in scans excluded.") +
-    theme_audit() +
+    theme_cinderhaven() +
     theme(axis.text.y.right  = element_text(color = cinderhaven_palette$red),
           axis.title.y.right = element_text(color = cinderhaven_palette$red),
           axis.text.y.left   = element_text(color = cinderhaven_palette$text_muted),
@@ -836,7 +819,7 @@ p19_base <- function(use_interactive) {
          subtitle = "Only 9 of 90 SKUs (10%) are 'Registered - Complete'.",
          x = "SKU count", y = NULL,
          caption = "Source: product_master.oneworldsync_status") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p19_base(FALSE), to_girafe(p19_base(TRUE), w_in = 9, h_in = 4),
@@ -896,7 +879,7 @@ p20_base <- function(use_interactive) {
          subtitle = "Of 90 SKUs, how many would pass each retailer's required fields today.",
          x = NULL, y = "SKU count",
          caption = "Source: retailer_readiness_summary") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p20_base(FALSE), to_girafe(p20_base(TRUE), w_in = 9, h_in = 5),
@@ -948,7 +931,7 @@ p21_base <- function(use_interactive) {
          x = "Days since last update",
          y = "SKU count",
          caption = "Source: product_master.last_updated") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p21_base(FALSE), to_girafe(p21_base(TRUE), w_in = 9, h_in = 4.5),
@@ -1004,7 +987,7 @@ p22_base <- function(use_interactive) {
            " distinct strings — casing varies ('2 tbsp' vs '2 Tbsp') and the gram weight on '1 tsp' shifts between 2g, 3g, and 5g."),
          x = "SKU count", y = NULL,
          caption = "Source: product_master.serving_size") +
-    theme_audit()
+    theme_cinderhaven()
 }
 
 save_pair(p22_base(FALSE), to_girafe(p22_base(TRUE), w_in = 10, h_in = 6),

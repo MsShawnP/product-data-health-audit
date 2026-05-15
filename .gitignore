@@ -15,6 +15,16 @@ renv/local/
 output/frames/
 output/frames/*.rds
 
+# Generated charts, workbook, and PDFs; rebuilt by R/run_all.R.
+output/charts/
+output/*.xlsx
+output/*.pdf
+output/*.md
+
+# Rendered Quarto output; rebuilt by quarto render.
+quarto/*.html
+quarto/*.pdf
+
 # Legacy SQLite artifacts (no longer generated; kept in case of stale copies).
 data/*.db
 data/*.db-wal
@@ -40,11 +50,27 @@ velocity-tool/
 *.out
 *.synctex.gz
 
-# Python (only the inspect_db.py utility lives here)
+# Dev-only diagnostic scripts (not part of the main pipeline).
+R/_*
+working/
+inspect_db.py
+
+# Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Secrets and credentials — never commit these.
+.env
+.env.*
+.Renviron
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*
+.secret*
 
 # OS noise
 .DS_Store
