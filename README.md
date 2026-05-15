@@ -59,7 +59,7 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 ## How to reproduce
 
-**Prerequisites:** [R](https://cran.r-project.org/) and [Python 3](https://www.python.org/downloads/). R runs the analysis pipeline; Python 3 is required to build the SQLite database from the generation scripts.
+**Prerequisites:** [R](https://cran.r-project.org/) and [Python 3](https://www.python.org/downloads/). R runs the analysis pipeline; Python 3 is required to build the SQLite database from the generation scripts. On Windows, run the shell commands below in WSL or Git Bash.
 
 ```bash
 git clone --recurse-submodules https://github.com/MsShawnP/product-data-health-audit.git
@@ -76,10 +76,10 @@ The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
 ```
 product-data-health-audit/
-├── setup.sh                                # One-step database build
+├── setup.sh                             # One-step database build
 ├── data/
-│   ├── cinderhaven-data/                   # Submodule: generation pipeline
-│   └── cinderhaven_product_master.db       # Built by setup.sh (gitignored)
+│   ├── cinderhaven-data/                # Submodule: generation pipeline
+│   └── cinderhaven_product_master.db    # Built by setup.sh (gitignored)
 ├── R/
 │   ├── 00_theme.R                       # Custom ggplot2 theme + color palette
 │   ├── 01_load_raw.R                    # Load raw tables from SQLite
@@ -88,38 +88,28 @@ product-data-health-audit/
 │   ├── 04_hero_charts.R                 # 4 hero charts
 │   ├── 05_supporting_charts.R           # 17 supporting charts
 │   ├── 06_excel_workbook.R              # 8-tab Excel workbook
-│   ├── _emit_canonical_numbers.R        # Generate canonical_numbers.md
 │   └── run_all.R                        # Pipeline orchestrator
 ├── quarto/
+│   ├── _quarto.yml                      # Quarto project config
 │   ├── report.qmd                       # Audit report (HTML + PDF)
 │   ├── tearsheet.qmd                    # Executive tearsheet (PDF)
 │   ├── dashboard.qmd                    # Monday Morning Dashboard (HTML)
 │   ├── compliance_timeline.qmd          # Shareable compliance timeline (PDF)
-│   ├── scorecard.qmd                    # Shareable scorecard template (PDF)
-│   └── _quarto.yml                      # Quarto project config
+│   └── scorecard.qmd                    # Shareable scorecard template (PDF)
 ├── shiny/
 │   └── app.R                            # Data Debt Calculator
-├── output/
+├── output/                              # All generated (gitignored, rebuilt by pipeline)
 │   ├── frames/                          # Canonical .rds data frames
-│   ├── charts/                          # All chart PNGs
+│   ├── charts/                          # All chart PNGs + interactive HTML
 │   ├── cinderhaven_audit.xlsx           # Excel workbook
-│   ├── canonical_numbers.md             # Single source of truth for all numbers
 │   ├── compliance_timeline.pdf          # Shareable artifact
 │   └── scorecard.pdf                    # Shareable artifact
+├── docs/process/                        # Build-process documentation
 ├── data_generation_log.md               # How the synthetic data was built
-├── cinderhaven_rebuild_plan.md          # Master project spec
-├── cinderhaven_full_report_prose_v2.md  # Approved report prose
-├── executive_tearsheet_prose.md         # Approved tearsheet prose
+├── .github/workflows/render.yml         # CI pipeline
 ├── renv.lock                            # Dependency snapshot
 └── README.md                            # This file
 ```
-
-## Companion artifacts
-
-- **GTIN Validator** — live web tool for validating GS1 barcodes: [link]
-- **SQL diagnostic query library** — 53 queries covering every analytical frame: [GitHub link]
-- **HTML audit report** — Python-generated fast diagnostic: [GitHub link]
-- **Data Debt Calculator** — estimate your own data debt: [link when deployed]
 
 ## License
 

@@ -11,6 +11,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   R_KEEP_PKG_SOURCE: yes
   RENV_PATHS_ROOT: ~/.cache/R/renv
@@ -24,6 +27,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Build database
+        run: ./setup.sh
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
