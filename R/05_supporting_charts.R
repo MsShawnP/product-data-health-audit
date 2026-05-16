@@ -43,9 +43,7 @@ raw             <- read_p("raw_tables")
 # fmt_dollar_short, product_line_colors, retailer_colors, theme_cinderhaven,
 # theme_cinderhaven_horizontal are all provided by 00_theme.R (sourced above).
 
-dollar_short         <- fmt_dollar_short
-product_line_palette <- product_line_colors
-retailer_palette     <- retailer_colors
+dollar_short <- fmt_dollar_short
 
 save_pair <- function(p_static, p_interactive, name,
                       w_in = 9, h_in = 6, dpi = 200) {

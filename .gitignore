@@ -55,6 +55,9 @@ R/_*
 working/
 inspect_db.py
 
+# Shiny deployment metadata (account-specific, not portable).
+shiny/rsconnect/
+
 # Python
 __pycache__/
 *.py[cod]
