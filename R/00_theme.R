@@ -193,7 +193,7 @@ scale_x_dollar_m <- function(...) {
 
 # ---- caption helper ------------------------------------------------------
 # All chart captions read "Source: <plain English>" — never reference the
-# .rds file name or the SQLite table directly.
+# .rds file name or the database table directly.
 
 src_caption <- function(text) {
   paste0("Source: ", text)
