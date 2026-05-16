@@ -72,6 +72,13 @@ venv/
 credentials*
 .secret*
 
+# Workflow state files (dev scaffolding, not portfolio content).
+AUDIT.md
+PLAN.md
+HANDOFF.md
+DECISIONS.md
+FAILURES.md
+
 # OS noise
 .DS_Store
 Thumbs.db
