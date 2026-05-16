@@ -2,7 +2,7 @@
 # The visual language. One source of truth for every chart, every artifact.
 # Sourced by every chart-producing script and by every Quarto setup chunk.
 #
-# Design rules (from cinderhaven_rebuild_plan.md, "Visual Language"):
+# Design rules ("Visual Language"):
 #   - White background. No grey panel fill. No vertical gridlines.
 #     Light horizontal gridlines only.
 #   - System sans-serif (Arial / Helvetica fallback).
