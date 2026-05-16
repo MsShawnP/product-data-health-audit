@@ -3,7 +3,7 @@
 # This file is the single place where company identity is defined.
 # To run this audit methodology for a different company:
 #   1. Replace these values with the new company's details
-#   2. Build the SQLite database from the new company's data
+#   2. Populate the Postgres database with the new company's data
 #   3. Run: Rscript R/run_all.R
 #
 # The R pipeline reads data.output_prefix and company.short_name
