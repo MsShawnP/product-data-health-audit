@@ -1,6 +1,6 @@
 # run_all.R — Full pipeline orchestrator.
 #
-# One command rebuilds everything from the SQLite database:
+# One command rebuilds everything from the Postgres database:
 #   0. Load shared theme + helpers          (R/00_theme.R, sourced by chart scripts)
 #   1. Load raw tables                      (R/01_load_raw.R)
 #   2. Build canonical analytical frames    (R/02_build_frames.R)

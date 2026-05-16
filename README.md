@@ -1,8 +1,12 @@
 # Product Data Readiness Audit — Cinderhaven Provisions
 
-A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs at $10M to $100M.
+A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs of growing food brands.
 
 Cinderhaven Provisions is a $25 million specialty food brand with 90 SKUs, 3 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+
+## Why now
+
+GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D barcodes. FSMA 204 traceability rules are already being enforced by Walmart and Albertsons via contract, ahead of the July 2028 federal deadline. Most specialty food companies don't know which of their SKUs will fail. This audit finds out — and quantifies what dirty data is already costing.
 
 ## What this produces
 
