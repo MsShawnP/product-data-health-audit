@@ -75,6 +75,12 @@ assert("vectorized input works",
        identical(is_valid_gtin14(c("00000000000000", "00000000000001")),
                  c(TRUE, FALSE)))
 
+assert("non-trivial valid GTIN-14 passes",
+       is_valid_gtin14("12345678901235"))
+
+assert("non-trivial GTIN-14 with wrong check digit fails",
+       !is_valid_gtin14("12345678901230"))
+
 cat("\n--- is_valid_upc12 tests ---\n")
 
 assert("valid 12-digit all-zeros passes",
@@ -88,6 +94,43 @@ assert("NA input fails",
 
 assert("wrong check digit fails",
        !is_valid_upc12("000000000001"))
+
+assert("non-trivial valid UPC-12 passes",
+       is_valid_upc12("012345678905"))
+
+assert("non-trivial UPC-12 with wrong check digit fails",
+       !is_valid_upc12("012345678900"))
+
+cat("\n--- issue_count formula regression ---\n")
+
+issue_count <- function(gtin_valid, upc_valid, missing_case_weight,
+                        missing_case_dims, missing_country,
+                        missing_brand_owner, ows_complete,
+                        weight_plausible) {
+  as.integer(is.na(gtin_valid) | !gtin_valid) +
+  as.integer(is.na(upc_valid)  | !upc_valid) +
+  as.integer(missing_case_weight) +
+  as.integer(missing_case_dims) +
+  as.integer(missing_country) +
+  as.integer(missing_brand_owner) +
+  as.integer(is.na(ows_complete) | !ows_complete) +
+  as.integer(!is.na(weight_plausible) & !weight_plausible)
+}
+
+assert("all clean -> 0 issues",
+       issue_count(TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE) == 0L)
+
+assert("all broken -> 8 issues",
+       issue_count(FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE) == 8L)
+
+assert("mixed NAs: NA gtin, NA ows, NA weight_plausible -> 4 issues",
+       issue_count(NA, TRUE, TRUE, FALSE, FALSE, TRUE, NA, NA) == 4L)
+
+assert("NA weight_plausible does not count as an issue",
+       issue_count(TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, NA) == 0L)
+
+assert("FALSE weight_plausible counts as an issue",
+       issue_count(TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE) == 1L)
 
 cat(sprintf("\n%d passed, %d failed\n", pass, fail))
 if (fail > 0) stop("Tests failed.")

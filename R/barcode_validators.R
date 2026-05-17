@@ -25,5 +25,5 @@ is_valid_check_digit <- function(code, expected_len) {
   identical(check, mod10_check_digit(body))
 }
 
-is_valid_gtin14 <- function(x) vapply(x, is_valid_check_digit, logical(1), expected_len = 14L)
-is_valid_upc12  <- function(x) vapply(x, is_valid_check_digit, logical(1), expected_len = 12L)
+is_valid_gtin14 <- function(x) vapply(x, is_valid_check_digit, logical(1), expected_len = 14L, USE.NAMES = FALSE)
+is_valid_upc12  <- function(x) vapply(x, is_valid_check_digit, logical(1), expected_len = 12L, USE.NAMES = FALSE)
