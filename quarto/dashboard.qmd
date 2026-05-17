@@ -378,7 +378,7 @@ reactable(
 
 ## Tab 3: Triage Tracker
 
-> **What this shows:** All 90 SKUs ranked by fix priority. The composite
+> **What this shows:** All `r nrow(sku_master_full)` SKUs ranked by fix priority. The composite
 > score weights revenue (40%), data quality (30%), and chargeback exposure
 > (30%). Effort is shown separately.
 >
@@ -424,7 +424,7 @@ reactable(
   bordered        = TRUE,
   defaultPageSize = 18,
   showPageSizeOptions = TRUE,
-  pageSizeOptions = c(18, 30, 90),
+  pageSizeOptions = c(18, 30, nrow(sku_master_full)),
   defaultSorted   = list(`Composite priority` = "desc"),
   defaultColDef   = colDef(
     headerStyle = list(background = cinderhaven_palette$bg_pale,

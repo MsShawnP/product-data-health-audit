@@ -198,7 +198,8 @@ p6_base <- function(use_interactive) {
       "UNFI"        = "#B0B0B0",
       "Whole Foods" = "#B0B0B0"),
       guide = "none") +
-    labs(title    = "$18M of revenue rides on data Walmart could reject today",
+    labs(title    = sprintf("%s of revenue rides on data Walmart could reject today",
+                           dollar_short(c6$rev_at_risk[c6$retailer == "Walmart"])),
          subtitle = "Bar = annual revenue from SKUs that fail at least one required field for that retailer",
          x = "Revenue at risk", y = NULL,
          caption = "Source: retailer_readiness_summary + sku_master_full, audit run 2026-05-03") +
@@ -249,7 +250,13 @@ p7_base <- function(use_interactive) {
       "Pantry Staples"       = cinderhaven_palette$red),
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
-    labs(title    = "Pantry Staples carries 70% more data debt per dollar than Artisan Sauces",
+    labs(title    = {
+           ps_ipm <- c7$issues_per_million[c7$product_line == "Pantry Staples"]
+           as_ipm <- c7$issues_per_million[c7$product_line == "Artisan Sauces"]
+           pct_more <- round(100 * (ps_ipm / as_ipm - 1))
+           sprintf("Pantry Staples carries %d%% more data debt per dollar than Artisan Sauces",
+                   pct_more)
+         },
          subtitle = "Issues per $1M of annual revenue. Higher = more data debt per dollar earned.",
          x = NULL, y = "Issues per $1M revenue",
          caption = "Source: sku_master_full, audit run 2026-05-03") +
@@ -430,7 +437,13 @@ p11_base <- function(use_interactive) {
               color = cinderhaven_palette$text) +
     scale_y_continuous(labels = percent_format(accuracy = 0.1),
                        expand = expansion(mult = c(0, 0.20))) +
-    labs(title    = "Below-average SKUs lose shelf slots at 7× the rate of above-average SKUs",
+    labs(title    = {
+           worst_rate <- c11_summary$mean_rate[c11_summary$quality_tier == "Worst 25%"]
+           best_rate  <- c11_summary$mean_rate[c11_summary$quality_tier == "Best 25%"]
+           ratio <- if (best_rate > 0) round(worst_rate / best_rate, 0) else Inf
+           sprintf("Worst-quarter SKUs lose shelf slots at %d× the rate of best-quarter SKUs",
+                   ratio)
+         },
          subtitle = "Deauthorization rate by data-quality tier",
          x        = NULL,
          y        = "Deauthorization rate",
@@ -451,11 +464,14 @@ current_cb_18mo <- sum(sku_master_full$chargeback_total)
 current_cb_per_year <- current_cb_18mo * 12 / 18
 current_revenue <- sum(sku_master_full$ttm_revenue)
 
+stage2_skus <- as.integer(ceiling(current_skus * 2.5))
+stage3_skus <- as.integer(current_skus * 5L)
+
 c12 <- tribble(
   ~scenario,        ~sku_count, ~retailer_count,
   paste0("Current (", current_skus, " SKUs, 4 retailers)"),   current_skus,         4L,
-  "Stage 2 (225 SKUs, 6 retailers)",  225L,                 6L,
-  "Stage 3 (450 SKUs, 8 retailers)",  450L,                 8L
+  sprintf("Stage 2 (%d SKUs, 6 retailers)", stage2_skus),     stage2_skus,          6L,
+  sprintf("Stage 3 (%d SKUs, 8 retailers)", stage3_skus),     stage3_skus,          8L
 ) |>
   mutate(scale_factor    = (sku_count / current_skus) *
                            (retailer_count / 4),
@@ -486,7 +502,8 @@ p12_base <- function(use_interactive) {
               vjust = -0.4, size = 4) +
     scale_y_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                        expand = expansion(mult = c(0, 0.16))) +
-    labs(title    = "Chargebacks scale to $587k if you grow without fixing the data",
+    labs(title    = sprintf("Chargebacks scale to %s if you grow without fixing the data",
+                           dollar_short(max(c12$proj_chargebacks))),
          subtitle = "Linear scaling of current chargeback rate by SKU count × retailer count. Assumes constant defect rate per SKU.",
          x = NULL, y = "Projected annual chargebacks",
          caption = paste0(
@@ -554,7 +571,8 @@ p13_base <- function(use_interactive) {
                        name = NULL,
                        breaks = c("Fail", "Pass")) +
     coord_fixed(clip = "off") +
-    labs(title    = "Twelve SKUs fail barcode validation — fails are the red dots",
+    labs(title    = sprintf("%d SKUs fail barcode validation — fails are the red dots",
+                           sum(c13_counts$n_fail)),
          subtitle = "Each dot is one SKU. Red = invalid check digit. Validator uses the dataset's mod-10 algorithm (see methodology).",
          x = NULL, y = NULL,
          caption = "Source: sku_dim") +
@@ -610,8 +628,16 @@ p14_base <- function(use_interactive) {
     scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
                                  `FALSE` = "#B0B0B0"),
                       guide = "none") +
-    labs(title    = "Three data-defect reasons account for 94% of chargeback dollars",
-         subtitle = "Three data-defect reasons (red) account for 93.7% of chargeback dollars.",
+    labs(title    = {
+           data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
+           sprintf("Three data-defect reasons account for %.0f%% of chargeback dollars",
+                   data_defect_pct)
+         },
+         subtitle = {
+           data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
+           sprintf("Three data-defect reasons (red) account for %.1f%% of chargeback dollars.",
+                   data_defect_pct)
+         },
          x = NULL, y = NULL,
          caption = "Source: chargebacks_enriched") +
     theme_cinderhaven()
@@ -768,8 +794,18 @@ p17_base <- function(use_interactive) {
     scale_y_continuous(labels = label_dollar(),
                        expand = expansion(mult = c(0.05, 0.20))) +
     coord_cartesian(clip = "off") +
-    labs(title    = "Chargebacks per SKU vary 2.8× depending on who entered the data",
-         subtitle = "Production-team uploads run at $513/SKU; broker and quality-manager uploads run at ~$1,440/SKU",
+    labs(title    = {
+           cpsku <- c17$chargeback_per_sku[!is.na(c17$chargeback_per_sku)]
+           spread <- if (min(cpsku) > 0) round(max(cpsku) / min(cpsku), 1) else Inf
+           sprintf("Chargebacks per SKU vary %.1f× depending on who entered the data",
+                   spread)
+         },
+         subtitle = {
+           prod_cpsku <- c17$chargeback_per_sku[c17$updated_by == "production_admin"]
+           worst_cpsku <- max(c17$chargeback_per_sku, na.rm = TRUE)
+           sprintf("Production-team uploads run at %s/SKU; worst source runs at %s/SKU",
+                   dollar_short(prod_cpsku), dollar_short(worst_cpsku))
+         },
          x = NULL,
          y = "Chargebacks per SKU",
          caption  = src_caption("Cinderhaven product master + chargeback ledger")) +
@@ -866,7 +902,7 @@ p20_base <- function(use_interactive) {
                                   "Pass" = cinderhaven_palette$text),
                        guide = "none") +
     geom_text(data = c20_lab,
-              aes(x = retailer, y = 95, label = label),
+              aes(x = retailer, y = nrow(raw$product_master) * 1.05, label = label),
               inherit.aes = FALSE, vjust = -0.6, size = 3.4,
               color = cinderhaven_palette$text, fontface = "bold") +
     scale_fill_manual(values = c("Fail" = cinderhaven_palette$red,

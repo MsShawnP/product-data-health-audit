@@ -1,5 +1,11 @@
 # Cinderhaven Product Data Readiness Audit — Full Report Prose
 
+> **Superseded.** This prose draft was written for the original 90-SKU dataset.
+> All hardcoded numbers (SKU counts, dollar amounts, table rows) are stale.
+> The authoritative version is `quarto/report.qmd`, which uses inline R
+> expressions to compute all values dynamically from the current 50-SKU dataset.
+> This file is retained as a process artifact only.
+
 ---
 
 ## Part 1: The Money
