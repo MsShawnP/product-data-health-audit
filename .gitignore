@@ -55,6 +55,7 @@ velocity-tool/
 R/_*
 working/
 inspect_db.py
+check_db.R
 
 # Shiny deployment metadata (account-specific, not portable).
 shiny/rsconnect/
