@@ -40,33 +40,7 @@ product_master   <- product_master   |> mutate(last_updated = ymd(last_updated))
 
 # ---- helpers --------------------------------------------------------------
 
-# Mod-10 check digit calculator.
-#
-# Note on the algorithm choice: the synthetic Cinderhaven dataset was generated
-# using EAN-13-style weights (1,3,1,3,... from the leftmost data digit) for both
-# GTIN-14 and UPC-A. This is non-standard for GTIN-14 — strict GS1 weights for a
-# 13-digit body are (3,1,3,1,...) from left — but matching the dataset's
-# generator is what lets us identify the SKUs the author deliberately corrupted.
-# Validating with the strict algorithm flags ~81% of SKUs (every record),
-# which would erase the signal the report needs to surface. The trade-off is
-# documented in the methodology appendix.
-mod10_check_digit <- function(body_digits) {
-  d <- as.integer(strsplit(body_digits, "")[[1]])
-  if (length(d) == 0 || any(is.na(d))) return(NA_integer_)
-  weights <- rep(c(1L, 3L), length.out = length(d))
-  s <- sum(d * weights)
-  (10L - (s %% 10L)) %% 10L
-}
-
-is_valid_check_digit <- function(code, expected_len) {
-  if (is.na(code) || nchar(code) != expected_len || !grepl("^[0-9]+$", code)) return(FALSE)
-  body  <- substr(code, 1, expected_len - 1)
-  check <- as.integer(substr(code, expected_len, expected_len))
-  identical(check, mod10_check_digit(body))
-}
-
-is_valid_gtin14 <- function(x) vapply(x, is_valid_check_digit, logical(1), expected_len = 14L)
-is_valid_upc12  <- function(x) vapply(x, is_valid_check_digit, logical(1), expected_len = 12L)
+source(file.path(ROOT, "R", "barcode_validators.R"))
 
 # Map sku_costs trade-spend wide cols to canonical retailer labels in `stores`.
 trade_spend_long <- sku_costs |>
@@ -101,20 +75,17 @@ sku_dim <- product_master |>
                                   lengths(strsplit(active_retailers, ";\\s*"))),
     days_since_update    = as.integer(max(last_updated, na.rm = TRUE) - last_updated)
   ) |>
-  rowwise() |>
   mutate(
-    issue_count = sum(c(
-      !isTRUE(gtin_valid),
-      !isTRUE(upc_valid),
-      isTRUE(missing_case_weight),
-      isTRUE(missing_case_dims),
-      isTRUE(missing_country),
-      isTRUE(missing_brand_owner),
-      !isTRUE(ows_complete),
-      isFALSE(weight_plausible)
-    ))
+    issue_count =
+      as.integer(is.na(gtin_valid) | !gtin_valid) +
+      as.integer(is.na(upc_valid)  | !upc_valid) +
+      as.integer(missing_case_weight) +
+      as.integer(missing_case_dims) +
+      as.integer(missing_country) +
+      as.integer(missing_brand_owner) +
+      as.integer(is.na(ows_complete) | !ows_complete) +
+      as.integer(!is.na(weight_plausible) & !weight_plausible)
   ) |>
-  ungroup() |>
   mutate(
     # 8 binary checks → quality score on 0-100 scale.
     data_quality_score = round(100 * (1 - issue_count / 8), 1)
@@ -219,16 +190,38 @@ evaluate_one <- function(field_name, sku_row) {
   )
 }
 
+# Pre-evaluate every known field for all SKUs at once, then join.
+field_evals <- sku_dim |>
+  transmute(
+    sku,
+    gtin14               = is_valid_gtin14(gtin14),
+    upc                  = is_valid_upc12(upc),
+    case_weight_lbs      = !is.na(case_weight_lbs),
+    case_length_in       = !is.na(case_length_in),
+    case_width_in        = !is.na(case_width_in),
+    case_height_in       = !is.na(case_height_in),
+    case_pack_qty        = !is.na(case_pack_qty),
+    unit_weight_lbs      = !is.na(unit_weight_lbs),
+    msrp                 = !is.na(msrp),
+    country_of_origin    = !(is.na(country_of_origin) | country_of_origin == ""),
+    brand_owner          = !(is.na(brand_owner) | brand_owner == ""),
+    serving_size         = !(is.na(serving_size) | serving_size == ""),
+    calories_per_serving = !is.na(calories_per_serving),
+    sodium_mg            = !is.na(sodium_mg),
+    total_fat_g          = !is.na(total_fat_g),
+    total_carb_g         = !is.na(total_carb_g),
+    protein_g            = !is.na(protein_g),
+    oneworldsync_status  = oneworldsync_status == "Registered - Complete"
+  ) |>
+  pivot_longer(-sku, names_to = "field", values_to = "passes") |>
+  mutate(passes = !is.na(passes) & passes)
+
 retailer_readiness_long <- crossing(
     sku_dim |> select(sku),
     required_fields
   ) |>
-  rowwise() |>
-  mutate(passes = {
-    sr <- sku_dim[sku_dim$sku == sku, ]
-    isTRUE(evaluate_one(field, sr))
-  }) |>
-  ungroup()
+  left_join(field_evals, by = c("sku", "field")) |>
+  mutate(passes = coalesce(passes, FALSE))
 
 retailer_readiness_summary <- retailer_readiness_long |>
   group_by(sku, retailer) |>
@@ -415,13 +408,21 @@ weekly_sku_retailer <- scan_with_retailer |>
   summarise(units = sum(units_sold),
             dollars = sum(dollars_sold), .groups = "drop")
 
+wsr_index <- split(weekly_sku_retailer,
+                    interaction(weekly_sku_retailer$sku,
+                                weekly_sku_retailer$retailer, drop = TRUE))
+
 promo_lift_one <- function(sk, rt, sw, ew) {
-  bl <- weekly_sku_retailer |>
-    filter(sku == sk, retailer == rt,
-           week_ending <  sw, week_ending >= sw - weeks(4))
-  pw <- weekly_sku_retailer |>
-    filter(sku == sk, retailer == rt,
-           week_ending >= sw, week_ending <= ew)
+  key <- paste(sk, rt, sep = ".")
+  chunk <- wsr_index[[key]]
+  if (is.null(chunk) || nrow(chunk) == 0) {
+    return(tibble(baseline_weeks = 0L, promo_weeks = 0L,
+                  baseline_units_per_wk = NA_real_,
+                  promo_units_per_wk    = NA_real_,
+                  lift_pct = NA_real_))
+  }
+  bl <- chunk[chunk$week_ending <  sw & chunk$week_ending >= sw - weeks(4), ]
+  pw <- chunk[chunk$week_ending >= sw & chunk$week_ending <= ew, ]
   bl_wk <- nrow(bl); pw_wk <- nrow(pw)
   bl_per_wk <- if (bl_wk == 0) NA_real_ else sum(bl$units) / bl_wk
   pw_per_wk <- if (pw_wk == 0) NA_real_ else sum(pw$units) / pw_wk
@@ -445,10 +446,7 @@ promo_effectiveness <- bind_cols(promotions, promo_lift_metrics) |>
 # ---- F12. velocity (SKU × retailer, 4-week / 12-week / prior-4-week) ------
 # Single source of truth consumed by the Excel workbook and the dashboard.
 
-scan_vel <- scan_data |>
-  mutate(week_ending = ymd(week_ending)) |>
-  left_join(stores |> select(store_id, retailer), by = "store_id") |>
-  filter(!is.na(retailer))
+scan_vel <- scan_with_retailer |> filter(!is.na(retailer))
 
 vel_last_week <- max(scan_vel$week_ending, na.rm = TRUE)
 vel_cut_4w    <- vel_last_week - weeks(4)
