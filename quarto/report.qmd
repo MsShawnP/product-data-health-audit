@@ -122,8 +122,8 @@ ds <- function(x) {
          paste0("$", formatC(round(x), big.mark = ",", format = "d")))
 }
 ds_short <- function(x) {
-  ifelse(abs(x) >= 1e6, sprintf("$%.1fM", x / 1e6),
-         ifelse(abs(x) >= 1e3, sprintf("$%.0fk", x / 1e3),
+  ifelse(abs(x) >= 999500, sprintf("$%.1fM", x / 1e6),
+         ifelse(abs(x) >= 1e3, paste0("$", formatC(round(x / 1e3), format = "d"), "k"),
                 paste0("$", formatC(round(x), big.mark = ",", format = "d"))))
 }
 fmt_d <- function(x) formatC(round(x), big.mark = ",", format = "d")
@@ -155,7 +155,8 @@ chp02_annual  <- round(chp02$chargeback_total * 12 / 18)
 chp02_monthly <- round(chp02$chargeback_total / 18)
 
 data_defect_pct <- cbe |>
-  mutate(is_data = !grepl("Late Delivery|Short Shipment", reason)) |>
+  mutate(is_data = !grepl("Late Delivery|Short Shipment", reason,
+                          ignore.case = TRUE)) |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
 non_data_annual <- round(annual_cb * (100 - data_defect_pct) / 100)
 
@@ -197,9 +198,10 @@ deauth_bottom <- smf |> filter(data_quality_score <= dq_median) |>
 deauth_top <- smf |> filter(data_quality_score > dq_median) |>
   summarise(rate = mean(deauth_rate, na.rm = TRUE), n = n(),
             n_any = sum(deauth_count > 0, na.rm = TRUE))
-deauth_ratio <- round(deauth_bottom$rate / deauth_top$rate, 1)
-shelf_loss_cost <- round((deauth_bottom$rate - deauth_top$rate) *
-                          deauth_bottom$n * deauth_bottom$mean_rev)
+deauth_ratio <- round(max(deauth_bottom$rate, 1e-9) /
+                      max(deauth_top$rate, 1e-9), 1)
+shelf_loss_cost <- max(0, round((deauth_bottom$rate - deauth_top$rate) *
+                                 deauth_bottom$n * deauth_bottom$mean_rev))
 total_annual_cost <- annual_cb + stalled_launch_cost + shelf_loss_cost
 
 entry_stats <- smf |>
@@ -208,8 +210,8 @@ entry_stats <- smf |>
             cb_per_sku = round(sum(chargeback_total, na.rm = TRUE) / n()),
             .groups = "drop") |>
   arrange(desc(cb_per_sku))
-n_unknown_source <- sum(smf$updated_by == "unknown", na.rm = TRUE)
-n_entry_paths <- n_distinct(smf$updated_by)
+n_unknown_source <- sum(is.na(smf$updated_by))
+n_entry_paths <- n_distinct(smf$updated_by, na.rm = FALSE)
 ```
 
 # Part 1: The Money
@@ -339,7 +341,7 @@ The cost of a deauthorization is not the lost revenue at that store. It is the c
 
 ## The `r ds(chp02_monthly)`-a-month problem nobody sees
 
-The `r n_gtin_fail` invalid GTIN check digits in Cinderhaven's product master have been wrong since the day each SKU was entered. The earliest was entered in June 2024. That was 23 months ago. In those 23 months, nobody corrected a single one of the nine digits. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
+The `r n_gtin_fail` invalid GTIN check digits in Cinderhaven's product master have been wrong since the day each SKU was entered. The earliest was entered in June 2024. That was 23 months ago. In those 23 months, nobody corrected a single one of those digits. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
 
 The chain of visibility works like this. A retailer's automated system validates the GTIN on an inbound shipment or a data feed submission. The check digit fails. The system generates a compliance penalty. The penalty appears as a line item on the next settlement statement, categorized under a heading like "vendor compliance deductions" or "data quality fines." The settlement statement is 40 pages long. It contains hundreds of line items. The compliance penalties are scattered across pages 12 through 30, interleaved with promotional deductions, logistics credits, and payment adjustments. An individual penalty is $200 to $400. It does not trigger an investigation. It does not cross an approval threshold. It does not generate an alert.
 
@@ -434,7 +436,11 @@ chp02_gtin_events <- cbe |>
   filter(sku == "CHP-0002",
          grepl("Invalid GTIN|Invalid UPC", reason, ignore.case = TRUE)) |>
   nrow()
-chp02_gtin_pct <- round(100 * chp02_gtin_events / max(chp02_events, 1))
+chp02_gtin_dollars <- cbe |>
+  filter(sku == "CHP-0002",
+         grepl("Invalid GTIN|Invalid UPC", reason, ignore.case = TRUE)) |>
+  summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
+chp02_gtin_pct <- round(100 * chp02_gtin_dollars / max(chp02$chargeback_total, 1))
 ```
 
 The defects are not complex. The GTIN-14 check digit is wrong. The brand owner field contains the two-character string "NA" instead of a company name. The OneWorldSync record was never created. The GTIN defect alone accounts for `r chp02_gtin_pct`% of CHP-0002's chargeback dollars. `r chp02_gtin_events` of the `r chp02_events` events trace to a single wrong digit in a single field.
@@ -515,7 +521,9 @@ Part 1 showed what data debt costs. This section is about where it comes from. F
 
 ```{r entry-source-detail}
 #| include: false
-es <- smf |> count(updated_by, name = "n") |> arrange(desc(n))
+es <- smf |>
+  mutate(updated_by = coalesce(updated_by, "unknown source")) |>
+  count(updated_by, name = "n") |> arrange(desc(n))
 es_desc <- paste(
   paste0(es$n, " by ", es$updated_by),
   collapse = ". "
@@ -529,7 +537,7 @@ There is no intake checklist. No required field set enforced at entry. No valida
 ```{r entry-source-table}
 #| results: asis
 es_tbl <- entry_stats |>
-  filter(updated_by != "unknown") |>
+  filter(!is.na(updated_by)) |>
   transmute(`Entry source` = updated_by,
             SKUs = n,
             `Chargebacks per SKU` = paste0("$", fmt_d(cb_per_sku)))
@@ -544,7 +552,7 @@ The two sources that produce materially better results share one characteristic 
 
 This is not fixable by training. Training addresses skill gaps. This is an attention gap. The fix is structural: a gate between data entry and the live product master. The broker intake checklist in the appendix defines eight fields that must be populated and validated before a SKU record can go live. It takes five minutes to fill out. But the checklist is not just for brokers. Every path into the product master needs the same front door because every path without one produces the same result.
 
-The `r n_unknown_source` SKUs with no recorded entry source at all are a separate finding. They represent a gap not just in data quality but in data governance. Nobody knows who entered these records. Nobody knows when. Nobody knows what process, if any, was followed. These nine SKUs are the clearest evidence that the product master is an unmanaged asset. It is the most important data system in the company, every retailer relationship, every chargeback, every velocity report, every shelf placement depends on it, and it has no owner, no process, and no audit trail.
+The `r n_unknown_source` SKUs with no recorded entry source at all are a separate finding. They represent a gap not just in data quality but in data governance. Nobody knows who entered these records. Nobody knows when. Nobody knows what process, if any, was followed. These `r n_unknown_source` SKUs are the clearest evidence that the product master is an unmanaged asset. It is the most important data system in the company, every retailer relationship, every chargeback, every velocity report, every shelf placement depends on it, and it has no owner, no process, and no audit trail.
 
 ## The products that matter most get the least attention
 
@@ -565,15 +573,17 @@ The fix does not require better data entry. It requires a list. Put the revenue 
 wm_pnl <- rpnl |> filter(retailer == "Walmart")
 wm_gross <- wm_pnl$gross_revenue
 wm_pct_of_total <- round(100 * wm_gross / total_ttm_rev)
-best_margin_ret <- rpnl |> arrange(desc(net_margin_pct_of_gross_revenue)) |> slice(1)
-worst_margin_ret <- rpnl |> arrange(net_margin_pct_of_gross_revenue) |> slice(1)
+contracted <- c("Walmart", "Costco", "UNFI", "Whole Foods")
+rpnl_contracted <- rpnl |> filter(retailer %in% contracted)
+best_margin_ret <- rpnl_contracted |> arrange(desc(net_margin_pct_of_gross_revenue)) |> slice(1)
+worst_margin_ret <- rpnl_contracted |> arrange(net_margin_pct_of_gross_revenue) |> slice(1)
 ```
 
 Walmart generates `r ds(wm_gross)` in gross revenue. That's `r wm_pct_of_total`% of the catalog. It is the largest channel by every gross metric. It is not the most profitable.
 
 ```{r retailer-margin-table}
 #| results: asis
-margin_tbl <- rpnl |>
+margin_tbl <- rpnl_contracted |>
   arrange(desc(net_margin_pct_of_gross_revenue)) |>
   transmute(Retailer = retailer,
             Gross = ds_short(gross_revenue),
@@ -696,9 +706,8 @@ About 30 minutes per SKU. `r n_missing_dims` SKUs, roughly `r dim_hours` hours t
 n_missing_country <- sum(smf$missing_country, na.rm = TRUE)
 n_missing_proddata <- sum(smf$missing_brand_owner | smf$missing_country |
                           !smf$ows_complete, na.rm = TRUE)
-proddata_cb_18mo <- cbe |>
-  filter(grepl("Missing product data", reason, ignore.case = TRUE)) |>
-  summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
+data_defect_cb_18mo <- total_cb_18mo * data_defect_pct / 100
+proddata_cb_18mo <- data_defect_cb_18mo - gtin_cb_18mo - dim_cb_18mo
 proddata_annual <- round(proddata_cb_18mo * 12 / 18)
 proddata_hours <- round(sum(
   smf$missing_brand_owner * 10 +
@@ -736,7 +745,7 @@ cat(kable(fix_tbl, format = "pipe", align = c("l", "r", "r", "r", "r")), sep = "
 gtin_pct_of_annual <- round(100 * gtin_annual / annual_cb)
 ```
 
-The asymmetry between cost and fix is the central finding of this report. Not the `r ds(total_annual_cost)` total. Not the Pareto concentration. Not the retailer readiness gaps. The asymmetry. The fact that a `r ds(total_ttm_rev)` company is losing `r ds(data_defect_annual)` a year in direct penalties because nobody has spent `r round(total_fix_hours)` hours on data entry. The fact that `r gtin_pct_of_annual`% of that cost sits in `r n_gtin_fail` fields that take `r gtin_fix_minutes` minutes to correct. The fact that those nine fields have been wrong for an average of 22 months while the charges accumulated in amounts too small to trigger investigation and too steady to ever stop.
+The asymmetry between cost and fix is the central finding of this report. Not the `r ds(total_annual_cost)` total. Not the Pareto concentration. Not the retailer readiness gaps. The asymmetry. The fact that a `r ds(total_ttm_rev)` company is losing `r ds(data_defect_annual)` a year in direct penalties because nobody has spent `r round(total_fix_hours)` hours on data entry. The fact that `r gtin_pct_of_annual`% of that cost sits in `r n_gtin_fail` fields that take `r gtin_fix_minutes` minutes to correct. The fact that those `r n_gtin_fail` fields have been wrong for an average of 22 months while the charges accumulated in amounts too small to trigger investigation and too steady to ever stop.
 
 ## What's still broken right now
 
