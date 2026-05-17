@@ -1,5 +1,10 @@
 # Executive Tearsheet — Cinderhaven Product Data Readiness
 
+> **Superseded.** This prose draft was written for the original 90-SKU dataset.
+> All hardcoded numbers are stale. The authoritative version is
+> `quarto/tearsheet.qmd`, which computes all values dynamically from the
+> current 50-SKU dataset. This file is retained as a process artifact only.
+
 ---
 
 ## Page 1

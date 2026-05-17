@@ -107,7 +107,7 @@ p1 <- ggplot(cb_p, aes(rank, cum_pct)) +
   scale_x_continuous(breaks = pretty_breaks(),
                      expand = expansion(mult = c(0.01, 0.02))) +
 
-  labs(title    = "Five SKUs drive half your chargeback bill",
+  labs(title    = sprintf("%d SKUs drive half your chargeback bill", n50),
        subtitle = "Cumulative share of chargeback dollars by SKU rank, 18 months",
        x        = "SKUs ranked from highest chargeback total to lowest",
        y        = NULL,
@@ -314,19 +314,9 @@ save_chart(p3, "03_retailer_net_margin", w = 10, h = 5)
 
 cat("\n[4/4] Fix ROI\n")
 
-# Numbers come from chargebacks_enriched (canonical source):
-#   Invalid GTIN/UPC reason category:    $54,488 over 18 months  → $36,325/yr
-#   Missing product data reason:         $24,844 over 18 months  → $16,563/yr
-#   Dimension mismatch reason:           $17,585 over 18 months  → $11,723/yr
-#
-# Effort estimates (assumptions stated inline in the methodology):
-#   12 invalid barcodes (9 GTIN-14 + 3 UPC-12) × ~10 min: ~2.0 hours
-#   ~30 SKUs missing product fields × ~30 min:           ~15.0 hours
-#   29 SKUs missing case dimensions × ~30 min:           ~14.5 hours
-#
-# The rebuild plan referenced "2 hours, $14,114/hour" as the GTIN claim;
-# that per-hour figure is from an earlier database snapshot. With the
-# current canonical numbers, the same 2-hour effort yields ~$18.2k/hour.
+# Numbers come from chargebacks_enriched (canonical source) and
+# sku_master_full (defect counts). Effort-per-defect minutes are from
+# the methodology appendix; SKU counts and hours are computed from data.
 
 reason_amts <- chargebacks_e |>
   group_by(reason) |>
@@ -337,11 +327,31 @@ amt_18 <- function(r) {
   if (length(v) == 0) 0 else v
 }
 
+n_barcode_skus <- sum(!sku_master_full$gtin_valid | !sku_master_full$upc_valid, na.rm = TRUE)
+barcode_hours  <- sum((!sku_master_full$gtin_valid) * 10 +
+                      (!sku_master_full$upc_valid)  * 10, na.rm = TRUE) / 60
+
+n_proddata_skus <- sum(sku_master_full$missing_brand_owner |
+                       sku_master_full$missing_country |
+                       !sku_master_full$ows_complete, na.rm = TRUE)
+proddata_hours  <- sum(sku_master_full$missing_brand_owner * 10 +
+                       sku_master_full$missing_country     * 30 +
+                       (!sku_master_full$ows_complete)     * 30, na.rm = TRUE) / 60
+
+n_dim_skus <- sum(sku_master_full$missing_case_dims |
+                  sku_master_full$missing_case_weight, na.rm = TRUE)
+dim_hours  <- sum((sku_master_full$missing_case_dims |
+                   sku_master_full$missing_case_weight) * 30 +
+                  (!is.na(sku_master_full$weight_plausible) &
+                   !sku_master_full$weight_plausible)   * 15, na.rm = TRUE) / 60
+
 fix_roi <- tibble(
-  action = c("Fix invalid barcodes — 45 SKUs",
-             "Complete missing product data — ~18 SKUs",
-             "Reconcile case dimensions — 18 SKUs"),
-  hours  = c(2.0, 15.0, 14.5),
+  action = c(sprintf("Fix invalid barcodes — %d SKUs", n_barcode_skus),
+             sprintf("Complete missing product data — %d SKUs", n_proddata_skus),
+             sprintf("Reconcile case dimensions — %d SKUs", n_dim_skus)),
+  hours  = c(round(barcode_hours, 1),
+             round(proddata_hours, 1),
+             round(dim_hours, 1)),
   amt_18mo = c(amt_18("Invalid GTIN/UPC"),
                amt_18("Missing product data"),
                amt_18("Dimension mismatch"))
@@ -368,7 +378,8 @@ p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   scale_x_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                      expand = expansion(mult = c(0, 0.65))) +
 
-  labs(title    = "Two hours of barcode fixes eliminate half your chargeback bill",
+  labs(title    = sprintf("%.0f hours of barcode fixes eliminate half your chargeback bill",
+                          barcode_hours),
        subtitle = "Annualized chargeback dollars saved per hour of effort, by fix action",
        x        = "Saved per hour of effort",
        y        = NULL,
