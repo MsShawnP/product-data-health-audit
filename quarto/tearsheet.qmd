@@ -89,26 +89,57 @@ knitr:
 ```{r setup}
 #| include: false
 suppressPackageStartupMessages({
-  library(dplyr); library(knitr)
+  library(dplyr); library(knitr); library(scales)
 })
 smf <- readRDS("../output/frames/sku_master_full.rds")
+rrs <- readRDS("../output/frames/retailer_readiness_summary.rds")
+cbe <- readRDS("../output/frames/chargebacks_enriched.rds")
+
+n_skus <- nrow(smf)
+total_cb_18mo <- sum(smf$chargeback_total, na.rm = TRUE)
+annual_cb <- round(total_cb_18mo * 12 / 18)
+total_ttm_rev <- sum(smf$ttm_revenue, na.rm = TRUE)
+
+wm_readiness <- rrs |> filter(retailer == "Walmart") |>
+  summarise(n_fail = sum(!overall_pass), n_total = n(),
+            pass_rate = mean(overall_pass))
+wm_fail <- wm_readiness$n_fail[1]
+wm_rev_at_risk <- smf |>
+  semi_join(rrs |> filter(retailer == "Walmart", !overall_pass),
+            by = "sku") |>
+  summarise(rev = sum(ttm_revenue, na.rm = TRUE)) |> pull(rev)
+wm_rev_pct <- round(100 * wm_rev_at_risk / total_ttm_rev)
+
+n_gtin_fail <- sum(!smf$gtin_valid, na.rm = TRUE)
+
+ds <- function(x) {
+  if (abs(x) >= 1e6) sprintf("%.1f million", x / 1e6)
+  else if (abs(x) >= 1e3) sprintf("%.0f,000", x / 1e3)
+  else formatC(round(x), big.mark = ",", format = "d")
+}
+
+stage3_skus <- n_skus * 5L
+stage3_retailers <- 8L
+stage3_cb <- round(annual_cb * (stage3_skus / n_skus) * (stage3_retailers / 4))
+
+total_fix_hours <- sum(smf$est_fix_hours, na.rm = TRUE)
 ```
 
 ## The price of poor housekeeping
 
-\stat{\$361,000 per year} in quantifiable cost from product data defects. That breaks into \$59,000 in retailer chargebacks, \$234,000 in revenue lost to stalled launches, and \$68,000 in shelf loss from deauthorizations linked to data quality. Together, that is 12% of EBITDA.
+\stat{\$`r ds(annual_cb)` per year} in retailer chargebacks from product data defects, plus stalled-launch revenue loss and shelf loss from deauthorizations linked to data quality.
 
-\stat{\$18.2 million in revenue at risk} at Walmart. Fifty of 90 SKUs fail Walmart's required-field check today. Those 50 carry 71% of the catalog's trailing twelve-month revenue. Costco, UNFI, and Whole Foods have similar gaps at lower thresholds.
+\stat{\$`r ds(wm_rev_at_risk)` in revenue at risk} at Walmart. `r wm_fail` of `r n_skus` SKUs fail Walmart's required-field check today. Those `r wm_fail` carry `r wm_rev_pct`% of the catalog's trailing twelve-month revenue. Costco, UNFI, and Whole Foods have similar gaps at lower thresholds.
 
-\stat{\$587,000 in projected annual chargebacks} at the growth target of \$55 million in revenue, if current defect rates hold. Each new SKU and each new retailer adds to the chargeback surface independently. The projection is linear. In practice, defect rates tend to worsen during rapid growth because data entry processes that strain at 90 SKUs break at 225.
+\stat{\$`r ds(stage3_cb)` in projected annual chargebacks} at the growth target, if current defect rates hold. Each new SKU and each new retailer adds to the chargeback surface independently. The projection is linear. In practice, defect rates tend to worsen during rapid growth because data entry processes that strain at `r n_skus` SKUs break at `r n_skus * 5`.
 
 ## The compliance deadline
 
-GS1 Sunrise 2027 transitions American retail barcodes to 2D codes built on validated GTINs. FSMA Rule 204 makes accurate GTINs a federal food traceability requirement. Nine of 90 SKUs carry GTINs that fail algorithmic validation today. Both deadlines are already in motion. A company that cannot pass a check digit calculation on its barcodes cannot participate in either transition.
+GS1 Sunrise 2027 transitions American retail barcodes to 2D codes built on validated GTINs. FSMA Rule 204 makes accurate GTINs a federal food traceability requirement. `r n_gtin_fail` of `r n_skus` SKUs carry GTINs that fail algorithmic validation today. Both deadlines are already in motion. A company that cannot pass a check digit calculation on its barcodes cannot participate in either transition.
 
 ## Summary
 
-The defining feature of this problem is the asymmetry between cost and fix. The catalog loses \$361,000 a year. Correcting every data defect that generates chargebacks takes 27 hours of data entry. The defects have been present for an average of 22 months. The connection between the defects and the charges has never been visible until this audit.
+The defining feature of this problem is the asymmetry between cost and fix. Correcting every data defect that generates chargebacks takes `r round(total_fix_hours)` hours of data entry. The defects have been present for months. The connection between the defects and the charges has never been visible until this audit.
 
 ::: {layout-ncol=3}
 ![Chargeback Pareto](../output/charts/01_chargeback_pareto.png){fig-alt="Pareto curve: 5 SKUs drive 50% of chargeback dollars; 15 drive 80%."}
@@ -180,7 +211,7 @@ CHP-0002, Spicy Arrabbiata, is the highest-revenue SKU in the catalog (\$2.71 mi
 
 ## A 14-day turnaround
 
-- **Day 1:** Correct the nine invalid GTIN check digits. Ninety minutes. Eliminates 60% of chargeback dollars.
-- **Week 1:** Complete the remaining missing fields across the catalog: case dimensions, brand owner, country of origin (26 hours). This eliminates the rest of the data-defect chargebacks and brings all 90 SKUs to passing status at all four contracted retailers.
+- **Day 1:** Correct the `r n_gtin_fail` invalid GTIN check digits. `r round(n_gtin_fail * 10)` minutes. Eliminates the largest single category of chargeback dollars.
+- **Week 1:** Complete the remaining missing fields across the catalog: case dimensions, brand owner, country of origin. This eliminates the rest of the data-defect chargebacks and brings all `r n_skus` SKUs to passing status at all four contracted retailers.
 - **Week 2:** Implement the broker intake checklist as a required gate on every data entry path. Deploy the Monday Morning Dashboard to replace the manual velocity report. Establish a monthly 30-minute data quality review.
 - **Result:** Chargebacks from data defects drop to zero. The ops team recovers 15 to 20 hours per month of manual reconciliation. The product master supports GS1 Sunrise 2027 compliance, FSMA Rule 204 traceability, and retailer expansion to \$55 million without compounding data debt.
