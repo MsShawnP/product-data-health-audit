@@ -158,38 +158,6 @@ retailer_chargebacks <- chargebacks |>
 # against each rule for each retailer that has rules.
 required_fields <- retailer_requirements |> filter(required == 1)
 
-# For fields we model directly, write the pass test inline. For other
-# fields (rare), default to: "field exists on product_master & is non-NA".
-field_is_present <- function(sku_row, field_name) {
-  if (!field_name %in% names(sku_row)) return(NA)  # rule references unknown field
-  v <- sku_row[[field_name]]
-  !(is.na(v) || (is.character(v) && (v == "" | trimws(v) == "")))
-}
-
-evaluate_one <- function(field_name, sku_row) {
-  switch(field_name,
-    gtin14            = is_valid_gtin14(sku_row$gtin14),
-    upc               = is_valid_upc12(sku_row$upc),
-    case_weight_lbs   = !is.na(sku_row$case_weight_lbs),
-    case_length_in    = !is.na(sku_row$case_length_in),
-    case_width_in     = !is.na(sku_row$case_width_in),
-    case_height_in    = !is.na(sku_row$case_height_in),
-    case_pack_qty     = !is.na(sku_row$case_pack_qty),
-    unit_weight_lbs   = !is.na(sku_row$unit_weight_lbs),
-    msrp              = !is.na(sku_row$msrp),
-    country_of_origin = !(is.na(sku_row$country_of_origin) | sku_row$country_of_origin == ""),
-    brand_owner       = !(is.na(sku_row$brand_owner)       | sku_row$brand_owner == ""),
-    serving_size      = !(is.na(sku_row$serving_size)      | sku_row$serving_size == ""),
-    calories_per_serving = !is.na(sku_row$calories_per_serving),
-    sodium_mg         = !is.na(sku_row$sodium_mg),
-    total_fat_g       = !is.na(sku_row$total_fat_g),
-    total_carb_g      = !is.na(sku_row$total_carb_g),
-    protein_g         = !is.na(sku_row$protein_g),
-    oneworldsync_status = sku_row$oneworldsync_status == "Registered - Complete",
-    field_is_present(sku_row, field_name)  # default
-  )
-}
-
 # Pre-evaluate every known field for all SKUs at once, then join.
 field_evals <- sku_dim |>
   transmute(

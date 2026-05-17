@@ -67,6 +67,11 @@ jobs:
       - name: Restore R packages
         uses: r-lib/actions/setup-renv@v2
 
+      - name: Run tests
+        run: Rscript tests/test_mod10.R
+        env:
+          PROJECT_ROOT: ${{ github.workspace }}
+
       - name: Run pipeline
         run: Rscript R/run_all.R
         env:

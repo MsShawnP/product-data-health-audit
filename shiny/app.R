@@ -659,7 +659,6 @@ server <- function(input, output, session) {
     v <- inp()
     cc <- cc()
     failing  <- round(v$N * (1 - v$P))
-    rev_M    <- v$N * v$A / 1e6
     density  <- debt_density(v$N, v$C, v$A)
     band     <- density_band(density)
     days_gs1 <- as.numeric(GS1_SUNRISE - TODAY)

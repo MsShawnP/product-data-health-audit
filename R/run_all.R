@@ -133,23 +133,22 @@ if (!nzchar(quarto_exe)) {
     })
     for (i in seq_along(procs)) {
       procs[[i]]$wait()
+      rc <- procs[[i]]$get_exit_status()
       j <- pdf_jobs[[i]]
       base_dir <- if (is.null(j$out_dir)) file.path(ROOT, dirname(j$qmd))
                   else normalizePath(file.path(ROOT, dirname(j$qmd), j$out_dir),
                                       mustWork = FALSE)
       out_file <- file.path(base_dir, j$out)
-      if (file.exists(out_file)) {
+      if ((is.null(rc) || rc == 0) && file.exists(out_file)) {
         cat(sprintf("  %s OK (%.0f KB)\n", j$out,
                     file.info(out_file)$size / 1024))
       } else {
-        cat(sprintf("  %s FAILED — check Quarto output\n", j$out))
+        err <- procs[[i]]$read_error_lines()
+        cat(sprintf("  %s FAILED (exit %s)\n", j$out,
+                    if (is.null(rc)) "?" else rc))
+        if (length(err)) cat(paste("    ", err, collapse = "\n"), "\n")
       }
     }
-  } else if (requireNamespace("parallel", quietly = TRUE) &&
-             .Platform$OS.type != "windows") {
-    parallel::mclapply(pdf_jobs, function(j) {
-      render_qmd(j$qmd, j$fmt, j$out, j$out_dir)
-    }, mc.cores = 3L)
   } else {
     for (j in pdf_jobs) render_qmd(j$qmd, j$fmt, j$out, j$out_dir)
   }
