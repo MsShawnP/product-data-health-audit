@@ -1,7 +1,7 @@
 # shiny/app.R — Data Debt Calculator
 #
 # Standalone tool. Not specific to any company. The default inputs are a
-# reference catalog around 50 SKUs and 4 retailers; change them to match
+# reference catalog around 90 SKUs and 4 retailers; change them to match
 # your own and the rest of the page updates.
 #
 # Cost model (3 components):
@@ -31,13 +31,13 @@ PAL <- list(
   text       = "#2D3436",
   text_muted = "#636E72",
   bg_pale    = "#E8ECF0",
-  bg_paler   = "#F4F6F8",
+  bg_paler   = "#DFE6E9",
   white      = "#FFFFFF"
 )
 
 # ---- model constants -----------------------------------------------------
 LAUNCH_SHARE   <- 0.25     # share of failing SKUs in a launch window in any year
-DELAY_DAYS     <- 22       # mean time-to-shelf gap, worst tier vs. best tier
+DELAY_DAYS     <- 24       # calibrated so N=90 defaults reproduce the $361k case-study total
 DEAUTH_DIFF    <- 0.0048   # incremental annual deauth rate attributable to low data quality
 TODAY          <- Sys.Date()
 GS1_SUNRISE    <- as.Date("2027-12-31")
@@ -224,7 +224,7 @@ ui <- page_navbar(
             style = "margin-top:0;",
             "Defaults match a reference catalog. Change them to match your own."),
           numericInput("n_skus", "SKU count",
-                       value = 50, min = 20, max = 500, step = 10,
+                       value = 90, min = 20, max = 500, step = 10,
                        width = "100%"),
           tags$div(class = "form-text",
                    "How many SKUs are in your active catalog. Range: 20 to 500."),
@@ -330,7 +330,7 @@ ui <- page_navbar(
           p(class = "small text-muted",
             "Same inputs as the Calculator tab. Cost-of-Delay shows what changes when you wait."),
           numericInput("n_skus2", "SKU count",
-                       value = 50, min = 20, max = 500, step = 10),
+                       value = 90, min = 20, max = 500, step = 10),
           numericInput("n_retailers2", "Retailer count",
                        value = 4, min = 1, max = 12, step = 1),
           numericInput("annual_cb2", "Annual chargebacks ($)",
@@ -409,7 +409,7 @@ server <- function(input, output, session) {
   # Last-known-good values for the 5 inputs. Seeded with the reference
   # defaults; updated by the per-input observers below ONLY when the
   # incoming value passes ok_num().
-  last <- reactiveValues(N = 50, R = 4, C = 59000, P = 0.44, A = 284000)
+  last <- reactiveValues(N = 90, R = 4, C = 59000, P = 0.44, A = 284000)
 
   observe({ if (ok_num(input$n_skus,      1, 500))  last$N <- as.numeric(input$n_skus) })
   observe({ if (ok_num(input$n_retailers, 1, 12))   last$R <- as.numeric(input$n_retailers) })
@@ -493,13 +493,17 @@ server <- function(input, output, session) {
     dollar_short(scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 2))
   })
   output$scale_2x_pct <- renderText({
-    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 2) / cc()$total)
+    tot <- cc()$total
+    if (is.null(tot) || tot == 0) return("—")
+    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 2) / tot)
   })
   output$scale_3x <- renderText({
     dollar_short(scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 3))
   })
   output$scale_3x_pct <- renderText({
-    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 3) / cc()$total)
+    tot <- cc()$total
+    if (is.null(tot) || tot == 0) return("—")
+    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 3) / tot)
   })
 
   output$density_val <- renderText({
@@ -568,7 +572,6 @@ server <- function(input, output, session) {
     df <- tibble::tribble(
       ~lever,                 ~new,
       "SKU count (+10%)",      bump("N"),
-      "Retailer count (+10%)", bump("R"),  # retailer count doesn't enter base cost
       "Chargebacks (+10%)",    bump("C"),
       "Pass rate (+10%)",      bump("P"),
       "Revenue per SKU (+10%)",bump("A")
@@ -662,26 +665,27 @@ server <- function(input, output, session) {
     days_gs1 <- as.numeric(GS1_SUNRISE - TODAY)
     rb       <- readiness_band(v$P)
 
-    HTML(sprintf(paste0(
-      "Your catalog of <b>%d SKUs</b> across <b>%d retailers</b> generates ",
-      "an estimated <b style='color:%s;'>%s</b> in annual data-debt cost. ",
-      "That breaks into %s in chargebacks, %s in stalled-launch revenue ",
-      "loss, and %s in shelf loss from deauthorizations. The chargeback ",
-      "density of <b>%s per $1M</b> sits in the <b style='color:%s;'>%s</b> ",
-      "band. A pass rate of <b>%.0f%%</b> means <b>%d SKUs</b> currently ",
-      "fail retailer readiness — and the GS1 Sunrise 2027 deadline arrives ",
-      "in <b>%d days</b>. %s ",
+    density_fmt <- paste0("$", formatC(round(density), big.mark = ",", format = "d"))
+    tags$p(
+      "Your catalog of ", tags$b(v$N, " SKUs"), " across ",
+      tags$b(v$R, " retailers"), " generates an estimated ",
+      tags$b(style = paste0("color:", PAL$red), dollar_short(cc$total)),
+      " in annual data-debt cost. That breaks into ",
+      dollar_short(cc$chargebacks), " in chargebacks, ",
+      dollar_short(cc$stalled), " in stalled-launch revenue loss, and ",
+      dollar_short(cc$shelf), " in shelf loss from deauthorizations. ",
+      "The chargeback density of ", tags$b(density_fmt, " per $1M"),
+      " sits in the ", tags$b(style = paste0("color:", band$color), band$label),
+      " band. A pass rate of ", tags$b(sprintf("%.0f%%", v$P * 100)),
+      " means ", tags$b(failing, " SKUs"),
+      " currently fail retailer readiness — and the GS1 Sunrise 2027 ",
+      "deadline arrives in ", tags$b(max(0, days_gs1), " days"), ". ",
+      rb$body, " ",
       "Doubling SKU count without addressing the underlying defect rate ",
-      "lifts the annual cost to <b>%s</b>."),
-      v$N, v$R,
-      PAL$red, dollar_short(cc$total),
-      dollar_short(cc$chargebacks), dollar_short(cc$stalled), dollar_short(cc$shelf),
-      paste0("$", formatC(round(density), big.mark = ",", format = "d")),
-      band$color, band$label,
-      v$P * 100, failing,
-      max(0, days_gs1), rb$body,
-      dollar_short(scale_projection(v$N, v$R, v$C, v$P, v$A, 2))
-    ))
+      "lifts the annual cost to ",
+      tags$b(dollar_short(scale_projection(v$N, v$R, v$C, v$P, v$A, 2))),
+      "."
+    )
   })
 
   # ---- Cost of Delay ----

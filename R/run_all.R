@@ -123,8 +123,30 @@ if (!nzchar(quarto_exe)) {
          fmt = "pdf", out = "scorecard.pdf", out_dir = "../output")
   )
 
-  if (requireNamespace("parallel", quietly = TRUE) &&
-      .Platform$OS.type != "windows") {
+  if (requireNamespace("processx", quietly = TRUE)) {
+    cat("  (rendering 3 PDFs in parallel via processx)\n")
+    procs <- lapply(pdf_jobs, function(j) {
+      qmd <- file.path(ROOT, j$qmd)
+      args <- c("render", qmd, "--to", j$fmt)
+      if (!is.null(j$out_dir)) args <- c(args, "--output-dir", j$out_dir)
+      processx::process$new(quarto_exe, args, stdout = "|", stderr = "|")
+    })
+    for (i in seq_along(procs)) {
+      procs[[i]]$wait()
+      j <- pdf_jobs[[i]]
+      base_dir <- if (is.null(j$out_dir)) file.path(ROOT, dirname(j$qmd))
+                  else normalizePath(file.path(ROOT, dirname(j$qmd), j$out_dir),
+                                      mustWork = FALSE)
+      out_file <- file.path(base_dir, j$out)
+      if (file.exists(out_file)) {
+        cat(sprintf("  %s OK (%.0f KB)\n", j$out,
+                    file.info(out_file)$size / 1024))
+      } else {
+        cat(sprintf("  %s FAILED — check Quarto output\n", j$out))
+      }
+    }
+  } else if (requireNamespace("parallel", quietly = TRUE) &&
+             .Platform$OS.type != "windows") {
     parallel::mclapply(pdf_jobs, function(j) {
       render_qmd(j$qmd, j$fmt, j$out, j$out_dir)
     }, mc.cores = 3L)
