@@ -332,12 +332,15 @@ reason_amts <- chargebacks_e |>
   group_by(reason) |>
   summarise(amt_18mo = sum(amount), .groups = "drop")
 
-amt_18 <- function(r) reason_amts$amt_18mo[reason_amts$reason == r]
+amt_18 <- function(r) {
+  v <- reason_amts$amt_18mo[reason_amts$reason == r]
+  if (length(v) == 0) 0 else v
+}
 
 fix_roi <- tibble(
-  action = c("Fix invalid barcodes — 12 SKUs",
-             "Complete missing product data — ~30 SKUs",
-             "Reconcile case dimensions — 29 SKUs"),
+  action = c("Fix invalid barcodes — 45 SKUs",
+             "Complete missing product data — ~18 SKUs",
+             "Reconcile case dimensions — 18 SKUs"),
   hours  = c(2.0, 15.0, 14.5),
   amt_18mo = c(amt_18("Invalid GTIN/UPC"),
                amt_18("Missing product data"),
