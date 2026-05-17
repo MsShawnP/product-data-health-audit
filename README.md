@@ -6,7 +6,7 @@ Cinderhaven Provisions is a $25 million specialty food brand with 90 SKUs, 3 pro
 
 ## Why now
 
-GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D barcodes. FSMA 204 traceability rules are already being enforced by Walmart and Albertsons via contract, ahead of the July 2028 federal deadline. Most specialty food companies don't know which of their SKUs will fail. This audit finds out — and quantifies what dirty data is already costing.
+GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D barcodes — the deadline is confirmed with no extension. But the federal timeline is already beside the point: Walmart began enforcing FSMA 204-style traceability requirements on August 1, 2025. Kroger's deadline passed June 30, 2025. Over 70 retailers have announced their own traceability programs, and nearly half require compliance for all foods — not just the FDA's Food Traceability List. Most specialty food companies don't know which of their SKUs will fail these requirements. This audit finds out — and quantifies what dirty data is already costing.
 
 ## What this produces
 

@@ -351,6 +351,11 @@ ui <- page_navbar(
                  "deauthorize SKUs that fail their checks, and the per-SKU ",
                  "remediation cost rises as the GS1 Sunrise 2027 deadline ",
                  "approaches and emergency-rate fixes become the only option."),
+          tags$p(style = paste0("color:", PAL$text_muted, "; max-width:60ch;"),
+                 "Major retailers aren't waiting for federal deadlines. ",
+                 "Walmart and Kroger began enforcing traceability requirements ",
+                 "in 2025. Over 70 retailers have announced compliance ",
+                 "programs with timelines ahead of the FDA's."),
 
           tags$hr(),
 
