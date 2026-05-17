@@ -31,7 +31,7 @@ PAL <- list(
   text       = "#2D3436",
   text_muted = "#636E72",
   bg_pale    = "#E8ECF0",
-  bg_paler   = "#F4F6F8",
+  bg_paler   = "#DFE6E9",
   white      = "#FFFFFF"
 )
 
@@ -493,13 +493,17 @@ server <- function(input, output, session) {
     dollar_short(scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 2))
   })
   output$scale_2x_pct <- renderText({
-    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 2) / cc()$total)
+    tot <- cc()$total
+    if (is.null(tot) || tot == 0) return("—")
+    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 2) / tot)
   })
   output$scale_3x <- renderText({
     dollar_short(scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 3))
   })
   output$scale_3x_pct <- renderText({
-    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 3) / cc()$total)
+    tot <- cc()$total
+    if (is.null(tot) || tot == 0) return("—")
+    sprintf("%.1fx today's total", scale_projection(inp()$N, inp()$R, inp()$C, inp()$P, inp()$A, 3) / tot)
   })
 
   output$density_val <- renderText({
@@ -568,7 +572,6 @@ server <- function(input, output, session) {
     df <- tibble::tribble(
       ~lever,                 ~new,
       "SKU count (+10%)",      bump("N"),
-      "Retailer count (+10%)", bump("R"),  # retailer count doesn't enter base cost
       "Chargebacks (+10%)",    bump("C"),
       "Pass rate (+10%)",      bump("P"),
       "Revenue per SKU (+10%)",bump("A")

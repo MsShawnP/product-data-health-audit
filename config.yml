@@ -23,7 +23,3 @@ audit:
 
 data:
   output_prefix: "cinderhaven"
-
-shiny:
-  delay_days: 22
-  deauth_diff: 0.0048
