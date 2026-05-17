@@ -93,7 +93,7 @@ knitr:
 ```{r setup}
 #| include: false
 suppressPackageStartupMessages({
-  library(dplyr); library(knitr); library(scales)
+  library(dplyr); library(knitr); library(scales); library(lubridate)
 })
 
 smf  <- readRDS("../output/frames/sku_master_full.rds")
@@ -118,13 +118,13 @@ mean_dq_top15 <- smf |> arrange(desc(ttm_revenue)) |> slice(1:15) |>
   summarise(m = round(mean(data_quality_score, na.rm = TRUE), 1)) |> pull(m)
 
 ds <- function(x) {
-  if (abs(x) >= 1e6) sprintf("$%.1f million", x / 1e6)
-  else paste0("$", formatC(round(x), big.mark = ",", format = "d"))
+  ifelse(abs(x) >= 1e6, sprintf("$%.1f million", x / 1e6),
+         paste0("$", formatC(round(x), big.mark = ",", format = "d")))
 }
 ds_short <- function(x) {
-  if (abs(x) >= 1e6) sprintf("$%.1fM", x / 1e6)
-  else if (abs(x) >= 1e3) sprintf("$%.0fk", x / 1e3)
-  else paste0("$", formatC(round(x), big.mark = ",", format = "d"))
+  ifelse(abs(x) >= 1e6, sprintf("$%.1fM", x / 1e6),
+         ifelse(abs(x) >= 1e3, sprintf("$%.0fk", x / 1e3),
+                paste0("$", formatC(round(x), big.mark = ",", format = "d"))))
 }
 fmt_d <- function(x) formatC(round(x), big.mark = ",", format = "d")
 
@@ -170,10 +170,10 @@ n_50pct <- which(smf_ranked$cum_pct >= 0.50)[1]
 n_80pct <- which(smf_ranked$cum_pct >= 0.80)[1]
 
 quality_tiers <- smf |>
-  mutate(tier = cut(data_quality_score,
-    quantile(data_quality_score, c(0, 0.25, 0.5, 0.75, 1), na.rm = TRUE),
-    labels = c("Worst 25%", "Below average", "Above average", "Best 25%"),
-    include.lowest = TRUE)) |>
+  mutate(tier = ntile(data_quality_score, 4),
+         tier = factor(tier, levels = 1:4,
+                       labels = c("Worst 25%", "Below average",
+                                  "Above average", "Best 25%"))) |>
   group_by(tier) |>
   summarise(mean_days = round(mean(mean_days_to_scan, na.rm = TRUE)),
             .groups = "drop")
@@ -443,7 +443,9 @@ In five of the 18 months, all four contracted retailers flagged CHP-0002 in the 
 
 CHP-0002 would fail every retailer's required-field check today. Not one. All four. The product is authorized at 774 stores and its data would not survive the onboarding process at any of them if it were submitted fresh. It was authorized before the checks existed or before they were enforced at their current stringency. It survives on inertia, not on data quality.
 
-The contrast is instructive. ```{r chp02-vs-chp20}
+The contrast is instructive.
+
+```{r chp02-vs-chp20}
 #| include: false
 chp20 <- smf |> filter(sku == "CHP-0020")
 chp20_events <- cbe |> filter(sku == "CHP-0020") |> nrow()
@@ -640,7 +642,9 @@ pl_ratio_pct <- round(100 * (worst_pl$ipm / best_pl$ipm - 1))
 
 `r worst_pl$product_line` carries `r pl_ratio_pct`% more data issues per dollar of revenue than `r best_pl$product_line`. The two worst lines are close enough to treat as one cleanup tier. But Artisan Sauces is meaningfully better across every metric.
 
-The obvious hypothesis is that Artisan Sauces routes through a better data entry process. It doesn't. The cross-tab between product line and entry source shows Artisan Sauces actually over-indexes on quality_mgr, ```{r qm-cb}
+The obvious hypothesis is that Artisan Sauces routes through a better data entry process. It doesn't. The cross-tab between product line and entry source shows Artisan Sauces actually over-indexes on quality_mgr,
+
+```{r qm-cb}
 #| include: false
 qm_cb <- entry_stats |> filter(updated_by == "quality_mgr") |> pull(cb_per_sku)
 ```
@@ -673,7 +677,9 @@ Those `r n_gtin_fail` SKUs generated `r ds(gtin_cb_18mo)` in chargebacks over 18
 
 `r gtin_fix_minutes` minutes of data entry. `r ds(gtin_annual)` a year. `r ds(gtin_savings_per_min)` per minute. The return on this fix is not a number that belongs in a business case. It belongs in a case study about organizational blind spots. The fix has been available for as long as the defect has existed. The cost has been accumulating every month. The connection between the two has never been visible because no system, no report, and no process at Cinderhaven links chargebacks to specific fields in the product master. This report is that link. The connection is now visible. What happens next is a decision, not a discovery.
 
-The second fix is case dimensions. `r n_missing_dims` SKUs have blank case weight, length, width, or height fields. When a retailer's warehouse receives a case and attempts to reconcile it against the product master, the master says nothing. Any measurement is a mismatch against a blank field. Someone pulls a case from inventory, measures it with a tape measure and a scale, and enters five numbers. ```{r dim-fix-stats}
+The second fix is case dimensions. `r n_missing_dims` SKUs have blank case weight, length, width, or height fields. When a retailer's warehouse receives a case and attempts to reconcile it against the product master, the master says nothing. Any measurement is a mismatch against a blank field. Someone pulls a case from inventory, measures it with a tape measure and a scale, and enters five numbers.
+
+```{r dim-fix-stats}
 #| include: false
 dim_hours <- round(n_missing_dims * 30 / 60, 1)
 dim_cb_18mo <- cbe |>
