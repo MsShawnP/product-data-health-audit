@@ -41,6 +41,13 @@ t0 <- Sys.time()
 # ---- R steps -------------------------------------------------------------
 
 for (s in R_SCRIPTS) {
+  if (s == "R/01_load_raw.R" && !nzchar(Sys.getenv("DATABASE_URL"))) {
+    rds_path <- file.path(ROOT, "output", "frames", "raw_tables.rds")
+    if (file.exists(rds_path)) {
+      step_banner(paste(s, "(SKIPPED — no DATABASE_URL, using cached RDS)"))
+      next
+    }
+  }
   step_banner(s)
   tryCatch(
     source(file.path(ROOT, s), echo = FALSE),
