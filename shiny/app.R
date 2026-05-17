@@ -665,26 +665,27 @@ server <- function(input, output, session) {
     days_gs1 <- as.numeric(GS1_SUNRISE - TODAY)
     rb       <- readiness_band(v$P)
 
-    HTML(sprintf(paste0(
-      "Your catalog of <b>%d SKUs</b> across <b>%d retailers</b> generates ",
-      "an estimated <b style='color:%s;'>%s</b> in annual data-debt cost. ",
-      "That breaks into %s in chargebacks, %s in stalled-launch revenue ",
-      "loss, and %s in shelf loss from deauthorizations. The chargeback ",
-      "density of <b>%s per $1M</b> sits in the <b style='color:%s;'>%s</b> ",
-      "band. A pass rate of <b>%.0f%%</b> means <b>%d SKUs</b> currently ",
-      "fail retailer readiness — and the GS1 Sunrise 2027 deadline arrives ",
-      "in <b>%d days</b>. %s ",
+    density_fmt <- paste0("$", formatC(round(density), big.mark = ",", format = "d"))
+    tags$p(
+      "Your catalog of ", tags$b(v$N, " SKUs"), " across ",
+      tags$b(v$R, " retailers"), " generates an estimated ",
+      tags$b(style = paste0("color:", PAL$red), dollar_short(cc$total)),
+      " in annual data-debt cost. That breaks into ",
+      dollar_short(cc$chargebacks), " in chargebacks, ",
+      dollar_short(cc$stalled), " in stalled-launch revenue loss, and ",
+      dollar_short(cc$shelf), " in shelf loss from deauthorizations. ",
+      "The chargeback density of ", tags$b(density_fmt, " per $1M"),
+      " sits in the ", tags$b(style = paste0("color:", band$color), band$label),
+      " band. A pass rate of ", tags$b(sprintf("%.0f%%", v$P * 100)),
+      " means ", tags$b(failing, " SKUs"),
+      " currently fail retailer readiness — and the GS1 Sunrise 2027 ",
+      "deadline arrives in ", tags$b(max(0, days_gs1), " days"), ". ",
+      rb$body, " ",
       "Doubling SKU count without addressing the underlying defect rate ",
-      "lifts the annual cost to <b>%s</b>."),
-      v$N, v$R,
-      PAL$red, dollar_short(cc$total),
-      dollar_short(cc$chargebacks), dollar_short(cc$stalled), dollar_short(cc$shelf),
-      paste0("$", formatC(round(density), big.mark = ",", format = "d")),
-      band$color, band$label,
-      v$P * 100, failing,
-      max(0, days_gs1), rb$body,
-      dollar_short(scale_projection(v$N, v$R, v$C, v$P, v$A, 2))
-    ))
+      "lifts the annual cost to ",
+      tags$b(dollar_short(scale_projection(v$N, v$R, v$C, v$P, v$A, 2))),
+      "."
+    )
   })
 
   # ---- Cost of Delay ----

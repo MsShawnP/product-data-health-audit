@@ -58,5 +58,27 @@ cat("\n--- Row counts ---\n")
 for (t in names(raw)) cat(sprintf("  %-22s %10d rows  %3d cols\n",
                                   t, nrow(raw[[t]]), ncol(raw[[t]])))
 
+# Schema validation: every table must be non-empty and contain expected key columns.
+expected <- list(
+  product_master    = c("sku", "gtin14", "upc", "product_name"),
+  sku_costs         = c("sku", "cogs_per_unit", "wholesale_price"),
+  chargebacks       = c("sku", "retailer", "amount", "reason"),
+  stores            = c("store_id", "retailer"),
+  distribution_log  = c("sku", "store_id", "authorized_date"),
+  scan_data         = c("sku", "store_id", "week_ending", "units_sold"),
+  promotions        = c("sku", "retailer", "start_week", "end_week"),
+  retailer_requirements = c("retailer", "field", "required")
+)
+for (tbl_name in names(expected)) {
+  tbl <- raw[[tbl_name]]
+  if (is.null(tbl)) stop(sprintf("Missing table: %s", tbl_name))
+  if (nrow(tbl) == 0) stop(sprintf("Empty table: %s", tbl_name))
+  missing_cols <- setdiff(expected[[tbl_name]], names(tbl))
+  if (length(missing_cols) > 0)
+    stop(sprintf("Table %s missing columns: %s", tbl_name,
+                 paste(missing_cols, collapse = ", ")))
+}
+cat("  Schema validation passed.\n")
+
 saveRDS(raw, file.path(OUT_DIR, "raw_tables.rds"))
 cat("\nWrote: ", file.path(OUT_DIR, "raw_tables.rds"), "\n", sep = "")
