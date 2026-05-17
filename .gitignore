@@ -12,8 +12,9 @@ renv/sandbox/
 renv/local/
 
 # Generated analytical frames; rebuilt by R/run_all.R from the database.
-output/frames/
-output/frames/*.rds
+# raw_tables.rds is committed so CI can run without Postgres.
+output/frames/*
+!output/frames/raw_tables.rds
 
 # Generated charts, workbook, and PDFs; rebuilt by R/run_all.R.
 output/charts/
