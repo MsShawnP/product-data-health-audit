@@ -87,7 +87,7 @@ for (i in seq_len(nrow(reason_cb))) {
 
 # ---- 2. Missingness patterns ---------------------------------------------
 
-hr("2. MISSINGNESS BY FIELD (product_master, n=90)")
+hr(paste0("2. MISSINGNESS BY FIELD (product_master, n=", nrow(raw$product_master), ")"))
 
 miss_tbl <- raw$product_master |>
   summarise(across(everything(), ~ mean(is.na(.) | (. == "" & is.character(.))))) |>
@@ -121,7 +121,7 @@ cat(sprintf("OneWorldSync incomplete: %d / %d (%.1f%%)\n",
 
 # ---- 3. Revenue distribution --------------------------------------------
 
-hr("3. REVENUE DISTRIBUTION (TTM, 90 SKUs)")
+hr(paste0("3. REVENUE DISTRIBUTION (TTM, ", nrow(raw$product_master), " SKUs)"))
 
 rev <- sku_master_full$ttm_revenue
 cat(sprintf("Total TTM revenue: $%s\n", format(round(sum(rev)), big.mark=",")))

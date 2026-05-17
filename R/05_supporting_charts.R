@@ -453,7 +453,7 @@ current_revenue <- sum(sku_master_full$ttm_revenue)
 
 c12 <- tribble(
   ~scenario,        ~sku_count, ~retailer_count,
-  "Current (90 SKUs, 4 retailers)",   current_skus,         4L,
+  paste0("Current (", current_skus, " SKUs, 4 retailers)"),   current_skus,         4L,
   "Stage 2 (225 SKUs, 6 retailers)",  225L,                 6L,
   "Stage 3 (450 SKUs, 8 retailers)",  450L,                 8L
 ) |>
@@ -502,7 +502,7 @@ save_pair(p12_base(FALSE), to_girafe(p12_base(TRUE), w_in = 9, h_in = 5.5),
 # ---- chart 13: GTIN/UPC validation pass/fail by product line --------------
 # Each SKU is a dot in a 6-wide × 5-tall grid. Red = invalid check digit.
 # Fails are the visual focus; passes recede into a near-white grey so the
-# eye lands on the 12 reds out of 180 total dots (90 SKUs × 2 checks).
+# eye lands on the 12 reds out of total dots (SKUs × 2 checks).
 
 cat("\n[13] GTIN/UPC pass/fail by product line\n")
 
@@ -813,8 +813,8 @@ p19_base <- function(use_interactive) {
     scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
                                  `FALSE` = "#B0B0B0"),
                       guide = "none") +
-    labs(title    = "Only 9 of 90 SKUs are fully registered in OneWorldSync",
-         subtitle = "Only 9 of 90 SKUs (10%) are 'Registered - Complete'.",
+    labs(title    = paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs are fully registered in OneWorldSync"),
+         subtitle = paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs (", round(100 * sum(c19$n[c19$is_complete]) / sum(c19$n)), "%) are 'Registered - Complete'."),
          x = "SKU count", y = NULL,
          caption = "Source: product_master.oneworldsync_status") +
     theme_cinderhaven()
@@ -874,7 +874,7 @@ p20_base <- function(use_interactive) {
                       name = NULL) +
     scale_y_continuous(expand = expansion(mult = c(0, 0.10))) +
     labs(title    = "Retailer item-setup readiness",
-         subtitle = "Of 90 SKUs, how many would pass each retailer's required fields today.",
+         subtitle = paste0("Of ", nrow(raw$product_master), " SKUs, how many would pass each retailer's required fields today."),
          x = NULL, y = "SKU count",
          caption = "Source: retailer_readiness_summary") +
     theme_cinderhaven()
@@ -1014,7 +1014,7 @@ c23 <- c23 |>
                                     "High", "Fix now"),
                          right = FALSE))
 
-# Ranked horizontal-bar view: all 90 SKUs sorted by fix-priority score
+# Ranked horizontal-bar view: all SKUs sorted by fix-priority score
 # descending, with "Fix now" at the top of the chart and the darkest hue.
 c23_ranked <- c23 |>
   arrange(desc(fix_priority_score)) |>
@@ -1046,7 +1046,7 @@ p23_base <- function(use_interactive) {
     scale_x_continuous(breaks = seq(0, 100, 20),
                        expand = expansion(mult = c(0, 0.06))) +
     labs(title    = "Most SKUs cluster in the middle — five need immediate attention",
-         subtitle = "All 90 SKUs ranked by fix-priority score (composite of revenue · quality · chargeback). Higher = fix sooner.",
+         subtitle = paste0("All ", nrow(c23), " SKUs ranked by fix-priority score (composite of revenue · quality · chargeback). Higher = fix sooner."),
          x = "Fix-priority score",
          y = NULL,
          caption = "Source: sku_master_full.fix_priority_score") +

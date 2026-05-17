@@ -2,7 +2,7 @@
 
 A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs of growing food brands.
 
-Cinderhaven Provisions is a $25 million specialty food brand with 90 SKUs, 3 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+Cinderhaven Provisions is a $25 million specialty food brand with 50 SKUs, 3 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
 
 ## Why now
 
@@ -97,7 +97,7 @@ The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 The R pipeline reads company-specific parameters from `config.yml`: database path, output filename prefix, and company name. To reuse this audit methodology for a different company:
 
 1. **Replace `config.yml` values** with the new company's name and output prefix.
-2. **Populate a Postgres database** with the same 8-table schema (`product_master`, `sku_costs`, `chargebacks`, `stores`, `distribution_log`, `scan_data`, `promotions`, `retailer_requirements`) and set `DATABASE_URL` in `.Renviron`.
+2. **Populate a Postgres database** with the same 8-table schema (`product_master`, `sku_costs`, `chargebacks`, `stores`, `distribution_log`, `scan_data`, `promotions`, `retailer_rules`) and set `DATABASE_URL` in `.Renviron`.
 3. **Update Quarto front matter** — title, subtitle, author, and date in `quarto/report.qmd`, `dashboard.qmd`, and `tearsheet.qmd`. These are per-engagement metadata, not auto-generated.
 4. **Rewrite report prose** — the body text in the `.qmd` files is written for Cinderhaven's specific findings. New data produces new numbers through the pipeline, but the narrative interpretation is always per-engagement.
 5. **Run `Rscript R/run_all.R`** — the pipeline, charts, Excel workbook, and all rendered artifacts rebuild from the new data.

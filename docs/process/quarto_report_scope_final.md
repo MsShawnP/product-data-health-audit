@@ -13,7 +13,7 @@
 **Deliverable:** Portfolio-grade audit report built in R/Quarto
 **Output formats:** HTML (primary, interactive), PDF (secondary, intentionally designed), Excel workbook (CEO's working copy)
 **Writing style:** Economist data-analyst — clean prose, plain English, dramatic where earned by the data, every claim tied to specific findings. No hedging when the data is clear. No overclaiming when it's not. Methodology assumptions stated inline at point of claim, not buried in footnotes.
-**Fictional company:** Cinderhaven Provisions (~$25M revenue, 90 SKUs, 3 product lines, ~902 stores)
+**Fictional company:** Cinderhaven Provisions (~$25M revenue, 50 SKUs, 3 product lines, ~902 stores)
 **Audience:** Portfolio piece targeting specialty food CEOs at $10M–$100M scaling into national retail. Secondary audience: technical evaluators (hiring managers, recruiters) assessing data skills.
 
 ---
@@ -25,14 +25,14 @@ The full Cinderhaven database — 8 tables spanning original product master data
 ### Tables
 
 **Original (product data audit):**
-- `product_master` (90 rows) — SKU attributes, GTIN, UPC, dimensions, nutritional, governance fields
+- `product_master` (50 rows) — SKU attributes, GTIN, UPC, dimensions, nutritional, governance fields
 - `retailer_requirements` (29 rows) — required fields by retailer
 - `chargebacks` (464 rows) — 18 months of chargeback history by SKU, retailer, reason
 
 **Expanded (velocity dataset):**
 - `stores` (~902 rows) — store-level detail by retailer, region, volume tier
 - `distribution_log` (~12,595 rows) — authorization and deauthorization dates by SKU × store
-- `sku_costs` (90 rows) — COGS, landed cost, wholesale price, trade spend % by retailer
+- `sku_costs` (50 rows) — COGS, landed cost, wholesale price, trade spend % by retailer
 - `promotions` (~75 rows) — promo events by SKU, retailer, discount depth, duration
 - `scan_data` (~1.19M rows) — weekly unit and dollar sales by SKU × store
 
@@ -46,7 +46,7 @@ Universal framing section. No Cinderhaven data. Written so any specialty food CE
 
 ### 2. Company Profile — Cinderhaven Provisions
 
-Narrative introduction. ~$25M revenue, 90 SKUs across 3 product lines (Artisan Sauces, Specialty Condiments, Pantry Staples), ~902 stores across Walmart, Costco, Whole Foods, UNFI, regional, DTC. Growth trajectory toward $55M. Written as a story, not a spec sheet.
+Narrative introduction. ~$25M revenue, 50 SKUs across 3 product lines (Artisan Sauces, Specialty Condiments, Pantry Staples), ~902 stores across Walmart, Costco, Whole Foods, UNFI, regional, DTC. Growth trajectory toward $55M. Written as a story, not a spec sheet.
 
 ### 3. TL;DR Tear-Sheet
 
@@ -128,7 +128,7 @@ Synthesize everything into a single view:
 
 ### 16. Growth Projection — The Combinatorial Explosion
 
-Project current error rates forward against growth targets (90 → 225 SKUs, 4 → 8 retailers). Chargeback scaling curve. Revenue-at-risk scaling curve. Grounded in actual velocity data as baseline.
+Project current error rates forward against growth targets (50 → 225 SKUs, 4 → 8 retailers). Chargeback scaling curve. Revenue-at-risk scaling curve. Grounded in actual velocity data as baseline.
 
 ### 17. The Contrarian Finding
 
@@ -191,7 +191,7 @@ No artificial limit on chart count. Include every chart that supports the findin
 
 ### Hero Charts (in main narrative, interactive via plotly/ggiraph)
 
-1. **Velocity vs. data quality scatterplot** — data quality score (x) vs. annual revenue (y) for all 90 SKUs. Interactive tooltips showing SKU name, revenue, missing attributes on hover.
+1. **Velocity vs. data quality scatterplot** — data quality score (x) vs. annual revenue (y) for all 50 SKUs. Interactive tooltips showing SKU name, revenue, missing attributes on hover.
 2. **Chargeback Pareto** — cumulative % of chargeback cost by SKU rank. Shows concentration.
 3. **Fix priority bubble matrix** — data quality issues (x) vs. revenue (y), bubble size = chargeback cost.
 4. **True net margin by retailer** — waterfall chart: gross revenue → trade spend → chargebacks → net contribution.
