@@ -83,6 +83,17 @@ HANDOFF.md
 DECISIONS.md
 FAILURES.md
 
+# Claude Code session artifacts
+.claude/
+
+# Quarto freeze cache
+quarto/_freeze/
+
+# Temporary files
+report_full_tmp.txt
+report_full.txt
+*report_full*.txt
+
 # OS noise
 .DS_Store
 Thumbs.db
