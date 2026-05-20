@@ -825,21 +825,23 @@ triage <- smf |>
     `$ saved / hour` = savings_per_hour
   )
 
-# Cinderhaven palette
-pal_red   <- "#C0221F"
-pal_teal  <- "#1E8C7E"
-pal_coral <- "#D35830"
-pal_pale  <- "#E8ECF0"
-pal_text  <- "#2D3436"
+# Lailara Design System v2 palette
+pal_red   <- "#cc100a"
+pal_teal  <- "#158f75"
+pal_coral <- "#b82d4a"
+pal_pale  <- "#d9d9d9"
+pal_text  <- "#333333"
+
+pal_canvas <- "#f5f3ee"
 
 ramp_red   <- function(x) {
-  if (is.na(x)) return("#FFFFFF")
-  grDevices::colorRampPalette(c("#FFFFFF", pal_red))(101)[
+  if (is.na(x)) return(pal_canvas)
+  grDevices::colorRampPalette(c(pal_canvas, pal_red))(101)[
     pmin(101, pmax(1, round(x * 100) + 1))]
 }
 ramp_teal  <- function(x) {
-  if (is.na(x)) return("#FFFFFF")
-  grDevices::colorRampPalette(c("#FFFFFF", pal_teal))(101)[
+  if (is.na(x)) return(pal_canvas)
+  grDevices::colorRampPalette(c(pal_canvas, pal_teal))(101)[
     pmin(101, pmax(1, round(x * 100) + 1))]
 }
 
@@ -912,7 +914,7 @@ reactable(
         else paste0("$", formatC(round(value), big.mark = ","), "/hr")
       },
       style = function(value) {
-        if (is.na(value)) list(background = "#FFFFFF")
+        if (is.na(value)) list(background = pal_canvas)
         else list(background = ramp_teal(value / max_sph))
       }
     )

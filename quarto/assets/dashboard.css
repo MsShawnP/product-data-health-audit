@@ -1,5 +1,6 @@
 /* dashboard.css — executive dashboard overrides for report.css.
-   Loaded AFTER report.css so these rules win. */
+   Loaded AFTER report.css so these rules win.
+   Colors: Lailara Design System v2. */
 
 /* ── Layout: kill Quarto grid, center content ─────────────────────── */
 
@@ -23,7 +24,7 @@ html, body {
 /* ── Title block: dark bar, full width ────────────────────────────── */
 
 #title-block-header {
-  background: #2D3436 !important;
+  background: #1a1a1a !important;
   color: #fff !important;
   margin: 0 -2rem 1.5rem -2rem !important;
   padding: 1.8rem 2.5rem 1.4rem !important;
@@ -33,6 +34,7 @@ html, body {
 #title-block-header h1.title,
 #title-block-header .title {
   color: #fff !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
   border-bottom: none !important;
   padding-bottom: 0 !important;
   margin-bottom: 0.25rem !important;
@@ -43,6 +45,7 @@ html, body {
 #title-block-header .subtitle,
 #title-block-header p.subtitle {
   color: rgba(255, 255, 255, 0.7) !important;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
   font-size: 1rem !important;
   margin: 0 !important;
 }
@@ -50,7 +53,7 @@ html, body {
 /* ── Tabs: clean underline style ──────────────────────────────────── */
 
 .panel-tabset .nav-tabs {
-  border-bottom: 2px solid #e0e0e0 !important;
+  border-bottom: 2px solid #d9d9d9 !important;
   gap: 0 !important;
 }
 
@@ -58,43 +61,43 @@ html, body {
   border: none !important;
   border-radius: 0 !important;
   background: transparent !important;
-  color: #666 !important;
-  font-family: "Helvetica Neue", Inter, system-ui, sans-serif !important;
+  color: #595959 !important;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
   font-weight: 500 !important;
   font-size: 0.95rem !important;
   padding: 0.6rem 1.2rem !important;
   margin-bottom: -2px !important;
-  transition: color 0.15s, border-color 0.15s !important;
+  transition: color 100ms ease-out, border-color 100ms ease-out !important;
 }
 
 .panel-tabset .nav-tabs .nav-link:hover {
-  color: #1E8C7E !important;
+  color: #cc100a !important;
   background: transparent !important;
   border: none !important;
-  border-bottom: 2px solid #1E8C7E !important;
+  border-bottom: 2px solid #cc100a !important;
 }
 
 .panel-tabset .nav-tabs .nav-link.active {
-  color: #1E8C7E !important;
+  color: #0d0d0d !important;
   background: transparent !important;
   border: none !important;
-  border-bottom: 2px solid #1E8C7E !important;
+  border-bottom: 2px solid #cc100a !important;
   font-weight: 600 !important;
 }
 
-/* ── Blockquotes: teal-bordered card ──────────────────────────────── */
+/* ── Blockquotes: accent-bordered card ───────────────────────────── */
 
 blockquote {
   max-width: 100% !important;
-  background: #f7f8f9 !important;
-  border-left: 4px solid #1E8C7E !important;
-  border-radius: 0 6px 6px 0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  background: #f2f2f2 !important;
+  border-left: 3px solid #d9d9d9 !important;
+  border-radius: 0 2px 2px 0 !important;
+  box-shadow: none !important;
   padding: 0.8rem 1.2rem !important;
   margin: 1rem 0 1.5rem 0 !important;
   font-size: 0.85rem !important;
   line-height: 1.5 !important;
-  color: #444 !important;
+  color: #595959 !important;
 }
 
 blockquote p {
@@ -103,7 +106,7 @@ blockquote p {
 }
 
 blockquote strong {
-  color: #2D3436 !important;
+  color: #333333 !important;
 }
 
 /* ── Reactable tables: card wrapper + dark header ─────────────────── */
@@ -112,17 +115,18 @@ blockquote strong {
   width: fit-content !important;
   margin-left: auto !important;
   margin-right: auto !important;
-  border: 1px solid #ddd !important;
-  border-radius: 6px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
   overflow: hidden !important;
 }
 
 /* Header row */
 .reactable .rt-thead .rt-th,
 .reactable .rt-thead .rt-td {
-  background: #2D3436 !important;
+  background: #1f2e7a !important;
   color: #fff !important;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
   font-weight: 600 !important;
   font-size: 0.82rem !important;
   text-transform: uppercase !important;
@@ -146,7 +150,7 @@ blockquote strong {
   background: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 3px !important;
+  border-radius: 2px !important;
   font-size: 0.78rem !important;
   padding: 2px 4px !important;
 }
@@ -157,37 +161,37 @@ blockquote strong {
 
 .reactable .rt-thead .rt-th select option {
   background: #fff !important;
-  color: #333 !important;
+  color: #333333 !important;
 }
 
 /* Body rows */
 .reactable .rt-tbody .rt-td {
   padding: 5px 10px !important;
   font-size: 0.85rem !important;
-  border-bottom: 1px solid #eee !important;
+  border-bottom: 1px solid #e0e0e0 !important;
 }
 
 /* Striped rows */
 .reactable .rt-tr-striped {
-  background: #fafbfc !important;
+  background: #f5f3ee !important;
 }
 
 /* Hover */
 .reactable .rt-tbody .rt-tr:hover {
-  background: #f0f7f6 !important;
+  background: #e8eaf4 !important;
 }
 
 /* Pagination */
 .reactable .rt-pagination {
   padding: 6px 10px !important;
   font-size: 0.8rem !important;
-  border-top: 1px solid #eee !important;
+  border-top: 1px solid #e0e0e0 !important;
 }
 
 /* Search box */
 .reactable .rt-search {
-  border: 1px solid #ddd !important;
-  border-radius: 4px !important;
+  border: 1px solid #d9d9d9 !important;
+  border-radius: 2px !important;
   padding: 4px 8px !important;
   font-size: 0.82rem !important;
 }

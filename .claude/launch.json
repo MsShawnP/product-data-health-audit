@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "landing",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", ".", "-p", "8081", "-c-1"],
+      "port": 8081
+    },
+    {
       "name": "dashboard",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["http-server", "quarto", "-p", "8080", "-c-1"],

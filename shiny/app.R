@@ -20,19 +20,35 @@ suppressPackageStartupMessages({
   library(htmltools)
 })
 
-# ---- palette (matches R/00_theme.R) -------------------------------------
+# ---- palette (Lailara Design System v2) ----------------------------------
 PAL <- list(
-  navy       = "#1B2A4A",
-  red        = "#C0221F",
-  coral      = "#D35830",
-  teal       = "#1E8C7E",
-  blue       = "#3D5A80",
-  blue_muted = "#576D91",
-  text       = "#2D3436",
-  text_muted = "#636E72",
-  bg_pale    = "#E8ECF0",
-  bg_paler   = "#DFE6E9",
-  white      = "#FFFFFF"
+  canvas     = "#f5f3ee",
+  red        = "#cc100a",
+  red_light  = "#ee8880",
+  chicago    = "#1f2e7a",
+  chicago_lt = "#8e9ad0",
+  hk         = "#158f75",
+  hk_dark    = "#0c6552",
+  tokyo      = "#b82d4a",
+  tokyo_lt   = "#e68a9a",
+  sg         = "#ee8a2a",
+  sg_dark    = "#7a3d10",
+  ink        = "#0d0d0d",
+  text       = "#333333",
+  text_sec   = "#595959",
+  reference  = "#666666",
+  gridline   = "#d9d9d9",
+  surface    = "#f2f2f2",
+  # Backward-compatible aliases
+  navy       = "#1f2e7a",
+  coral      = "#b82d4a",
+  teal       = "#158f75",
+  blue       = "#1f2e7a",
+  blue_muted = "#8e9ad0",
+  text_muted = "#595959",
+  bg_pale    = "#d9d9d9",
+  bg_paler   = "#f2f2f2",
+  white      = "#f5f3ee"
 )
 
 # ---- model constants -----------------------------------------------------
@@ -136,21 +152,23 @@ dollar_short <- function(x) {
 }
 
 theme_calc <- function() {
-  theme_minimal(base_size = 12) +
+  theme_minimal(base_size = 12, base_family = "Source Sans 3") +
     theme(
-      plot.background    = element_rect(fill = PAL$white, color = NA),
-      panel.background   = element_rect(fill = PAL$white, color = NA),
+      plot.background    = element_rect(fill = PAL$canvas, color = NA),
+      panel.background   = element_rect(fill = PAL$canvas, color = NA),
       panel.grid.minor   = element_blank(),
       panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_line(color = PAL$bg_pale, linewidth = 0.4),
-      axis.text          = element_text(color = PAL$text),
-      axis.title         = element_text(color = PAL$text_muted, size = 11),
-      plot.title         = element_text(face = "bold", color = PAL$text,
-                                         hjust = 0, size = 13),
-      plot.subtitle      = element_text(color = PAL$text_muted, hjust = 0,
+      panel.grid.major.y = element_line(color = PAL$gridline, linewidth = 0.3),
+      axis.text          = element_text(color = PAL$text_sec),
+      axis.title         = element_text(color = PAL$text_sec, size = 11),
+      plot.title         = element_text(family = "Playfair Display",
+                                         face = "bold", color = PAL$ink,
+                                         hjust = 0, size = 14),
+      plot.subtitle      = element_text(color = PAL$text_sec, hjust = 0,
                                          size = 11, margin = margin(b = 6)),
-      plot.caption       = element_text(color = PAL$text_muted, hjust = 0,
-                                         size = 9, margin = margin(t = 6)),
+      plot.caption       = element_text(color = PAL$text_sec, hjust = 0,
+                                         size = 9, face = "italic",
+                                         margin = margin(t = 6)),
       plot.title.position = "plot",
       plot.caption.position = "plot",
       legend.position = "none"
@@ -163,27 +181,29 @@ theme_calc <- function() {
 
 theme_bs <- bs_theme(
   version = 5,
-  bg = PAL$white, fg = PAL$text,
-  primary = PAL$navy,
-  secondary = PAL$blue_muted,
-  success = PAL$teal,
-  warning = PAL$coral,
+  bg = PAL$canvas, fg = PAL$text,
+  primary = PAL$chicago,
+  secondary = PAL$chicago_lt,
+  success = PAL$hk,
+  warning = PAL$tokyo,
   danger = PAL$red,
-  base_font = font_google("Inter", local = FALSE),
-  heading_font = font_google("Inter", local = FALSE)
+  base_font = font_google("Source Sans 3", local = FALSE),
+  heading_font = font_google("Playfair Display", local = FALSE)
 ) |>
   bs_add_rules(sprintf("
-    .stat-card { background: %s; border-radius: 6px; padding: 14px 16px;
+    .stat-card { background: %s; border-radius: 2px; padding: 14px 16px;
                  border-left: 4px solid %s; }
-    .stat-card .stat-num { font-size: 1.8rem; font-weight: 700; color: %s;
+    .stat-card .stat-num { font-family: 'Playfair Display', Georgia, serif;
+                           font-size: 1.8rem; font-weight: 700; color: %s;
                            line-height: 1.0; }
     .stat-card .stat-lbl { color: %s; font-size: 0.85rem; margin-top: 2px; }
     .stat-card .stat-sub { color: %s; font-size: 0.75rem; margin-top: 6px; }
-    .lead-num { font-size: 3rem; font-weight: 700; color: %s; line-height: 1; }
+    .lead-num { font-family: 'Playfair Display', Georgia, serif;
+                font-size: 3rem; font-weight: 700; color: %s; line-height: 1; }
     .lead-lbl { color: %s; font-size: 0.95rem; margin-top: 4px; }
-    .pill { display: inline-block; padding: 2px 10px; border-radius: 12px;
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 2px;
             font-size: 0.78rem; font-weight: 600; color: white; }
-    .interp { background: %s; padding: 14px 18px; border-radius: 6px;
+    .interp { background: %s; padding: 14px 18px; border-radius: 2px;
               border-left: 4px solid %s; line-height: 1.55; }
     .footer-link { color: %s; font-weight: 600; }
     .footer-link:hover { color: %s; }
@@ -191,17 +211,17 @@ theme_bs <- bs_theme(
     label.control-label { font-weight: 600; color: %s; }
     .form-text { color: %s; font-size: 0.78rem; }
   ",
-  PAL$bg_paler, PAL$navy, PAL$red, PAL$text_muted, PAL$text_muted,
-  PAL$red, PAL$text_muted,
-  PAL$bg_pale, PAL$navy,
-  PAL$navy, PAL$red,
-  PAL$navy, PAL$text, PAL$text_muted))
+  PAL$surface, PAL$chicago, PAL$red, PAL$text_sec, PAL$text_sec,
+  PAL$red, PAL$text_sec,
+  PAL$gridline, PAL$chicago,
+  PAL$chicago, PAL$red,
+  PAL$ink, PAL$text, PAL$text_sec))
 
 ui <- page_navbar(
   title = "Data Debt Calculator",
   theme = theme_bs,
   lang = "en",
-  navbar_options = navbar_options(bg = PAL$navy, underline = TRUE),
+  navbar_options = navbar_options(bg = PAL$chicago, underline = TRUE),
   header = tags$header(
     tags$style(HTML("
       .navbar-brand { font-weight: 700; letter-spacing: -0.01em; }
@@ -344,7 +364,7 @@ ui <- page_navbar(
 
         div(role = "region", `aria-label` = "Cost of delay",
           tags$h2("Every month of delay costs more than the last",
-                  style = paste0("font-size:1.4rem; color:", PAL$navy)),
+                  style = paste0("font-size:1.4rem; color:", PAL$chicago)),
           tags$p(style = paste0("color:", PAL$text_muted, "; max-width:60ch;"),
                  "Three things compound while a data defect sits unfixed: ",
                  "chargebacks accrue every month, shelf is lost as retailers ",
