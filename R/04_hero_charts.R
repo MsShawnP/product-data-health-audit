@@ -43,7 +43,7 @@ save_chart <- function(p, name, w = 9, h = 5.5, dpi = 200) {
   rds_path <- file.path(OUT_DIR, paste0(name, ".rds"))
   png_path <- file.path(OUT_DIR, paste0(name, ".png"))
   saveRDS(p, rds_path)
-  ggsave(png_path, p, width = w, height = h, dpi = dpi, bg = "white")
+  ggsave(png_path, p, width = w, height = h, dpi = dpi, bg = LL_CANVAS)
   cat(sprintf("  %s.rds (%4.1f KB)  +  %s.png (%4.0f KB)\n",
               name, file.info(rds_path)$size / 1024,
               name, file.info(png_path)$size / 1024))
@@ -178,9 +178,9 @@ p2 <- ggplot(tier_summary, aes(mean_days, tier, fill = tier)) +
   # recede into grey.
   scale_fill_manual(values = c(
     "Worst 25%"     = cinderhaven_palette$red,
-    "Below average" = "#B0B0B0",
-    "Above average" = "#B0B0B0",
-    "Best 25%"      = "#B0B0B0"),
+    "Below average" = cinderhaven_palette$recede,
+    "Above average" = cinderhaven_palette$recede,
+    "Best 25%"      = cinderhaven_palette$recede),
     guide = "none") +
   scale_x_continuous(limits = c(0, max(tier_summary$mean_days) * 1.25),
                      breaks = seq(0, 50, 10),
@@ -235,8 +235,8 @@ c3_long <- c3_pnl |>
                                        "Chargebacks")))
 
 stack_palette <- c(
-  "Net contribution" = "#D0D0D0",   # light grey — the calm part
-  "Trade spend"      = "#888888",   # medium grey — context, not focus
+  "Net contribution" = cinderhaven_palette$recede,   # light grey — the calm part
+  "Trade spend"      = cinderhaven_palette$recede_dark,   # medium grey — context, not focus
   "Chargebacks"      = cinderhaven_palette$red)  # the controllable lever
 
 # All three labels go inside their segments at the visual segment
@@ -369,7 +369,7 @@ fix_roi <- tibble(
 p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   geom_col(width = 0.55) +
   scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
-                               `FALSE` = "#B0B0B0"),
+                               `FALSE` = cinderhaven_palette$recede),
                     guide = "none") +
   geom_text(aes(label = label),
             hjust = -0.04, size = 3.7,

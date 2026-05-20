@@ -5,7 +5,15 @@
 suppressPackageStartupMessages({
   library(ggplot2)
   library(scales)
+  library(showtext)
+  library(sysfonts)
 })
+
+# ---- Lailara brand fonts via Google Fonts -----------------------------------
+# showtext renders them into PNG/SVG output on any system, including CI.
+font_add_google("Playfair Display", "Playfair Display")
+font_add_google("Source Sans 3", "Source Sans 3")
+showtext_auto()
 
 # ---- Lailara Design System v2 — Color Families ----------------------------
 
@@ -41,7 +49,14 @@ LL_TEXT        <- "#333333"
 LL_TEXT_SEC    <- "#595959"
 LL_REFERENCE  <- "#666666"
 LL_GRIDLINE   <- "#d9d9d9"
+LL_DISABLED   <- "#b3b3b3"
 LL_SURFACE    <- "#f2f2f2"
+
+# ---- Chart-role aliases (semantic names for one-accent pattern) -------------
+# Focal element gets LL_RED; everything else recedes to these.
+LL_RECEDE       <- LL_GRIDLINE   # non-focal bars, secondary series
+LL_RECEDE_MID   <- LL_DISABLED   # medium-emphasis (e.g. "High" tier)
+LL_RECEDE_DARK  <- LL_REFERENCE  # stronger receding (e.g. trade spend)
 
 # ---- Categorical chart palette (10 slots, paired) -------------------------
 LL_CAT_10 <- c(
@@ -160,7 +175,10 @@ cinderhaven_palette <- list(
   text_muted = LL_TEXT_SEC,
   bg_pale    = LL_GRIDLINE,
   bg_paler   = LL_SURFACE,
-  white      = LL_CANVAS
+  white      = LL_CANVAS,
+  recede     = LL_RECEDE,
+  recede_mid = LL_RECEDE_MID,
+  recede_dark = LL_RECEDE_DARK
 )
 
 # ---- formatters ------------------------------------------------------------
