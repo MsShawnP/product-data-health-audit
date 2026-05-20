@@ -1,171 +1,170 @@
 # 00_theme.R
-# The visual language. One source of truth for every chart, every artifact.
+# Lailara Design System v2 — single source of truth for every chart.
 # Sourced by every chart-producing script and by every Quarto setup chunk.
-#
-# Design rules ("Visual Language"):
-#   - White background. No grey panel fill. No vertical gridlines.
-#     Light horizontal gridlines only.
-#   - System sans-serif (Arial / Helvetica fallback).
-#   - Titles state the insight, not the metric: "8 SKUs drive half your
-#     chargeback costs" not "Chargeback concentration by SKU rank."
-#   - Subtitles state the context. Captions are right-aligned, plain English.
-#   - No statistical notation in reader-facing text. No Spearman, no n=,
-#     no p-values, no quartile labels (use "Worst 25%" / "Best 25%" instead).
-#   - No log scales. No box plots, violin plots, pie charts, or radar charts.
-#   - Color is paired with position or label — never the only encoding.
-#   - WCAG 2.1 AA contrast: 4.5:1 for text, 3:1 for graphical elements.
 
 suppressPackageStartupMessages({
   library(ggplot2)
   library(scales)
 })
 
-# ---- the palette ---------------------------------------------------------
-# Names match the rebuild-plan spec. Hex values pinned.
+# ---- Lailara Design System v2 — Color Families ----------------------------
 
-cinderhaven_palette <- list(
-  # Core brand
-  navy        = "#1B2A4A",   # primary dark
-  red         = "#C0221F",   # at risk / problem / cost
-  coral       = "#D35830",   # secondary warning
-  teal        = "#1E8C7E",   # positive / clean / passing
-  blue        = "#3D5A80",   # medium accent
-  blue_muted  = "#576D91",   # supporting accent
+LL_CANVAS     <- "#f5f3ee"
 
-  # Neutrals
-  text        = "#2D3436",   # near-black body text
-  text_muted  = "#636E72",   # secondary text + gridlines
-  bg_pale     = "#E8ECF0",   # light grey background
-  bg_paler    = "#DFE6E9",   # lighter grey
-  white       = "#FFFFFF"
+# Brand red (default = 42)
+LL_RED        <- "#cc100a"
+LL_RED_LIGHT  <- "#ee8880"
+LL_RED_DARK   <- "#8e0b07"
+
+# Chicago accent (default = 20)
+LL_CHICAGO       <- "#1f2e7a"
+LL_CHICAGO_LIGHT <- "#8e9ad0"
+
+# Hong Kong teal (default = 35)
+LL_HK         <- "#158f75"
+LL_HK_LIGHT   <- "#6dcdb5"
+LL_HK_DARK    <- "#0c6552"
+
+# Tokyo berry (default = 40)
+LL_TOKYO       <- "#b82d4a"
+LL_TOKYO_LIGHT <- "#e68a9a"
+LL_TOKYO_DARK  <- "#7e1f34"
+
+# Singapore orange (default = 55)
+LL_SG         <- "#ee8a2a"
+LL_SG_LIGHT   <- "#f6b97c"
+LL_SG_DARK    <- "#7a3d10"
+
+# London greyscale
+LL_INK        <- "#0d0d0d"
+LL_TEXT        <- "#333333"
+LL_TEXT_SEC    <- "#595959"
+LL_REFERENCE  <- "#666666"
+LL_GRIDLINE   <- "#d9d9d9"
+LL_SURFACE    <- "#f2f2f2"
+
+# ---- Categorical chart palette (10 slots, paired) -------------------------
+LL_CAT_10 <- c(
+  "#1f2e7a", "#8e9ad0",
+  "#0c6552", "#6dcdb5",
+  "#7e1f34", "#e68a9a",
+  "#7a3d10", "#f6b97c",
+  "#8e0b07", "#ee8880"
 )
 
-# ---- product-line colors -------------------------------------------------
-# Locked across every chart. Three product lines, three fixed hues.
-# Choices: Artisan Sauces — navy (the heritage line, most premium look);
-# Specialty Condiments — coral (sharper accent, second-tier line);
-# Pantry Staples — teal (the everyday line, cleaner positioning).
+LL_CAT_10_TEXT <- c(
+  "#ffffff", "#0a0f29",
+  "#ffffff", "#063d32",
+  "#ffffff", "#6e1a2c",
+  "#ffffff", "#4a2508",
+  "#ffffff", "#4d0604"
+)
 
+# ---- Sequential palette (Hong Kong ramp, darkest first) --------------------
+LL_SEQ <- c(
+  "#063d32", "#0a5c4b", "#0e6e5a", "#158f75",
+  "#1fa282", "#35b595", "#6dcdb5", "#b5e4d8"
+)
+
+# ---- Divergent palette (HK positive / London neutral / Tokyo negative) -----
+LL_DIV_POS <- c("#0a5c4b", "#158f75", "#6dcdb5")
+LL_DIV_NEU <- "#d9d9d9"
+LL_DIV_NEG <- c("#e68a9a", "#b82d4a", "#6e1a2c")
+
+# ---- product-line colors ---------------------------------------------------
+# Three product lines → dark stops from three families.
 product_line_colors <- c(
-  "Artisan Sauces"       = cinderhaven_palette$navy,
-  "Specialty Condiments" = cinderhaven_palette$coral,
-  "Pantry Staples"       = cinderhaven_palette$teal
+  "Artisan Sauces"       = LL_CHICAGO,
+  "Specialty Condiments" = LL_TOKYO,
+  "Pantry Staples"       = LL_HK
 )
 
-# ---- retailer colors -----------------------------------------------------
-# Used wherever retailers are shown side-by-side. Walmart gets the muted
-# blue (it's the dominant share — let it sit quietly in the chart).
-# The other three each get a distinct accent so the eye can compare them.
-
+# ---- retailer colors -------------------------------------------------------
+# Four retailers → dark stops from four families.
 retailer_colors <- c(
-  "Walmart"     = cinderhaven_palette$blue_muted,
-  "Costco"      = cinderhaven_palette$red,
-  "UNFI"        = cinderhaven_palette$coral,
-  "Whole Foods" = cinderhaven_palette$teal
+  "Walmart"     = LL_CHICAGO,
+  "Costco"      = LL_TOKYO,
+  "UNFI"        = LL_SG_DARK,
+  "Whole Foods" = LL_HK_DARK
 )
 
-# ---- pass / fail and risk-tier colors ------------------------------------
-
+# ---- pass / fail and risk-tier colors --------------------------------------
 passfail_colors <- c(
-  "Pass" = cinderhaven_palette$teal,
-  "Fail" = cinderhaven_palette$red
+  "Pass" = LL_HK,
+  "Fail" = LL_RED
 )
 
-# Risk bands used by the triage table + risk distribution histogram.
-# Names are reader-facing — "Worst 25%" not "Q1".
 risk_band_colors <- c(
-  "Worst 25%"     = cinderhaven_palette$red,
-  "Below average" = cinderhaven_palette$coral,
-  "Above average" = cinderhaven_palette$blue_muted,
-  "Best 25%"      = cinderhaven_palette$teal
+  "Worst 25%"     = LL_RED,
+  "Below average" = LL_TOKYO,
+  "Above average" = LL_CHICAGO_LIGHT,
+  "Best 25%"      = LL_HK
 )
 
-# ---- the theme -----------------------------------------------------------
-# Apply with `+ theme_cinderhaven()`. Args let callers override base size
-# (e.g. dashboard cards want smaller; tearsheet wants larger).
-
-theme_cinderhaven <- function(base_size = 11) {
-  theme_minimal(base_size = base_size) +
+# ---- the theme -------------------------------------------------------------
+theme_lailara <- function(base_size = 12) {
+  theme_minimal(base_size = base_size, base_family = "Source Sans 3") +
     theme(
-      # White everything — no grey panel fill.
-      plot.background    = element_rect(fill = cinderhaven_palette$white,
-                                        color = NA),
-      panel.background   = element_rect(fill = cinderhaven_palette$white,
-                                        color = NA),
-
-      # Horizontal gridlines only, kept light. No vertical gridlines.
-      panel.grid.minor   = element_blank(),
+      plot.background    = element_rect(fill = LL_CANVAS, color = NA),
+      panel.background   = element_rect(fill = LL_CANVAS, color = NA),
+      panel.grid.major.y = element_line(color = LL_GRIDLINE, linewidth = 0.3),
       panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_line(color = cinderhaven_palette$bg_pale,
-                                        linewidth = 0.4),
-
-      # Titles state the insight, left-aligned.
-      plot.title         = element_text(face = "bold",
-                                        color = cinderhaven_palette$text,
-                                        size = base_size + 2,
-                                        hjust = 0,
-                                        margin = margin(b = 4)),
-      plot.subtitle      = element_text(color = cinderhaven_palette$text_muted,
-                                        size = base_size - 1,
-                                        hjust = 0,
-                                        margin = margin(b = 8)),
-      plot.caption       = element_text(color = cinderhaven_palette$text_muted,
-                                        size = base_size - 3,
-                                        hjust = 1,
-                                        margin = margin(t = 8)),
-      plot.title.position = "plot",
-      plot.caption.position = "plot",
-
-      # Axis text — minimal tick marks, no bold.
-      axis.text          = element_text(color = cinderhaven_palette$text,
-                                        size = base_size - 1),
-      axis.title.x       = element_text(color = cinderhaven_palette$text,
-                                        size = base_size - 1,
-                                        margin = margin(t = 6)),
-      axis.title.y       = element_text(color = cinderhaven_palette$text,
-                                        size = base_size - 1,
-                                        margin = margin(r = 6)),
-      axis.ticks         = element_line(color = cinderhaven_palette$text_muted,
-                                        linewidth = 0.3),
-      axis.ticks.length  = unit(2, "pt"),
-
-      # Legend — top, single row, no title (use direct labels where possible).
+      panel.grid.minor   = element_blank(),
+      plot.title         = element_text(
+        family = "Playfair Display", face = "bold",
+        size = rel(1.6), color = LL_INK, margin = margin(b = 4)
+      ),
+      plot.subtitle      = element_text(
+        size = rel(1.0), color = LL_TEXT_SEC, margin = margin(b = 12)
+      ),
+      plot.caption       = element_text(
+        size = rel(0.75), color = LL_TEXT_SEC, hjust = 0,
+        face = "italic", margin = margin(t = 8)
+      ),
+      axis.text          = element_text(color = LL_TEXT_SEC, size = rel(0.85)),
+      axis.title         = element_text(color = LL_TEXT_SEC, size = rel(0.9)),
       legend.position    = "top",
       legend.title       = element_blank(),
-      legend.text        = element_text(color = cinderhaven_palette$text,
-                                        size = base_size - 1),
-      legend.key         = element_rect(fill = cinderhaven_palette$white,
-                                        color = NA),
-      legend.background  = element_rect(fill = cinderhaven_palette$white,
-                                        color = NA),
+      legend.text        = element_text(color = LL_TEXT_SEC),
+      legend.key         = element_rect(fill = LL_CANVAS, color = NA),
+      legend.background  = element_rect(fill = LL_CANVAS, color = NA),
       legend.margin      = margin(b = 4),
-
-      # Strip text (facet labels) — bold, no fill.
-      strip.background   = element_rect(fill = cinderhaven_palette$white,
-                                        color = NA),
-      strip.text         = element_text(face = "bold",
-                                        color = cinderhaven_palette$text,
-                                        size = base_size,
-                                        hjust = 0,
-                                        margin = margin(b = 4))
+      strip.background   = element_rect(fill = LL_CANVAS, color = NA),
+      strip.text         = element_text(face = "bold", color = LL_INK,
+                                        hjust = 0, margin = margin(b = 4)),
+      plot.title.position = "plot",
+      plot.caption.position = "plot"
     )
 }
 
-# Variant for horizontal-bar charts: switch which axis has gridlines.
-theme_cinderhaven_horizontal <- function(base_size = 11) {
-  theme_cinderhaven(base_size = base_size) +
+theme_lailara_horizontal <- function(base_size = 12) {
+  theme_lailara(base_size = base_size) +
     theme(
-      panel.grid.major.x = element_line(color = cinderhaven_palette$bg_pale,
-                                        linewidth = 0.4),
+      panel.grid.major.x = element_line(color = LL_GRIDLINE, linewidth = 0.3),
       panel.grid.major.y = element_blank()
     )
 }
 
-# ---- formatters ----------------------------------------------------------
-# Pre-baked scales for currency. Use these everywhere instead of
-# constructing label_dollar() inline — keeps every chart consistent.
+# Backward-compatible aliases so chart scripts don't need line-by-line edits
+theme_cinderhaven            <- theme_lailara
+theme_cinderhaven_horizontal <- theme_lailara_horizontal
 
-# Compact dollar format: $1.2M / $850k / $642
+cinderhaven_palette <- list(
+  navy       = LL_CHICAGO,
+  red        = LL_RED,
+  coral      = LL_TOKYO,
+  teal       = LL_HK,
+  blue       = LL_CHICAGO,
+  blue_muted = LL_CHICAGO_LIGHT,
+  text       = LL_TEXT,
+  text_muted = LL_TEXT_SEC,
+  bg_pale    = LL_GRIDLINE,
+  bg_paler   = LL_SURFACE,
+  white      = LL_CANVAS
+)
+
+# ---- formatters ------------------------------------------------------------
+
 fmt_dollar_short <- function(x) {
   ifelse(is.na(x), "—",
    ifelse(abs(x) >= 1e6, sprintf("$%.2fM", x / 1e6),
@@ -174,7 +173,6 @@ fmt_dollar_short <- function(x) {
                                                format = "d")))))
 }
 
-# Compact y-axis label_dollar, defaults to k. Override scale for M.
 scale_y_dollar_k <- function(...) {
   scale_y_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"), ...)
 }
@@ -191,18 +189,12 @@ scale_x_dollar_m <- function(...) {
   scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"), ...)
 }
 
-# ---- caption helper ------------------------------------------------------
-# All chart captions read "Source: <plain English>" — never reference the
-# .rds file name or the database table directly.
-
+# ---- caption helper --------------------------------------------------------
 src_caption <- function(text) {
   paste0("Source: ", text)
 }
 
-# ---- product-line / retailer scale shortcuts -----------------------------
-# Use these in charts so the color mapping is one line:
-#   ggplot(...) + scale_pl_color() + ...
-
+# ---- product-line / retailer scale shortcuts -------------------------------
 scale_pl_color <- function(...) {
   scale_color_manual(values = product_line_colors, ...)
 }
@@ -222,10 +214,7 @@ scale_risk_band_fill <- function(...) {
   scale_fill_manual(values = risk_band_colors, ...)
 }
 
-# ---- self-test -----------------------------------------------------------
-# Set CINDERHAVEN_THEME_TEST=1 to render a 2×2 sample to output/charts/
-# proving the theme + palette + helpers all wire up correctly.
-
+# ---- self-test -------------------------------------------------------------
 if (identical(Sys.getenv("CINDERHAVEN_THEME_TEST"), "1")) {
   suppressPackageStartupMessages({
     library(dplyr); library(tibble); library(patchwork)
@@ -256,27 +245,27 @@ if (identical(Sys.getenv("CINDERHAVEN_THEME_TEST"), "1")) {
          x = NULL, y = "Revenue (sample units)",
          caption = src_caption("test data"),
          color = NULL) +
-    theme_cinderhaven()
+    theme_lailara()
 
   p2 <- ggplot(d_ret, aes(revenue, retailer, fill = retailer)) +
     geom_col(width = 0.7) +
     scale_x_dollar_m() +
     scale_retailer_fill(guide = "none") +
-    labs(title = "Retailer palette — Walmart muted, others accented",
-         subtitle = "Walmart is the dominant share — let it sit quietly",
+    labs(title = "Retailer palette",
+         subtitle = "Walmart is the dominant share",
          x = NULL, y = NULL,
          caption = src_caption("test data")) +
-    theme_cinderhaven_horizontal()
+    theme_lailara_horizontal()
 
   p3 <- ggplot(tibble(x = c("Pass", "Fail"), y = c(63, 27)),
                aes(y, x, fill = x)) +
     geom_col(width = 0.55) +
     scale_passfail_fill(guide = "none") +
-    labs(title = "Pass / fail palette — teal vs. red",
+    labs(title = "Pass / fail palette",
          subtitle = "Used wherever a SKU passes or fails a check",
          x = "SKU count", y = NULL,
          caption = src_caption("test data")) +
-    theme_cinderhaven_horizontal()
+    theme_lailara_horizontal()
 
   d_risk <- tibble(
     band = factor(names(risk_band_colors), levels = names(risk_band_colors)),
@@ -284,15 +273,15 @@ if (identical(Sys.getenv("CINDERHAVEN_THEME_TEST"), "1")) {
   p4 <- ggplot(d_risk, aes(band, n, fill = band)) +
     geom_col(width = 0.65) +
     scale_risk_band_fill(guide = "none") +
-    labs(title = "Risk-band palette — plain-English tier labels only",
-         subtitle = "No 'Q1/Q2/Q3/Q4' anywhere reader-facing",
+    labs(title = "Risk-band palette",
+         subtitle = "Plain-English tier labels only",
          x = NULL, y = "SKU count",
          caption = src_caption("test data")) +
-    theme_cinderhaven()
+    theme_lailara()
 
   out <- (p1 | p2) / (p3 | p4)
   ggsave(file.path(TEST_OUT, "00_theme_smoketest.png"), out,
-         width = 12, height = 8, dpi = 150, bg = "white")
+         width = 12, height = 8, dpi = 150, bg = LL_CANVAS)
   cat("theme smoketest written:",
       file.path(TEST_OUT, "00_theme_smoketest.png"), "\n")
 }

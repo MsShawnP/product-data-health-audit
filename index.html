@@ -7,41 +7,47 @@
   <meta name="description" content="A complete product data health audit for a fictional specialty food company. Five artifacts from one R+Quarto pipeline.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --navy:        #1B2A4A;
-      --red:         #C0221F;
-      --coral:       #D35830;
-      --teal:        #1E8C7E;
-      --blue-muted:  #576D91;
-      --text:        #2D3436;
-      --text-muted:  #636E72;
-      --bg-pale:     #E8ECF0;
-      --bg-paler:    #F4F6F8;
+      --ll-canvas:      #f5f3ee;
+      --ll-red-42:      #cc100a;
+      --ll-chicago-20:  #1f2e7a;
+      --ll-chicago-10:  #141e52;
+      --ll-hk-35:       #158f75;
+      --ll-tokyo-40:    #b82d4a;
+      --ll-sg-55:       #ee8a2a;
+      --ll-ink:         #0d0d0d;
+      --ll-text:        #333333;
+      --ll-text-sec:    #595959;
+      --ll-gridline:    #d9d9d9;
+      --ll-surface:     #f2f2f2;
+      --ll-serif:       'Playfair Display', Georgia, 'Times New Roman', serif;
+      --ll-sans:        'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
-      font-family: 'Inter', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
-      color: var(--text);
-      background: #ffffff;
-      line-height: 1.55;
+      font-family: var(--ll-sans);
+      color: var(--ll-text);
+      background: var(--ll-canvas);
+      line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
     .container {
-      max-width: 880px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 56px 2rem 64px;
+      padding: 48px 24px 64px;
     }
     header {
-      border-bottom: 2px solid var(--navy);
+      border-bottom: 1px solid var(--ll-gridline);
       padding-bottom: 18px;
       margin-bottom: 28px;
     }
     h1 {
-      color: var(--navy);
+      font-family: var(--ll-serif);
+      color: var(--ll-ink);
       font-size: 1.95rem;
       font-weight: 700;
       letter-spacing: -0.015em;
@@ -49,23 +55,23 @@
       line-height: 1.15;
     }
     .subtitle {
-      color: var(--text-muted);
+      color: var(--ll-text-sec);
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: 400;
       margin: 0;
     }
     .description {
       font-size: 1.05rem;
-      color: var(--text);
+      color: var(--ll-text);
       margin: 0 0 36px 0;
+      max-width: 660px;
     }
-    .description strong { color: var(--red); font-weight: 600; }
+    .description strong { color: var(--ll-red-42); font-weight: 600; }
     h2 {
-      color: var(--navy);
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      font-family: var(--ll-serif);
+      color: var(--ll-ink);
+      font-size: 1.35rem;
+      font-weight: 700;
       margin: 36px 0 12px 0;
     }
     .grid {
@@ -75,7 +81,7 @@
     }
     @media (max-width: 640px) {
       .grid { grid-template-columns: 1fr; }
-      .container { padding: 40px 1.5rem 48px; }
+      .container { padding: 32px 16px 48px; }
       h1 { font-size: 1.6rem; }
     }
     .card {
@@ -83,57 +89,60 @@
       flex-direction: column;
       gap: 4px;
       padding: 14px 18px;
-      background: var(--bg-paler);
-      border-left: 3px solid var(--navy);
-      border-radius: 4px;
+      background: var(--ll-surface);
+      border-left: 3px solid var(--ll-chicago-20);
+      border-radius: 2px;
       text-decoration: none;
-      color: var(--text);
-      transition: background 0.12s ease, border-color 0.12s ease;
+      color: var(--ll-text);
+      transition: background 100ms ease-out, border-color 100ms ease-out;
     }
     .card:hover, .card:focus {
-      background: var(--bg-pale);
-      border-left-color: var(--red);
+      background: var(--ll-gridline);
+      border-left-color: var(--ll-red-42);
       outline: none;
     }
     .card:focus-visible {
-      box-shadow: 0 0 0 2px var(--red);
+      outline: 2px solid var(--ll-ink);
+      outline-offset: 2px;
     }
     .card-title {
-      color: var(--navy);
+      font-family: var(--ll-sans);
+      color: var(--ll-chicago-20);
       font-weight: 600;
       font-size: 1rem;
     }
     .card-meta {
-      color: var(--text-muted);
+      color: var(--ll-text-sec);
       font-size: 0.82rem;
-      font-weight: 500;
+      font-weight: 400;
     }
     .card-meta .ext {
       display: inline-block;
       margin-left: 4px;
-      color: var(--blue-muted);
+      color: var(--ll-text-sec);
     }
     .urgency {
       font-size: 0.92rem;
-      color: var(--text-muted);
-      border-left: 3px solid var(--coral);
+      color: var(--ll-text-sec);
+      border-left: 3px solid var(--ll-red-42);
       padding-left: 14px;
       margin: -12px 0 36px 0;
+      max-width: 660px;
     }
-    .urgency strong { color: var(--coral); font-weight: 600; }
+    .urgency strong { color: var(--ll-red-42); font-weight: 600; }
     footer {
       margin-top: 48px;
       padding-top: 18px;
-      border-top: 1px solid var(--bg-pale);
-      color: var(--text-muted);
+      border-top: 1px solid var(--ll-gridline);
+      color: var(--ll-text-sec);
       font-size: 0.85rem;
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 8px;
     }
-    footer a { color: var(--navy); text-decoration: none; font-weight: 500; }
-    footer a:hover { color: var(--red); }
+    footer a { color: var(--ll-text); text-decoration: underline; font-weight: 400; }
+    footer a:hover { color: var(--ll-chicago-20); }
   </style>
 </head>
 <body>

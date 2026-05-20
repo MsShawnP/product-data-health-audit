@@ -31,7 +31,7 @@ velocity         <- read_p("velocity")
 # ---- helpers --------------------------------------------------------------
 
 # Apply a header style + freeze top row + reasonable column widths.
-finish_sheet <- function(wb, sheet, df, header_fill = "#1f4e79") {
+finish_sheet <- function(wb, sheet, df, header_fill = "#1f2e7a") {
   n_col <- ncol(df)
   n_row <- nrow(df)
   if (n_row == 0 || n_col == 0) return(invisible(wb))

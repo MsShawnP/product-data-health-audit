@@ -48,13 +48,13 @@ dollar_cell <- function(value) {
 }
 
 ramp_red <- function(x) {
-  if (is.na(x)) return("#FFFFFF")
-  grDevices::colorRampPalette(c("#FFFFFF", cinderhaven_palette$red))(101)[
+  if (is.na(x)) return(LL_CANVAS)
+  grDevices::colorRampPalette(c(LL_CANVAS, cinderhaven_palette$red))(101)[
     pmin(101, pmax(1, round(x * 100) + 1))]
 }
 ramp_teal <- function(x) {
-  if (is.na(x)) return("#FFFFFF")
-  grDevices::colorRampPalette(c("#FFFFFF", cinderhaven_palette$teal))(101)[
+  if (is.na(x)) return(LL_CANVAS)
+  grDevices::colorRampPalette(c(LL_CANVAS, cinderhaven_palette$teal))(101)[
     pmin(101, pmax(1, round(x * 100) + 1))]
 }
 
