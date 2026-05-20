@@ -71,13 +71,22 @@ blockquote, .callout {
   border-radius: 0 2px 2px 0;
 }
 
+/* Wrap tables in a scroll container so wide tables never force horizontal page scroll */
+.table-wrapper,
+div.cell-output-display {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 table {
   font-family: var(--ll-sans);
   font-size: 0.92rem;
   border-collapse: collapse;
   margin: 1rem 0;
+  max-width: 100%;
+  width: 100%;
 }
-th { border-bottom: 2px solid var(--ll-text); text-align: left; padding: 0.4rem 0.6rem; }
+th { border-bottom: 2px solid var(--ll-text); text-align: left; padding: 0.4rem 0.6rem; white-space: nowrap; }
 td { border-bottom: 1px solid var(--ll-gridline); padding: 0.35rem 0.6rem; }
 
 figure { margin: 1.5rem 0; }
