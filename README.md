@@ -53,7 +53,7 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 - **R** — data prep, analytical frames, charts, workbook generation
 - **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts
-- **Postgres** — Cinderhaven Data Platform (9 tables, 1.1M scan data rows)
+- **Postgres** — Cinderhaven Data Platform (8 staging views, 1.1M scan data rows; optional for reproduction — cached data included)
 - **ggplot2** — all charts, custom theme with project color palette
 - **plotly** — interactive chart versions in HTML report
 - **reactable** — interactive tables in report and dashboard
@@ -63,34 +63,32 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 ## How to reproduce
 
-**Prerequisites:** [R](https://cran.r-project.org/) with RPostgres installed.
+**Prerequisites:** [R](https://cran.r-project.org/) and [Quarto](https://quarto.org/docs/get-started/).
 
 ```bash
 git clone https://github.com/MsShawnP/product-data-health-audit.git
 cd product-data-health-audit
-cp .Renviron.example .Renviron   # edit DATABASE_URL if not using local Docker
 Rscript -e "renv::restore()"
-Rscript -e "renv::install('RPostgres')"
 Rscript R/run_all.R
 ```
 
-To run locally, start the shared Docker Postgres from
-[refactor-older-cinderhaven-projects](https://github.com/MsShawnP/refactor-older-cinderhaven-projects):
+No database required. The repository includes a cached snapshot of all source data (`output/frames/raw_tables.rds`). When `DATABASE_URL` is not set, the pipeline skips the database step and builds everything from this cache.
 
-```bash
-# In the refactor-older-cinderhaven-projects repo:
-docker compose up
-
-# Then in this repo:
-Rscript R/run_all.R
-```
-
-The R pipeline loads tables from the Cinderhaven Data Platform, builds
-all canonical data frames, generates 21 charts, renders the Excel
-workbook, and produces the Quarto artifacts. Total R run time:
-approximately two minutes.
+The R pipeline builds all canonical data frames, generates 21 charts, renders the Excel workbook, and produces the Quarto artifacts. Total R run time: approximately two minutes.
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
+
+### Refreshing source data
+
+The cached `raw_tables.rds` is sufficient for reproducing all artifacts. To refresh the underlying data from the Cinderhaven Data Platform (Postgres), set `DATABASE_URL` in `.Renviron`:
+
+```bash
+cp .Renviron.example .Renviron
+# Edit .Renviron with your Postgres connection string
+Rscript R/run_all.R
+```
+
+The pipeline connects to Postgres only in `R/01_load_raw.R`, pulls 8 tables, and saves a fresh `raw_tables.rds`. All downstream scripts read from the cache.
 
 ## Running this for a different company
 
@@ -137,6 +135,7 @@ product-data-health-audit/
 │   ├── compliance_timeline.pdf          # Shareable artifact
 │   └── scorecard.pdf                    # Shareable artifact
 ├── docs/process/                        # Build-process documentation
+├── docs/solutions/                      # Structured knowledge docs (design patterns, fixes)
 ├── data_generation_log.md               # How the synthetic data was built
 ├── .github/workflows/render.yml         # CI pipeline
 ├── renv.lock                            # Dependency snapshot
