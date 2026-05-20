@@ -1,7 +1,7 @@
 /* report.css — Lailara Design System v2 type and table styling.
    Targets HTML output only; PDF uses the LaTeX defaults. */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+@import url('../../assets/fonts/fonts.css');
 
 :root {
   --ll-canvas:      #f5f3ee;
