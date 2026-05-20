@@ -1,7 +1,7 @@
 # shiny/app.R — Data Debt Calculator
 #
 # Standalone tool. Not specific to any company. The default inputs are a
-# reference catalog around 90 SKUs and 4 retailers; change them to match
+# reference catalog of 50 SKUs and 4 retailers; change them to match
 # your own and the rest of the page updates.
 #
 # Cost model (3 components):
@@ -9,7 +9,7 @@
 #   stalled_launch   = N (1 - P) * A * launch_share * (delay_days / 365)
 #   shelf_loss       = N (1 - P) * A * deauth_diff_rate
 # Constants below were calibrated so the reference defaults reproduce the
-# $59k / $234k / $68k breakdown that appears in the case study.
+# ~$430k total that appears in the case study.
 
 suppressPackageStartupMessages({
   library(shiny)
@@ -53,8 +53,8 @@ PAL <- list(
 
 # ---- model constants -----------------------------------------------------
 LAUNCH_SHARE   <- 0.25     # share of failing SKUs in a launch window in any year
-DELAY_DAYS     <- 24       # calibrated so N=90 defaults reproduce the $361k case-study total
-DEAUTH_DIFF    <- 0.0048   # incremental annual deauth rate attributable to low data quality
+DELAY_DAYS     <- 40       # calibrated so N=50 defaults reproduce the ~$430k case-study total
+DEAUTH_DIFF    <- 0.0010   # incremental annual deauth rate attributable to low data quality
 TODAY          <- Sys.Date()
 GS1_SUNRISE    <- as.Date("2027-12-31")
 FSMA_204       <- as.Date("2028-07-20")
@@ -119,7 +119,7 @@ emergency_mult <- function(months_waited, months_to_deadline) {
 
 cost_of_delay <- function(N, R, C, P, A) {
   cc <- cost_components(N, R, C, P, A)
-  base_fix_hours    <- 27           # from the methodology appendix
+  base_fix_hours    <- 52           # from the methodology appendix
   base_hourly_rate  <- 60           # generic clerical rate
   base_fix_cost     <- base_fix_hours * base_hourly_rate
 
@@ -244,7 +244,7 @@ ui <- page_navbar(
             style = "margin-top:0;",
             "Defaults match a reference catalog. Change them to match your own."),
           numericInput("n_skus", "SKU count",
-                       value = 90, min = 20, max = 500, step = 10,
+                       value = 50, min = 20, max = 500, step = 10,
                        width = "100%"),
           tags$div(class = "form-text",
                    "How many SKUs are in your active catalog. Range: 20 to 500."),
@@ -254,17 +254,17 @@ ui <- page_navbar(
           tags$div(class = "form-text",
                    "Distinct retailer accounts you ship to. Range: 1 to 12."),
           numericInput("annual_cb", "Annual chargebacks ($)",
-                       value = 59000, min = 0, max = 5e6, step = 1000,
+                       value = 112000, min = 0, max = 5e6, step = 1000,
                        width = "100%"),
           tags$div(class = "form-text",
                    "What retailers deduct from your settlement statements each year."),
           sliderInput("pass_rate", "Data quality pass rate",
-                      value = 0.44, min = 0, max = 1, step = 0.01,
+                      value = 0.60, min = 0, max = 1, step = 0.01,
                       ticks = FALSE, width = "100%"),
           tags$div(class = "form-text",
                    "Share of SKUs that pass retailer required-field checks."),
           numericInput("rev_per_sku", "Avg annual revenue per SKU ($)",
-                       value = 284000, min = 1000, max = 5e6, step = 1000,
+                       value = 559000, min = 1000, max = 5e6, step = 1000,
                        width = "100%"),
           tags$div(class = "form-text",
                    "Trailing-twelve-month sales divided by active SKU count."),
@@ -350,16 +350,16 @@ ui <- page_navbar(
           p(class = "small text-muted",
             "Same inputs as the Calculator tab. Cost-of-Delay shows what changes when you wait."),
           numericInput("n_skus2", "SKU count",
-                       value = 90, min = 20, max = 500, step = 10),
+                       value = 50, min = 20, max = 500, step = 10),
           numericInput("n_retailers2", "Retailer count",
                        value = 4, min = 1, max = 12, step = 1),
           numericInput("annual_cb2", "Annual chargebacks ($)",
-                       value = 59000, min = 0, max = 5e6, step = 1000),
+                       value = 112000, min = 0, max = 5e6, step = 1000),
           sliderInput("pass_rate2", "Data quality pass rate",
-                      value = 0.44, min = 0, max = 1, step = 0.01,
+                      value = 0.60, min = 0, max = 1, step = 0.01,
                       ticks = FALSE),
           numericInput("rev_per_sku2", "Avg annual revenue per SKU ($)",
-                       value = 284000, min = 1000, max = 5e6, step = 1000)
+                       value = 559000, min = 1000, max = 5e6, step = 1000)
         ),
 
         div(role = "region", `aria-label` = "Cost of delay",
@@ -434,7 +434,7 @@ server <- function(input, output, session) {
   # Last-known-good values for the 5 inputs. Seeded with the reference
   # defaults; updated by the per-input observers below ONLY when the
   # incoming value passes ok_num().
-  last <- reactiveValues(N = 90, R = 4, C = 59000, P = 0.44, A = 284000)
+  last <- reactiveValues(N = 50, R = 4, C = 112000, P = 0.60, A = 559000)
 
   observe({ if (ok_num(input$n_skus,      1, 500))  last$N <- as.numeric(input$n_skus) })
   observe({ if (ok_num(input$n_retailers, 1, 12))   last$R <- as.numeric(input$n_retailers) })
