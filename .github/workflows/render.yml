@@ -120,6 +120,8 @@ jobs:
           cp index.html .nojekyll _site/
           cp quarto/report.html quarto/report.pdf _site/quarto/
           cp quarto/dashboard.html quarto/tearsheet.pdf _site/quarto/
+          cp -r quarto/report_files _site/quarto/report_files
+          cp -r quarto/dashboard_files _site/quarto/dashboard_files
           cp -r quarto/assets/* _site/quarto/assets/ 2>/dev/null || true
           cp output/compliance_timeline.pdf output/scorecard.pdf _site/output/
           cp output/*_audit.xlsx _site/output/ 2>/dev/null || true
