@@ -2,7 +2,7 @@
 
 A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs of growing food brands.
 
-Cinderhaven Provisions is a $25 million specialty food brand with 90 SKUs, 3 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+Cinderhaven Provisions is a $25 million specialty food brand with 50 SKUs, 3 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
 
 ## Why now
 
@@ -12,7 +12,7 @@ GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D ba
 
 One pipeline generates five artifacts:
 
-1. **Audit report** (Quarto HTML + PDF) — 8-page case study finding $361,000/year in quantifiable cost from product data defects, with a triage list that ranks every SKU by fix priority
+1. **Audit report** (Quarto HTML + PDF) — 8-page case study finding ~$430,000/year in quantifiable cost from product data defects, with a triage list that ranks every SKU by fix priority
 2. **Executive tearsheet** (2-page PDF) — board-level summary with three headline numbers and a 14-day turnaround plan
 3. **Monday Morning Dashboard** (standalone HTML) — the velocity report, retailer P&L, and triage tracker a CEO currently builds by hand in Excel, rebuilt as an interactive tool
 4. **Excel workbook** (8 tabs, .xlsx) — the CEO's working copy with data dictionary and broker intake checklist
