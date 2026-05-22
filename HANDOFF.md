@@ -170,17 +170,30 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 - CI should be green
 - All /improve CRITICAL items (1-4) resolved
 
-**Next session — start here:**
-1. Remaining /improve IMPORTANT items:
-   - No PLAN.md exists (#6)
-   - No `tryCatch()` on `readRDS()` calls (#7)
-   - Barcode validator uses EAN-13 weights, not GS1-standard GTIN-14 weights (#8) — documented trade-off in barcode_validators.R comment
-   - O(n²) `still_broken_vec` computation (#9) — should use a join
-2. Remaining /improve NICE TO HAVE:
-   - Frame-loading boilerplate duplicated across 5 scripts (#10)
-   - Minor naming inconsistencies (#11)
-   - `data_generation_log.md` still references 90 SKUs (#12) — SSOT has 50
-3. Dependency audit (never done)
+**Next:** Project is in maintenance mode. Next /improve review due 2026-06-22, next dep audit due 2026-07-22.
+
+## 2026-05-22 (session 4) — /improve cleanup + dependency audit
+
+**Started from:** 5 important + 3 nice-to-have /improve items remaining, plus dependency audit never done.
+
+**Did:**
+- Fixed #7: tryCatch on readRDS() in 02_build_frames.R
+- Fixed #8: Switched barcode validator to GS1-standard GTIN-14 weights, updated tests
+- Fixed #9: Replaced O(n²) still_broken_vec with join-based approach
+- Fixed #10: Extracted shared read_frame helper into R/00_setup.R
+- Fixed #11: Renamed chargebacks_e → chargebacks_enriched across 3 scripts
+- Fixed #12: Updated data_generation_log.md from 90→50 SKUs
+- Created PLAN.md (local only, gitignored)
+- Dependency audit: updated bit64/renv, added svglite/textshaping/processx to lockfile, no CVEs
+- Pushed 4 commits, CI green
+
+**State:**
+- All 12 /improve items resolved
+- Health tracker fully green
+- Git: clean, pushed to main (e18a0bc)
+- CI: green
+
+**Next:** Maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
 
 ---
 
@@ -191,5 +204,5 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 - **Top concerns:** 100% SKU failure rate caused by three compounding code bugs (wrong score denominator, missing field mappings in retailer readiness, UPC validation failure). Narrative will need full rewrite after fixes.
 - **What was fixed session 2:** Chart title clipping (wrap_title + encoding fixes + chart 06 NA bug). Committed as 9818f0c.
 - **What was fixed session 3:** All 4 critical items (DQ denominator, readiness field mapping, UPC validation, narrative update). Committed as 141c7d8.
-- **Remaining:** 5 important, 3 nice-to-have, plus dependency audit.
-- **Next review:** 2026-06-22
+- **What was fixed session 4:** All remaining items (#7-#12) plus dependency audit. Committed as d770702, ce80690, c017a73, e18a0bc.
+- **All items resolved.** Next review: 2026-06-22

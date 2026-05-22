@@ -54,6 +54,12 @@ Durable choices with rationale. These should hold across future sessions.
 - **Scope:** `quarto/report.qmd` setup chunk (variables removed), Part 1 narrative (sections removed), Part 4 methodology (estimates removed from total).
 - **Do not:** Re-introduce aggregate cost estimates that combine measured chargebacks with modeled/assumed costs unless the model is documented in the methodology section.
 
+### 2026-05-22 — Barcode validator uses GS1-standard weights, not dataset-generator weights
+
+- **Why:** The previous EAN-13-style weights `(1,3,1,3,...)` matched the synthetic data generator but violated the GS1 spec for GTIN-14. The difference in failure rates (90% vs ~81%) is acceptable — the report uses dynamic inline R and adapts automatically.
+- **Scope:** `R/barcode_validators.R`, `mod10_check_digit()`. Applies to GTIN-14 and UPC-A validation.
+- **Do not:** Revert to EAN-13 weights to match the dataset generator. If the synthetic data needs regenerating, generate it with correct GS1 weights instead.
+
 ### 2026-05-22 — Retailer readiness excludes SSOT-absent fields
 
 - **Why:** The `retailer_requirements` table references fields (`allergen_statement`, `nutrition_facts`, `product_image`, `sds_sheet`, `serving_size`) that do not exist in the raw `product_master`. Left-joining these against `field_evals` produced NAs, which `coalesce(passes, FALSE)` silently converted to failures — making every SKU fail every retailer. Fields with name mismatches (`case_dimensions`, `unit_weight`) compounded the problem.
