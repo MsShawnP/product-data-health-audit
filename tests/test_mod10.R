@@ -2,8 +2,8 @@
 #
 # Run: Rscript tests/test_mod10.R
 #
-# Uses the EAN-13-style weight pattern (1,3,1,3,...) that matches the
-# Cinderhaven dataset generator. See the algorithm note in barcode_validators.R.
+# Uses GS1-standard weight patterns: (3,1,3,1,...) for GTIN-14/UPC-A bodies,
+# (1,3,1,3,...) for EAN-13 bodies. See barcode_validators.R.
 
 ROOT <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
@@ -35,22 +35,26 @@ assert("non-numeric returns NA",
 assert("check digit for 13 zeros is 0",
        mod10_check_digit("0000000000000") == 0L)
 
-# Weight pattern verification: EAN-13-style (1,3,1,3,...)
-assert("first digit gets weight 1",
-       mod10_check_digit("1000000000000") == 9L)
+# Weight pattern verification: GS1-standard (3,1,3,1,...) for 13-digit body
+assert("13-digit body: first digit gets weight 3",
+       mod10_check_digit("1000000000000") == 7L)
 
-assert("second digit gets weight 3",
-       mod10_check_digit("0100000000000") == 7L)
+assert("13-digit body: second digit gets weight 1",
+       mod10_check_digit("0100000000000") == 9L)
 
-# Arithmetic: body '123' → weights 1,3,1 → sum 1+6+3=10 → check 0
-assert("body 123 → check 0",
-       mod10_check_digit("123") == 0L)
+# 12-digit body (EAN-13): weights (1,3,1,3,...)
+assert("12-digit body: first digit gets weight 1",
+       mod10_check_digit("100000000000") == 9L)
 
-# body '9' → 9*1=9 → (10-9)%%10=1
-assert("single digit 9 → check 1",
-       mod10_check_digit("9") == 1L)
+# 3-digit body → weights 3,1,3 → sum 3+6+9=18 → check (10-8)%10=2
+assert("body 123 → check 2",
+       mod10_check_digit("123") == 6L)
 
-# body '5' → 5*1=5 → (10-5)%%10=5
+# body '9' → 9*3=27 → (10-7)%%10=3
+assert("single digit 9 → check 3",
+       mod10_check_digit("9") == 3L)
+
+# body '5' → 5*3=15 → (10-5)%%10=5
 assert("single digit 5 → check 5",
        mod10_check_digit("5") == 5L)
 
@@ -76,10 +80,10 @@ assert("vectorized input works",
                  c(TRUE, FALSE)))
 
 assert("non-trivial valid GTIN-14 passes",
-       is_valid_gtin14("12345678901235"))
+       is_valid_gtin14("12345678901231"))
 
 assert("non-trivial GTIN-14 with wrong check digit fails",
-       !is_valid_gtin14("12345678901230"))
+       !is_valid_gtin14("12345678901235"))
 
 cat("\n--- is_valid_upc12 tests ---\n")
 
@@ -99,7 +103,7 @@ assert("non-trivial valid UPC-12 passes",
        is_valid_upc12("012345678905"))
 
 assert("non-trivial UPC-12 with wrong check digit fails",
-       !is_valid_upc12("012345678900"))
+       !is_valid_upc12("012345678901"))
 
 cat("\n--- issue_count formula regression ---\n")
 
