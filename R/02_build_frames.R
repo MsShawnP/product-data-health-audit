@@ -89,7 +89,7 @@ sku_dim <- product_master |>
   left_join(sku_costs, by = "sku") |>
   mutate(
     gtin_valid           = is_valid_gtin14(gtin14),
-    upc_valid            = is_valid_upc12(upc),
+    upc_valid            = is_valid_upc(upc),
     missing_case_weight  = is.na(case_weight_lbs),
     missing_case_dims    = is.na(case_length_in) | is.na(case_width_in) | is.na(case_height_in),
     missing_country      = is.na(country_of_origin) | country_of_origin == "",
@@ -115,7 +115,7 @@ sku_dim <- product_master |>
       as.integer(is.na(ows_complete) | !ows_complete) +
       as.integer(!is.na(weight_plausible) & !weight_plausible),
     chk_gtin_len = !is.na(gtin14) & nchar(as.character(gtin14)) == 14,
-    chk_upc_len  = !is.na(upc) & nchar(as.character(upc)) >= 12,
+    chk_upc_len  = !is.na(upc) & nchar(as.character(upc)) %in% c(12L, 13L),
     checks_passed_6 =
       as.integer(chk_gtin_len) +
       as.integer(chk_upc_len) +
@@ -125,8 +125,7 @@ sku_dim <- product_master |>
       as.integer(!missing_brand_owner)
   ) |>
   mutate(
-    # 8 binary checks → quality score on 0-100 scale (matches DB: 6 checks / 8).
-    data_quality_score = round(checks_passed_6 / 8 * 100, 1)
+    data_quality_score = round(checks_passed_6 / 6 * 100, 1)
   )
 
 # ---- F2. sku_revenue: trailing-12-month rollup ----------------------------
@@ -200,30 +199,28 @@ retailer_chargebacks <- chargebacks |>
 
 # Required-field rules from retailer_requirements; we evaluate each SKU
 # against each rule for each retailer that has rules.
-required_fields <- retailer_requirements |> filter(required == 1)
+required_fields <- retailer_requirements |>
+  filter(required == 1) |>
+  mutate(field = recode(field,
+    case_dimensions = "case_dims",
+    unit_weight     = "unit_weight_lbs"
+  )) |>
+  filter(!field %in% c("allergen_statement", "nutrition_facts",
+                        "product_image", "sds_sheet", "serving_size"))
 
-# Pre-evaluate every known field for all SKUs at once, then join.
 field_evals <- sku_dim |>
   transmute(
     sku,
-    gtin14               = is_valid_gtin14(gtin14),
-    upc                  = is_valid_upc12(upc),
-    case_weight_lbs      = !is.na(case_weight_lbs),
-    case_length_in       = !is.na(case_length_in),
-    case_width_in        = !is.na(case_width_in),
-    case_height_in       = !is.na(case_height_in),
-    case_pack_qty        = !is.na(case_pack_qty),
-    unit_weight_lbs      = !is.na(unit_weight_lbs),
-    msrp                 = !is.na(msrp),
-    country_of_origin    = !(is.na(country_of_origin) | country_of_origin == ""),
-    brand_owner          = !(is.na(brand_owner) | brand_owner == ""),
-    serving_size         = !(is.na(serving_size) | serving_size == ""),
-    calories_per_serving = !is.na(calories_per_serving),
-    sodium_mg            = !is.na(sodium_mg),
-    total_fat_g          = !is.na(total_fat_g),
-    total_carb_g         = !is.na(total_carb_g),
-    protein_g            = !is.na(protein_g),
-    oneworldsync_status  = oneworldsync_status == "Registered - Complete"
+    gtin14            = is_valid_gtin14(gtin14),
+    upc               = is_valid_upc(upc),
+    case_weight_lbs   = !is.na(case_weight_lbs),
+    case_dims         = !is.na(case_length_in) & !is.na(case_width_in) & !is.na(case_height_in),
+    case_pack_qty     = !is.na(case_pack_qty),
+    unit_weight_lbs   = !is.na(unit_weight_lbs),
+    msrp              = !is.na(msrp),
+    country_of_origin = !(is.na(country_of_origin) | country_of_origin == ""),
+    brand_owner       = !(is.na(brand_owner) | brand_owner == ""),
+    oneworldsync_status = oneworldsync_status == "Registered - Complete"
   ) |>
   pivot_longer(-sku, names_to = "field", values_to = "passes") |>
   mutate(passes = !is.na(passes) & passes)
