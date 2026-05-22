@@ -17,6 +17,11 @@ suppressPackageStartupMessages({
   library(htmlwidgets)
 })
 
+safe_fct_reorder <- function(f, x, ...) {
+  if (length(unique(x)) <= 1) return(factor(f))
+  forcats::fct_reorder(f, x, ...)
+}
+
 ROOT     <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
@@ -46,14 +51,18 @@ raw             <- read_p("raw_tables")
 dollar_short <- fmt_dollar_short
 
 save_pair <- function(p_static, p_interactive, name,
-                      w_in = 9, h_in = 6, dpi = 200) {
+                      w_in = 9, h_in = 6, dpi = 300) {
   png_path  <- file.path(OUT_DIR, paste0(name, ".png"))
+  svg_path  <- file.path(OUT_DIR, paste0(name, ".svg"))
   html_path <- file.path(OUT_DIR, paste0(name, ".html"))
   ggsave(png_path, p_static, width = w_in, height = h_in, dpi = dpi, bg = LL_CANVAS)
+  ggsave(svg_path, p_static, width = w_in, height = h_in, bg = LL_CANVAS, device = svglite::svglite)
   htmlwidgets::saveWidget(p_interactive, html_path, selfcontained = FALSE,
                           title = name)
   cat(sprintf("  png:  %-46s (%5.0f KB)\n", basename(png_path),
               file.info(png_path)$size / 1024))
+  cat(sprintf("  svg:  %-46s (%5.0f KB)\n", basename(svg_path),
+              file.info(svg_path)$size / 1024))
   cat(sprintf("  html: %-46s (%5.0f KB)\n", basename(html_path),
               file.info(html_path)$size / 1024))
 }
@@ -101,7 +110,7 @@ c5 <- defect_cols |>
            rev_at_risk = sum(c5_src$ttm_revenue[flag]))
   }) |>
   bind_rows() |>
-  mutate(defect = fct_reorder(defect, pct_revenue))
+  mutate(defect = safe_fct_reorder(defect, pct_revenue))
 
 c5_long <- c5 |>
   pivot_longer(c(pct_skus, pct_revenue),
@@ -163,7 +172,7 @@ c6 <- retailer_rs |>
             .groups = "drop") |>
   mutate(retailer    = factor(retailer,
             levels = retailer_rs |> distinct(retailer) |> pull(retailer) |>
-                     intersect(c("Walmart","Costco","UNFI","Whole Foods"))),
+                     intersect(c("Walmart","Costco","Whole Foods"))),
          rev_at_risk_pct = rev_at_risk / rev_total,
          tooltip = paste0(
            "<b>", retailer, "</b><br>",
@@ -174,7 +183,7 @@ c6 <- retailer_rs |>
            " (", percent(rev_at_risk_pct, accuracy = 0.1), ")"))
 
 p6_base <- function(use_interactive) {
-  p <- ggplot(c6, aes(x = rev_at_risk, y = fct_reorder(retailer, rev_at_risk),
+  p <- ggplot(c6, aes(x = rev_at_risk, y = safe_fct_reorder(retailer, rev_at_risk),
                       fill = retailer))
   if (use_interactive) {
     p <- p + geom_col_interactive(aes(tooltip = tooltip, data_id = retailer),
@@ -195,7 +204,6 @@ p6_base <- function(use_interactive) {
     scale_fill_manual(values = c(
       "Walmart"     = cinderhaven_palette$red,
       "Costco"      = cinderhaven_palette$recede,
-      "UNFI"        = cinderhaven_palette$recede,
       "Whole Foods" = cinderhaven_palette$recede),
       guide = "none") +
     labs(title    = sprintf("%s of revenue rides on data Walmart could reject today",
@@ -221,7 +229,7 @@ c7 <- sku_master_full |>
             ttm_revenue  = sum(ttm_revenue, na.rm = TRUE),
             chargeback   = sum(chargeback_total, na.rm = TRUE),
             .groups = "drop") |>
-  mutate(issues_per_million = total_issues / (ttm_revenue / 1e6),
+  mutate(issues_per_million = ifelse(ttm_revenue > 0, total_issues / (ttm_revenue / 1e6), NA_real_),
          tooltip = paste0(
            "<b>", product_line, "</b><br>",
            n_skus, " SKUs · Annual revenue ", dollar_short(ttm_revenue), "<br>",
@@ -232,7 +240,7 @@ c7 <- sku_master_full |>
            "Issues per $1M revenue: ", round(issues_per_million, 2)))
 
 p7_base <- function(use_interactive) {
-  p <- ggplot(c7, aes(x = fct_reorder(product_line, issues_per_million),
+  p <- ggplot(c7, aes(x = safe_fct_reorder(product_line, issues_per_million),
                       y = issues_per_million, fill = product_line))
   if (use_interactive) {
     p <- p + geom_col_interactive(aes(tooltip = tooltip, data_id = product_line),
@@ -253,9 +261,13 @@ p7_base <- function(use_interactive) {
     labs(title    = {
            ps_ipm <- c7$issues_per_million[c7$product_line == "Pantry Staples"]
            as_ipm <- c7$issues_per_million[c7$product_line == "Artisan Sauces"]
-           pct_more <- round(100 * (ps_ipm / as_ipm - 1))
-           sprintf("Pantry Staples carries %d%% more data debt per dollar than Artisan Sauces",
-                   pct_more)
+           if (length(ps_ipm) && length(as_ipm) && !is.na(ps_ipm) && !is.na(as_ipm) && as_ipm > 0) {
+             pct_more <- round(100 * (ps_ipm / as_ipm - 1))
+             sprintf("Pantry Staples carries %d%% more data debt per dollar than Artisan Sauces",
+                     pct_more)
+           } else {
+             "Data debt by product line (revenue data unavailable for ratio)"
+           }
          },
          subtitle = "Issues per $1M of annual revenue. Higher = more data debt per dollar earned.",
          x = NULL, y = "Issues per $1M revenue",
@@ -469,12 +481,12 @@ stage3_skus <- as.integer(current_skus * 5L)
 
 c12 <- tribble(
   ~scenario,        ~sku_count, ~retailer_count,
-  paste0("Current (", current_skus, " SKUs, 4 retailers)"),   current_skus,         4L,
-  sprintf("Stage 2 (%d SKUs, 6 retailers)", stage2_skus),     stage2_skus,          6L,
+  paste0("Current (", current_skus, " SKUs, 3 retailers)"),   current_skus,         3L,
+  sprintf("Stage 2 (%d SKUs, 5 retailers)", stage2_skus),     stage2_skus,          5L,
   sprintf("Stage 3 (%d SKUs, 8 retailers)", stage3_skus),     stage3_skus,          8L
 ) |>
   mutate(scale_factor    = (sku_count / current_skus) *
-                           (retailer_count / 4),
+                           (retailer_count / 3),
          proj_chargebacks = current_cb_per_year * scale_factor,
          proj_revenue     = current_revenue * (sku_count / current_skus),
          scenario = factor(scenario, levels = scenario),
@@ -508,7 +520,7 @@ p12_base <- function(use_interactive) {
          x = NULL, y = "Projected annual chargebacks",
          caption = paste0(
            "Baseline: $", formatC(round(current_cb_per_year), big.mark = ",", format = "d"),
-           "/yr at ", current_skus, " SKUs × 4 retailers (annualized from 18mo).",
+           "/yr at ", current_skus, " SKUs × 3 retailers (annualized from 18mo).",
            " Real growth typically degrades defect rate — this is the floor.")) +
     theme_cinderhaven()
 }
@@ -604,8 +616,8 @@ c14 <- chargebacks_e |>
   arrange(desc(amt)) |>
   mutate(pct = amt / sum(amt),
          reason = factor(reason, levels = rev(reason)),
-         is_data_defect = reason %in% c("Invalid GTIN/UPC", "Missing product data",
-                                         "Dimension mismatch"),
+         is_data_defect = reason %in% c("Label / barcode fine", "Pricing error",
+                                         "Damaged goods"),
          tooltip = paste0(
            "<b>", reason, "</b><br>",
            dollar_short(amt), " (", percent(pct, accuracy = 0.1), ")<br>",
@@ -760,7 +772,7 @@ c17 <- process_debt |>
          # and runs at a fraction of the broker / quality_mgr rate — that's
          # the "doing it right" benchmark.
          is_good    = updated_by == "production_admin",
-         updated_by = fct_reorder(updated_by, chargeback_per_sku, .desc = TRUE),
+         updated_by = safe_fct_reorder(updated_by, chargeback_per_sku, .desc = TRUE),
          tooltip = paste0(
            "<b>", updated_by, "</b><br>",
            n_skus, " SKUs · quality ", round(mean_quality_score, 0), "<br>",
@@ -821,6 +833,11 @@ save_pair(p17_base(FALSE), to_girafe(p17_base(TRUE), w_in = 11, h_in = 6),
 
 cat("\n[19] OneWorldSync status distribution\n")
 
+if (!"oneworldsync_status" %in% names(raw$product_master) ||
+    all(is.na(raw$product_master$oneworldsync_status))) {
+  cat("  SKIPPED — oneworldsync_status column not present in current schema\n")
+} else {
+
 c19 <- raw$product_master |>
   count(oneworldsync_status, name = "n") |>
   arrange(desc(n)) |>
@@ -828,7 +845,7 @@ c19 <- raw$product_master |>
          is_complete = oneworldsync_status == "Registered - Complete",
          # Largest non-complete bucket is the problem in plain sight.
          is_top_problem = !is_complete & n == max(n[!is_complete]),
-         status = fct_reorder(oneworldsync_status, n),
+         status = safe_fct_reorder(oneworldsync_status, n),
          tooltip = paste0(
            "<b>", oneworldsync_status, "</b><br>",
            n, " SKUs (", percent(pct, accuracy = 0.1), ")"))
@@ -858,6 +875,7 @@ p19_base <- function(use_interactive) {
 
 save_pair(p19_base(FALSE), to_girafe(p19_base(TRUE), w_in = 9, h_in = 4),
           "19_oneworldsync_status", w_in = 9, h_in = 4)
+}
 
 # ---- chart 20: Retailer item-setup readiness (stacked bar) ----------------
 
@@ -882,7 +900,7 @@ c20_lab <- c20 |> filter(outcome == "Pass") |>
   transmute(retailer, label = paste0(round(100 * n / n_total), "% pass"))
 
 p20_base <- function(use_interactive) {
-  p <- ggplot(c20, aes(x = fct_reorder(retailer, ifelse(outcome == "Pass", n, 0),
+  p <- ggplot(c20, aes(x = safe_fct_reorder(retailer, ifelse(outcome == "Pass", n, 0),
                                         .fun = sum),
                        y = n, fill = outcome))
   if (use_interactive) {
@@ -975,13 +993,18 @@ save_pair(p21_base(FALSE), to_girafe(p21_base(TRUE), w_in = 9, h_in = 4.5),
 
 cat("\n[22] Serving size variants\n")
 
+if (!"serving_size" %in% names(raw$product_master) ||
+    all(is.na(raw$product_master$serving_size))) {
+  cat("  SKIPPED — serving_size column not present in current schema\n")
+} else {
+
 c22 <- raw$product_master |>
   count(serving_size, name = "n") |>
   arrange(desc(n)) |>
   mutate(serving_size = ifelse(is.na(serving_size) | serving_size == "",
                                "(missing)", serving_size),
          pct = n / sum(n),
-         serving_size = fct_reorder(serving_size, n),
+         serving_size = safe_fct_reorder(serving_size, n),
          tooltip = paste0(
            "<b>", serving_size, "</b><br>",
            n, " SKUs (", percent(pct, accuracy = 0.1), ")"))
@@ -1026,6 +1049,7 @@ p22_base <- function(use_interactive) {
 
 save_pair(p22_base(FALSE), to_girafe(p22_base(TRUE), w_in = 10, h_in = 6),
           "22_serving_size_variants", w_in = 10, h_in = 6)
+}
 
 # ---- chart 23: SKU risk (fix-priority) distribution -----------------------
 

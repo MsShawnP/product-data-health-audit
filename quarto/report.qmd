@@ -96,6 +96,9 @@ suppressPackageStartupMessages({
   library(dplyr); library(knitr); library(scales); library(lubridate)
 })
 
+chart_ext <- if (knitr::is_html_output()) "svg" else "png"
+chart <- function(name) paste0("../output/charts/", name, ".", chart_ext)
+
 smf  <- readRDS("../output/frames/sku_master_full.rds")
 rrs  <- readRDS("../output/frames/retailer_readiness_summary.rds")
 cbe  <- readRDS("../output/frames/chargebacks_enriched.rds")
@@ -146,106 +149,84 @@ wm_rev_pct  <- round(100 * wm_rev_risk / total_ttm_rev)
 
 stage2_skus <- as.integer(ceiling(n_skus * 2.5))
 stage3_skus <- as.integer(n_skus * 5L)
-stage2_cb   <- round(annual_cb * (stage2_skus / n_skus) * (6 / 4))
-stage3_cb   <- round(annual_cb * (stage3_skus / n_skus) * (8 / 4))
+stage2_cb   <- round(annual_cb * (stage2_skus / n_skus) * (5 / 3))
+stage3_cb   <- round(annual_cb * (stage3_skus / n_skus) * (8 / 3))
 
-chp02 <- smf |> filter(sku == "CHP-0002")
-chp02_events  <- cbe |> filter(sku == "CHP-0002") |> nrow()
-chp02_annual  <- round(chp02$chargeback_total * 12 / 18)
-chp02_monthly <- round(chp02$chargeback_total / 18)
+top_rev <- smf |> arrange(desc(ttm_revenue)) |> slice(1)
+top_cb  <- smf |> arrange(desc(chargeback_total)) |> slice(1)
+top_rev_events  <- cbe |> filter(sku == top_rev$sku) |> nrow()
+top_rev_annual  <- round(top_rev$chargeback_total * 12 / 18)
+top_rev_monthly <- round(top_rev$chargeback_total / 18)
+top_cb_events   <- cbe |> filter(sku == top_cb$sku) |> nrow()
+top_cb_annual   <- round(top_cb$chargeback_total * 12 / 18)
+
+n_upc_fail <- sum(!smf$upc_valid, na.rm = TRUE)
 
 data_defect_pct <- cbe |>
-  mutate(is_data = !grepl("Late Delivery|Short Shipment", reason,
+  mutate(is_data = !grepl("Late delivery|Short shipment|Damaged goods", reason,
                           ignore.case = TRUE)) |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
 non_data_annual <- round(annual_cb * (100 - data_defect_pct) / 100)
 
-gtin_cb_18mo <- cbe |>
-  filter(grepl("Invalid GTIN|Invalid UPC", reason, ignore.case = TRUE)) |>
+barcode_cb_18mo <- cbe |>
+  filter(grepl("Label.*barcode", reason, ignore.case = TRUE)) |>
   summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
-gtin_annual <- round(gtin_cb_18mo * 12 / 18)
+barcode_annual <- round(barcode_cb_18mo * 12 / 18)
 
 smf_ranked <- smf |> arrange(desc(chargeback_total)) |>
   mutate(cum_cb = cumsum(chargeback_total), cum_pct = cum_cb / sum(chargeback_total))
 n_50pct <- which(smf_ranked$cum_pct >= 0.50)[1]
 n_80pct <- which(smf_ranked$cum_pct >= 0.80)[1]
 
-quality_tiers <- smf |>
-  mutate(tier = ntile(data_quality_score, 4),
-         tier = factor(tier, levels = 1:4,
-                       labels = c("Worst 25%", "Below average",
-                                  "Above average", "Best 25%"))) |>
-  group_by(tier) |>
-  summarise(mean_days = round(mean(mean_days_to_scan, na.rm = TRUE)),
-            .groups = "drop")
-best_tier_days  <- quality_tiers |> filter(tier == "Best 25%") |> pull(mean_days)
-worst_tier_days <- quality_tiers |> filter(tier == "Worst 25%") |> pull(mean_days)
-days_spread <- worst_tier_days - best_tier_days
+mean_days_scan <- round(mean(smf$mean_days_to_scan, na.rm = TRUE))
 
-n_outside_best <- smf |> mutate(t = ntile(data_quality_score, 4)) |>
-  filter(t < 4) |> nrow()
-
-stalled_launch_cost <- smf |>
-  mutate(extra = pmax(0, mean_days_to_scan - best_tier_days, na.rm = TRUE)) |>
-  filter(extra > 0) |>
-  summarise(t = round(sum(extra * ttm_revenue / 365, na.rm = TRUE))) |> pull(t)
-
-dq_median <- median(smf$data_quality_score, na.rm = TRUE)
-deauth_bottom <- smf |> filter(data_quality_score <= dq_median) |>
-  summarise(rate = mean(deauth_rate, na.rm = TRUE), n = n(),
+deauth_stats <- smf |>
+  summarise(mean_rate = mean(deauth_rate, na.rm = TRUE),
             n_any = sum(deauth_count > 0, na.rm = TRUE),
+            total_deauth = sum(deauth_count, na.rm = TRUE),
             mean_rev = mean(ttm_revenue, na.rm = TRUE))
-deauth_top <- smf |> filter(data_quality_score > dq_median) |>
-  summarise(rate = mean(deauth_rate, na.rm = TRUE), n = n(),
-            n_any = sum(deauth_count > 0, na.rm = TRUE))
-deauth_ratio <- round(max(deauth_bottom$rate, 1e-9) /
-                      max(deauth_top$rate, 1e-9), 1)
-shelf_loss_cost <- max(0, round((deauth_bottom$rate - deauth_top$rate) *
-                                 deauth_bottom$n * deauth_bottom$mean_rev))
-total_annual_cost <- annual_cb + stalled_launch_cost + shelf_loss_cost
+mean_deauth_pct <- round(100 * deauth_stats$mean_rate, 1)
 
-entry_stats <- smf |>
-  group_by(updated_by) |>
-  summarise(n = n(),
-            cb_per_sku = round(sum(chargeback_total, na.rm = TRUE) / n()),
-            .groups = "drop") |>
-  arrange(desc(cb_per_sku))
-n_unknown_source <- sum(is.na(smf$updated_by))
-n_entry_paths <- n_distinct(smf$updated_by, na.rm = FALSE)
+n_retailers <- n_distinct(rrs$retailer)
+all_fail_all <- sum(rrs$overall_pass) == 0
 ```
 
 # Part 1: The Money
 
-By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of Cinderhaven's `r n_skus` SKUs carry GTINs that do not pass. Those `r n_gtin_fail` SKUs cannot participate in the transition until someone corrects a single digit in each record.
+By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of Cinderhaven's `r n_skus` SKUs carry GTIN-14s that do not pass. All `r n_upc_fail` carry invalid UPC-12 check digits. Those SKUs cannot participate in the transition until someone corrects the digits.
 
 Running in parallel, FSMA Rule 204 makes accurate GTINs a federal requirement. FDA food traceability mandates them as the product identifier backbone for tracking food through the supply chain. The barcode that used to be a scanning convenience is becoming the regulatory infrastructure for food safety. This is not a retailer preference. It is law.
 
-These two deadlines land on a company whose product master would fail basic validation at every contracted retailer today. `r rr("Walmart", "n_fail")` of `r n_skus` SKUs fail Walmart's required-field check. Those `r rr("Walmart", "n_fail")` carry `r ds(wm_rev_risk)` in trailing twelve-month revenue, `r wm_rev_pct`% of the catalog. Costco is nearly as exposed. UNFI and Whole Foods less so, but UNFI's `r rr("UNFI", "pass_rate")`% pass rate still puts `r ds(rev_at_risk("UNFI"))` at risk.
+These two deadlines land on a company whose product master would fail basic validation at every retailer today. Not most retailers. Every one. All `r n_skus` SKUs fail all `r n_retailers` retailers' required-field checks. The failure is uniform and total: `r ds(total_ttm_rev)` in trailing twelve-month revenue, 100% of the catalog, rides on data that would not survive the onboarding process at any retailer if submitted fresh.
 
-| Retailer | SKUs failing | Revenue at risk | Pass rate |
-|---|---:|---:|---:|
-| Walmart | `r rr("Walmart", "n_fail")` of `r n_skus` | `r ds_short(rev_at_risk("Walmart"))` | `r rr("Walmart", "pass_rate")`% |
-| Costco | `r rr("Costco", "n_fail")` of `r n_skus` | `r ds_short(rev_at_risk("Costco"))` | `r rr("Costco", "pass_rate")`% |
-| UNFI | `r rr("UNFI", "n_fail")` of `r n_skus` | `r ds_short(rev_at_risk("UNFI"))` | `r rr("UNFI", "pass_rate")`% |
-| Whole Foods | `r rr("Whole Foods", "n_fail")` of `r n_skus` | `r ds_short(rev_at_risk("Whole Foods"))` | `r rr("Whole Foods", "pass_rate")`% |
+```{r rr-summary-table}
+#| results: asis
+rr_tbl <- rr_stats |>
+  arrange(desc(n_required)) |>
+  transmute(Retailer = retailer,
+            `SKUs failing` = paste(n_fail, "of", n_fail + n_pass),
+            `Revenue at risk` = ds_short(rev_at_risk(retailer)),
+            `Pass rate` = paste0(pass_rate, "%"))
+cat(kable(rr_tbl, format = "pipe", align = c("l", "r", "r", "r")), sep = "\n")
+```
 
-![Revenue at risk by retailer.](../output/charts/06_retailer_readiness_revenue_at_risk.png){fig-alt="Horizontal bar chart of TTM revenue at risk per contracted retailer."}
+![Revenue at risk by retailer.](`r chart("06_retailer_readiness_revenue_at_risk")`){fig-alt="Horizontal bar chart of TTM revenue at risk per retailer."}
 
-These are not projections of what might happen if data quality degrades. They are measurements of the current product master against the current retailer requirements. The data fails now. The only reason the revenue still flows is that nobody has run the audit yet.
+These are not projections of what might happen if data quality degrades. They are measurements of the current product master against the current retailer requirements. The data fails now, at every retailer, for every SKU. The only reason the revenue still flows is that nobody has run the audit yet.
 
-The convergence of retailer readiness gaps, GS1 Sunrise, and FSMA 204 is the wall. Each individually would justify fixing the product master. Together, they create a deadline. A company that reaches 2028 with invalid GTINs, missing case dimensions, and `r pct_ows_incomplete`% OneWorldSync incompleteness will not have a data quality problem. It will have a market access problem.
+The convergence of universal retailer readiness failure, GS1 Sunrise, and FSMA 204 is the wall. Each individually would justify fixing the product master. Together, they create a deadline. A company that reaches 2028 with `r n_gtin_fail` invalid GTINs and `r n_upc_fail` invalid UPCs will not have a data quality problem. It will have a market access problem.
 
-The `r ds(annual_cb)` in annual chargebacks is what dirty data costs when nobody checks. The `r ds(wm_rev_risk)` in at-risk revenue is what it costs when someone does. The GS1 and FSMA transitions are the moment when everyone checks at once.
+The `r ds(annual_cb)` in annual chargebacks is what dirty data costs when nobody checks. The `r ds(total_ttm_rev)` in at-risk revenue is what it costs when someone does. The GS1 and FSMA transitions are the moment when everyone checks at once.
 
 ## The `r ds(annual_cb)` you already pay
 
-Cinderhaven's four contracted retailers deducted `r ds(total_cb_18mo)` in chargebacks from settlement payments over the past 18 months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account. Most of it was unnecessary.
+Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_18mo)` in chargebacks from settlement payments over the past 18 months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
 
-Not all chargebacks are created equal. Walmart charges you when your barcode fails a check digit validation. Costco charges you when the case dimensions in the product master don't match what arrives at the warehouse. UNFI charges you when a required data field is blank. Late deliveries and short shipments also generate charges, but those are logistics problems. This report is about the other kind: the charges that come from wrong, missing, or incomplete product data. Those account for `r data_defect_pct`% of the chargeback bill.
+The chargebacks arrive under five headings: label and barcode fines, pricing errors, damaged goods, late deliveries, and short shipments. Late deliveries, short shipments, and damaged goods are logistics problems. Label and barcode fines and pricing errors are data problems: charges that trace to wrong or incomplete product records. Those data-related categories account for `r data_defect_pct`% of the chargeback bill.
 
-![Chargeback dollars by reason.](../output/charts/14_chargeback_by_reason.png){fig-alt="Horizontal bar chart breaking down chargeback dollars by reason, with data-defect reasons accounting for the majority of dollars."}
+![Chargeback dollars by reason.](`r chart("14_chargeback_by_reason")`){fig-alt="Horizontal bar chart breaking down chargeback dollars by reason, with data-defect reasons accounting for the majority of dollars."}
 
-`r n_50pct` SKUs generate half of that bill. `r n_80pct` generate 80%. `r n_zero_cb` of your `r n_skus` SKUs have never been charged back at all. This is not a catalog-wide crisis. It is a concentrated problem with specific names and specific causes. Here are the names:
+`r n_50pct` SKUs generate half of that bill. `r n_80pct` generate 80%. The concentration is not extreme because the underlying defect is universal: every SKU in the catalog carries barcode validation failures, and every SKU generates chargebacks. But some SKUs generate far more than others. Here are the names:
 
 ```{r top5-cb-table}
 #| results: asis
@@ -259,64 +240,35 @@ cat(kable(top5, format = if (knitr::is_html_output()) "pipe" else "pipe",
           align = c("l", "l", "r", "l")), sep = "\n")
 ```
 
-![Chargeback Pareto: a small number of SKUs drive most of the cost.](../output/charts/01_chargeback_pareto.png){fig-alt="Pareto curve showing a small number of SKUs account for the majority of chargeback dollars."}
+![Chargeback Pareto: a small number of SKUs drive most of the cost.](`r chart("01_chargeback_pareto")`){fig-alt="Pareto curve showing a small number of SKUs account for the majority of chargeback dollars."}
 
-Every one of these has an invalid GTIN-14 check digit. Every one has at least one other defect layered on top. And every one of these defects is present in the product master right now. Not last year. Not at the time of the last audit. Right now. The charges arrived last month because the same wrong digit that generated the charge the month before is still wrong.
+Every one of these carries an invalid UPC-12 check digit. Most also carry an invalid GTIN-14. These are the same barcode defects present across the entire catalog, but concentrated at the top of the chargeback ranking because these SKUs ship to more retailers at higher volume. The defects are present in the product master right now. Not last year. Not at the time of the last audit. Right now.
 
 ## What a wrong barcode costs when nobody is counting
 
-CHP-0002, Spicy Arrabbiata, is the centerpiece of this finding and gets its own section below. But the pattern it represents is worth understanding first through a simpler example.
-
-```{r chp44-setup}
+```{r top-cb-setup}
 #| include: false
-chp44 <- smf |> filter(sku == "CHP-0044")
-chp44_6mo <- cbe |> filter(sku == "CHP-0044",
+top_cb_6mo <- cbe |> filter(sku == top_cb$sku,
   month_date >= max(cbe$month_date) - months(6)) |>
   summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
-chp44_monthly <- round(chp44_6mo / 6)
-chp44_annual <- round(chp44$chargeback_total * 12 / 18)
+top_cb_monthly <- round(top_cb_6mo / 6)
 ```
 
-CHP-0044, `r chp44$product_name`, has one data defect that generates chargebacks: an invalid GTIN-14 check digit. One field. One wrong number. It generated `r ds(chp44_6mo)` in the last six months, about `r ds(chp44_monthly)` a month, arriving as line items on four different retailer settlement statements. Nobody at Cinderhaven has connected these four monthly line items to each other, because nobody has a process for tracing chargebacks back to specific fields in the product master. The charges look like four separate problems. They are one problem, four times.
+`r top_cb$sku`, `r top_cb$product_name`, leads the chargeback ranking at `r ds(top_cb$chargeback_total)` over 18 months. It carries `r ds(top_cb$ttm_revenue)` in trailing twelve-month revenue across `r top_cb$auth_count` stores. `r top_cb_events` chargeback events spread across 18 months, arriving at roughly `r ds(top_cb_monthly)` a month on settlement statements from multiple retailers. Nobody at Cinderhaven has connected these monthly line items to each other, because nobody has a process for tracing chargebacks back to specific fields in the product master. The charges look like separate problems at separate retailers. They are the same underlying barcode defect, repeated.
 
-Fixing CHP-0044's check digit takes ten minutes. Open the product master. Recalculate the check digit. Type the correct number. Save. Ten minutes against `r ds(chp44_annual)` a year. That ratio does not require a business case. It requires someone to know the connection exists.
+Fixing a check digit takes ten minutes. Open the product master. Recalculate the check digit using the standard GS1 algorithm. Type the correct number. Save. Ten minutes against `r ds(top_cb_annual)` a year. That ratio does not require a business case. It requires someone to know the connection exists.
 
-## The waiting room
+## The pattern beneath the numbers
 
-There is an invisible queue between the moment a retailer authorizes a product and the moment that product generates its first sale. At Cinderhaven, the length of that queue is determined almost entirely by the quality of the product data.
+The barcode defect is not concentrated in a few problem SKUs. It is the catalog's default state. `r n_upc_fail` of `r n_skus` SKUs carry invalid UPC-12 check digits. `r n_gtin_fail` carry invalid GTIN-14s. Every SKU that ships to a retailer with an invalid barcode is a candidate for a compliance penalty every time the barcode is scanned, validated, or reconciled against a data feed.
 
-CHP-0022, San Marzano Marinara, was authorized at its first retailer on June 3, 2024. It carries four data defects: an invalid GTIN-14, an invalid UPC-12, a blank brand owner, and missing case dimensions. The retailer's item setup system received the authorization, attempted to validate the product record, and stalled. The GTIN didn't pass. The case dimensions were blank, so the warehouse management system couldn't assign a slot. The record sat in a validation queue while the shelf space it had been allocated sat empty. The first scan didn't register until July 13. Forty days after the buyer had already approved the product.
+The chargebacks are spread across `r n_retailers` retailers and five reason categories. "Label / barcode fine" is the largest single category, but "Pricing error," "Damaged goods," "Late delivery," and "Short shipment" also contribute. The data-related reasons (label/barcode and pricing) account for `r data_defect_pct`% of the total bill. The remainder is logistics.
 
-A SKU with clean data clears that same queue in 10 days. The difference is not processing speed. It is not retailer bureaucracy. It is the number of automated validation checks that return errors instead of passing, each one adding a manual review step, a correction request back to the vendor, and a resubmission cycle before the product can flow to the distribution center.
-
-`r worst_tier_days` days is not the worst case. It is typical for the worst quarter of the catalog:
-
-```{r tts-table}
-#| results: asis
-tts_tbl <- quality_tiers |>
-  transmute(`Data quality tier` = tier,
-            `Mean days to shelf` = paste(mean_days, "days"))
-cat(kable(tts_tbl, format = "pipe", align = c("l", "r")), sep = "\n")
-```
-
-![Time-to-shelf by data quality tier.](../output/charts/02_time_to_shelf.png){fig-alt="Dot strip plot showing days from authorization to first scan by data quality tier, with the Worst 25% averaging roughly 3x the Best 25%."}
-
-The `r days_spread`-day spread between worst and best represents revenue that was approved, authorized, and shelf-allocated, waiting in a system queue for someone to fix a data field. Not waiting for a buyer decision. Not waiting for a logistics window. Waiting for a digit to be corrected in a record that nobody at Cinderhaven knew was wrong, because nobody at Cinderhaven tracks authorization-to-first-scan as a metric.
-
-This is the cost that doesn't have a line item. Chargebacks arrive as deductions on a settlement statement. Stalled revenue doesn't arrive at all. It is the absence of revenue during a window when revenue should have been flowing. Nobody notices because there is no alert, no report, no dashboard that says "this product was authorized 30 days ago and hasn't scanned yet." The authorization is celebrated. The gap is never measured. The revenue loss is real but invisible.
-
-```{r chp22-cost}
-#| include: false
-chp22 <- smf |> filter(sku == "CHP-0022")
-chp22_extra_days <- round(chp22$mean_days_to_scan - best_tier_days)
-chp22_lost <- round(chp22_extra_days * chp22$ttm_revenue / 365)
-```
-
-At CHP-0022's daily revenue rate, `r chp22_extra_days` extra days costs roughly `r ds(chp22_lost)`. That's a small SKU. Apply the same math across all `r n_outside_best` SKUs outside the best quality tier, scaled by their revenue and their actual time-to-shelf gaps, and the catalog-wide cost is `r ds(stalled_launch_cost)` a year. This estimate assumes revenue accrues linearly with shelf time and that delayed launch revenue is not recovered in later periods. Both assumptions are conservative. In specialty food, launch windows are competitive and seasonal. A product that misses its first three weeks during a promotional period doesn't get those weeks back. A competitor's product fills the gap. The revenue doesn't shift to next month. It vanishes.
+The uniformity of the defect explains two things. First, why the chargeback spread across SKUs is relatively narrow: the top chargeback SKU (`r ds(top_cb$chargeback_total)`) is only about three times the bottom. Every SKU has the same type of defect, so the variation comes from shipping volume and retailer mix, not from defect severity. Second, why the fix is so concentrated: correct the barcodes and the entire data-defect chargeback bill disappears. There is no long tail of miscellaneous problems to chase.
 
 ## The slots you don't get back
 
-The progression from chargebacks to stalled revenue to shelf loss follows a severity curve. Chargebacks take your money. Stalled launches take your time. Shelf loss takes your position.
+Chargebacks take your money. Deauthorizations take your position.
 
 ```{r deauth-exemplar}
 #| include: false
@@ -331,149 +283,94 @@ deauth_ex_cb_total <- deauth_ex$chargeback_total
 
 `r deauth_ex$sku`, `r deauth_ex$product_name`, was authorized across `r deauth_ex$auth_count` stores. It carries `r deauth_ex_defects` data defects and has been deauthorized at `r deauth_ex$deauth_count` locations. Those slots are gone. Winning them back requires a new category review, which happens once a year at Walmart, and a pitch that explains why the product that was pulled for data defects won't be pulled again.
 
-`r deauth_ex$deauth_count` stores out of `r deauth_ex$auth_count` sounds minor. It isn't. It's the signal that the retailer's system has flagged this SKU. The defects that triggered the deauthorizations are identical to the defects still present at the other `r deauth_ex_remaining` stores. The GTIN is still invalid. The data defects are still unfixed. `r ds(deauth_ex_cb_total)` in chargebacks over 18 months with no sign of stopping. The deauthorized stores were not the punishment. They were the warning shot. The unfixed data is the loaded gun still pointed at the other `r deauth_ex_remaining`.
+`r deauth_ex$deauth_count` stores out of `r deauth_ex$auth_count` sounds minor. It isn't. It's the signal that the retailer's system has flagged this SKU. The barcode defects that triggered the deauthorizations are identical to the defects still present at the other `r deauth_ex_remaining` stores. `r ds(deauth_ex_cb_total)` in chargebacks over 18 months with no sign of stopping. The deauthorized stores were not the punishment. They were the warning shot. The unfixed barcodes are the loaded gun still pointed at the other `r deauth_ex_remaining`.
 
-![Deauthorization rate by data quality tier.](../output/charts/11_deauth_rate_by_quality_tier.png){fig-alt="Bar chart showing bottom-half quality SKUs are deauthorized at roughly 4.5x the rate of top-half SKUs."}
+![Deauthorization rate by data quality tier.](`r chart("11_deauth_rate_by_quality_tier")`){fig-alt="Bar chart showing deauthorization rates across the catalog."}
 
-The pattern is not unique to `r deauth_ex$sku`. Bottom-half data quality SKUs get deauthorized at `r deauth_ratio` times the rate of top-half SKUs. `r deauth_bottom$n_any` of `r deauth_bottom$n` bottom-half SKUs have lost at least one slot. `r deauth_top$n_any` of `r deauth_top$n` top-half SKUs have. The data cannot prove that every deauthorization is a direct consequence of data quality. Retailers remove products for many reasons: poor velocity, planogram resets, category rationalization. But the correlation between data quality and deauthorization rate is the strongest signal in this dataset after the chargeback-to-defect linkage. The SKUs with the worst data lose shelf space at `r deauth_ratio` times the rate. That is not a coincidence that disappears with a larger sample. That is a pattern that gets worse.
+The pattern is not unique to `r deauth_ex$sku`. Across the catalog, `r deauth_stats$n_any` of `r n_skus` SKUs have lost at least one store authorization. The mean deauthorization rate is `r mean_deauth_pct`%, with some SKUs losing more than 12% of their store base. Every one of these SKUs carries the same barcode defects as the rest of the catalog. The deauthorizations are the retailer's system doing what it was designed to do: flagging products with invalid data and removing them from distribution.
 
-The cost of a deauthorization is not the lost revenue at that store. It is the competitive displacement. A specialty food brand does not compete for abstract "shelf space." It competes for specific slots in specific planograms that are reviewed on 12-to-24-month cycles. Losing a slot to a competitor means that competitor's product will generate 12 to 24 months of velocity data at that location, data the category manager will use to justify keeping it during the next review. The brand that lost the slot has to overcome a year of incumbent velocity data with nothing but a pitch deck and a promise. The cost is not $400 a month in chargebacks. The cost is two years of competitive disadvantage at every location where the deauthorization spreads.
+The cost of a deauthorization is not the lost revenue at that store. It is the competitive displacement. A specialty food brand does not compete for abstract "shelf space." It competes for specific slots in specific planograms that are reviewed on 12-to-24-month cycles. Losing a slot to a competitor means that competitor's product will generate 12 to 24 months of velocity data at that location, data the category manager will use to justify keeping it during the next review. The brand that lost the slot has to overcome a year of incumbent velocity data with nothing but a pitch deck and a promise.
 
-## The `r ds(chp02_monthly)`-a-month problem nobody sees
+## The `r ds(top_rev_monthly)`-a-month problem nobody sees
 
-The `r n_gtin_fail` invalid GTIN check digits in Cinderhaven's product master have been wrong since the day each SKU was entered. The earliest was entered in June 2024. That was 23 months ago. In those 23 months, nobody corrected a single one of those digits. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
+The `r n_gtin_fail` invalid GTIN check digits and `r n_upc_fail` invalid UPC check digits in Cinderhaven's product master have been wrong since the day each SKU was entered. In that time, nobody corrected a single one. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
 
-The chain of visibility works like this. A retailer's automated system validates the GTIN on an inbound shipment or a data feed submission. The check digit fails. The system generates a compliance penalty. The penalty appears as a line item on the next settlement statement, categorized under a heading like "vendor compliance deductions" or "data quality fines." The settlement statement is 40 pages long. It contains hundreds of line items. The compliance penalties are scattered across pages 12 through 30, interleaved with promotional deductions, logistics credits, and payment adjustments. An individual penalty is $200 to $400. It does not trigger an investigation. It does not cross an approval threshold. It does not generate an alert.
+The chain of visibility works like this. A retailer's automated system validates the barcode on an inbound shipment or a data feed submission. The check digit fails. The system generates a compliance penalty. The penalty appears as a line item on the next settlement statement, categorized under a heading like "vendor compliance deductions" or "label/barcode fine." The settlement statement is 40 pages long. It contains hundreds of line items. The compliance penalties are scattered across pages, interleaved with promotional deductions, logistics credits, and payment adjustments. An individual penalty is small. It does not trigger an investigation. It does not cross an approval threshold. It does not generate an alert.
 
-On the other side, the product master sits in whatever system Cinderhaven uses to manage product data. It might be an ERP. It might be a shared Excel file. It might be a combination of both. The GTIN-14 field contains a 14-digit number that was typed once, by whoever set up the SKU, and has not been opened since. Nobody reviews GTIN fields. Nobody runs check digit validations. Nobody has a process for connecting a chargeback on page 14 of a Walmart settlement statement to a digit in row 44 of the product master.
+On the other side, the product master sits in whatever system Cinderhaven uses to manage product data. The GTIN-14 and UPC-12 fields contain numbers that were typed once, by whoever set up each SKU, and have not been opened since. Nobody reviews barcode fields. Nobody runs check digit validations. Nobody has a process for connecting a chargeback on a settlement statement to a digit in the product master.
 
-The ops team is not negligent. They are fully occupied. Four retailer portals. Broker coordination. Velocity reports rebuilt by hand every Monday. Trade spend reconciliation. New SKU launches. Promotional planning. Data cleanup is on the list. It is always on the list. It sits between "update the trade spend template" and "fix the label printer" and it never reaches the top because the chargebacks arrive in amounts too small to demand attention and too steady to ever stop on their own.
+The ops team is not negligent. They are fully occupied. Six retailer portals. Broker coordination. Velocity reports rebuilt by hand every Monday. Trade spend reconciliation. New SKU launches. Promotional planning. Data cleanup is on the list. It is always on the list. It sits between "update the trade spend template" and "fix the label printer" and it never reaches the top because the chargebacks arrive in amounts too small to demand attention and too steady to ever stop on their own.
 
-CHP-0002 has generated `r chp02_events` chargeback events in 18 months. An average of `r ds(chp02_monthly)` a month. `r chp02_events` times, the system flagged the same wrong digit, generated the same penalty, deducted it from the same settlement, and nobody traced it back. Not because tracing it was hard. Because nobody knew to look.
+`r top_rev$sku`, `r top_rev$product_name`, is the #1 revenue SKU in the catalog at `r ds(top_rev$ttm_revenue)`. It has generated `r top_rev_events` chargeback events in 18 months, `r ds(top_rev$chargeback_total)` in total, roughly `r ds(top_rev_monthly)` a month. `r top_rev_events` times, the system flagged the wrong barcode digit, generated a penalty, deducted it from a settlement, and nobody traced it back. Not because tracing it was hard. Because nobody knew to look.
 
-This is the structural problem beneath all four cost categories. The chargebacks persist because the defects persist. The defects persist because nobody has time to find them. Nobody has time to find them because the cost of each individual defect is too small to surface through normal business processes. The total is `r ds(total_annual_cost)` a year. The individual units are invisible. The system that would make them visible does not exist yet. Part 3 of this report describes what that system looks like.
+This is the structural problem. The chargebacks persist because the defects persist. The defects persist because nobody has time to find them. Nobody has time to find them because the cost of each individual defect is too small to surface through normal business processes. The total is `r ds(annual_cb)` a year. The individual units are invisible. The system that would make them visible does not exist yet. Part 3 of this report describes what that system looks like.
 
 ## The revenue you're not capturing
 
 The cost story is about money leaving. This is about money that never arrives.
 
-```{r wm-readiness}
+```{r expansion-readiness}
 #| include: false
-wm_pass_rev <- smf |>
-  semi_join(rrs |> filter(retailer == "Walmart", overall_pass), by = "sku") |>
-  summarise(r = sum(ttm_revenue, na.rm = TRUE)) |> pull(r)
-wm_fail_rev <- wm_rev_risk
-```
-
-`r rr("Walmart", "n_pass")` of Cinderhaven's `r n_skus` SKUs pass Walmart's required-field check today. These are the products that could be submitted for a new Walmart line review, a planogram expansion, or a regional test without any data work. They are ready. The data is clean. The barcodes validate. The case dimensions are populated. The OneWorldSync records exist.
-
-Those `r rr("Walmart", "n_pass")` SKUs generate `r ds(wm_pass_rev)` in trailing twelve-month revenue across all channels. They are, on average, the smaller products in the catalog.
-
-The `r rr("Walmart", "n_fail")` that fail generate `r ds(wm_fail_rev)`.
-
-This is the inversion that makes the revenue story uncomfortable. The products with the cleanest data are not the biggest sellers. The biggest sellers have the dirtiest data. The catalog's growth potential is concentrated in exactly the SKUs that cannot pass a retailer readiness check. Every expansion conversation runs into the same wall: the products you most want to expand are the ones whose data isn't ready to expand with them.
-
-```{r wm-fail-authorized}
-#| include: false
-wm_fail_all <- smf |>
-  semi_join(rrs |> filter(retailer == "Walmart", !overall_pass), by = "sku")
-wm_fail_authorized <- wm_fail_all |>
-  filter(auth_count > deauth_count) |> nrow()
-wm_fail_not_auth <- nrow(wm_fail_all) - wm_fail_authorized
-wm_fail_top10_rev <- wm_fail_all |>
-  arrange(desc(ttm_revenue)) |> slice(1:10) |>
+n_authorized <- smf |> filter(auth_count > deauth_count) |> nrow()
+top10_rev_total <- smf |> arrange(desc(ttm_revenue)) |> slice(1:10) |>
   summarise(r = sum(ttm_revenue, na.rm = TRUE)) |> pull(r)
 ```
 
-`r wm_fail_authorized` of those `r rr("Walmart", "n_fail")` failing SKUs are already shipping to Walmart. They were authorized before the requirements tightened, or before anyone checked. They are generating revenue on borrowed time.
+Zero of Cinderhaven's `r n_skus` SKUs pass any retailer's required-field check today. Not one product in the catalog could be submitted for a new line review, a planogram expansion, or a regional test without data work first. The entire expansion pipeline is blocked by barcode validation failures.
 
-```{r wm-fail-top10}
+All `r n_authorized` currently authorized SKUs are shipping to retailers and generating revenue. They were authorized before the requirements tightened, or before anyone checked. They are generating revenue on borrowed time.
+
+```{r top10-rev-table}
 #| results: asis
-wm_fail_top <- wm_fail_all |>
+top10_tbl_simple <- smf |>
   arrange(desc(ttm_revenue)) |>
   slice(1:10) |>
   transmute(SKU = sku, Product = product_name,
-            `TTM revenue` = ds_short(ttm_revenue))
-cat(kable(wm_fail_top, format = "pipe", align = c("l", "l", "r")), sep = "\n")
+            `TTM revenue` = ds_short(ttm_revenue),
+            `18-mo chargebacks` = ds_short(chargeback_total))
+cat(kable(top10_tbl_simple, format = "pipe", align = c("l", "l", "r", "r")), sep = "\n")
 ```
 
-`r ds(wm_fail_top10_rev)` in Walmart-channel revenue riding on data that Walmart's own system would reject. Four of these appear in both this table and the top chargeback offenders list. The data defects are not hypothetical risk. They are already generating deductions on products that are already selling. The risk and the cost are happening simultaneously.
+`r ds(top10_rev_total)` in revenue from the top 10 SKUs alone, all riding on data that every retailer's system would reject. These products are already generating chargebacks. The risk and the cost are happening simultaneously.
 
-The other `r wm_fail_not_auth` failing SKUs are not authorized at Walmart today. They are the expansion queue. If Cinderhaven wants to pitch a Walmart line extension, and at `r ds(total_ttm_rev)` in revenue scaling toward $55 million, that pitch is coming, those `r wm_fail_not_auth` SKUs need their data fixed before the conversation starts. Not during the conversation. Before. A retailer's category team does not fix vendor data. They evaluate what's submitted. If the submission fails their automated checks, the conversation ends before a human being ever sees the product.
+If Cinderhaven wants to pitch a line extension at any retailer, and at `r ds(total_ttm_rev)` in revenue scaling toward $55 million, that pitch is coming, every SKU needs its data fixed before the conversation starts. Not during the conversation. Before. A retailer's category team does not fix vendor data. They evaluate what's submitted. If the submission fails their automated checks, the conversation ends before a human being ever sees the product.
 
-```{r velocity-comparison}
-#| include: false
-wm_fail_vel <- smf |>
-  semi_join(rrs |> filter(retailer == "Walmart", !overall_pass), by = "sku") |>
-  summarise(v = round(mean(ttm_units / 52 / pmax(auth_count, 1), na.rm = TRUE), 1)) |> pull(v)
-wm_pass_vel <- smf |>
-  semi_join(rrs |> filter(retailer == "Walmart", overall_pass), by = "sku") |>
-  summarise(v = round(mean(ttm_units / 52 / pmax(auth_count, 1), na.rm = TRUE), 1)) |> pull(v)
-```
-
-The counterintuitive finding makes this worse. Failing SKUs have slightly higher average velocity than passing SKUs: `r wm_fail_vel` units per store per week versus `r wm_pass_vel`. The products with the worst data are selling faster than the products with the best data. The readiness gate is screening on data completeness, not commercial viability. The products being blocked from expansion are the ones the market wants most.
-
-The gap between "blocked" and "ready" for most of these SKUs is two to three fields. Brand owner. GTIN check digit. Case dimensions. The work is measured in hours, not weeks. The `r rr("Walmart", "n_fail")` failing SKUs are not `r rr("Walmart", "n_fail")` product development problems. They are `r rr("Walmart", "n_fail")` data entry tasks. The difference between `r ds(wm_pass_rev)` in expansion-ready revenue and `r ds(total_ttm_rev)` in expansion-ready revenue is approximately `r round(total_fix_hours)` hours of clerical work. That is the most underspent `r round(total_fix_hours)` hours in the company.
+The gap between "blocked" and "ready" for every SKU in the catalog is the same: barcode check digits. The work is measured in hours, not weeks. `r n_skus` failing SKUs are not `r n_skus` product development problems. They are `r n_skus` data entry tasks. The difference between $0 in expansion-ready revenue and `r ds(total_ttm_rev)` in expansion-ready revenue is approximately `r round(total_fix_hours)` hours of clerical work. That is the most underspent `r round(total_fix_hours)` hours in the company.
 
 ## The SKU you can't afford to ignore
 
-```{r chp02-detail}
+```{r top-rev-detail}
 #| include: false
-chp02_stores <- chp02$auth_count
-chp02_vel <- round(chp02$ttm_units / 52 / pmax(chp02_stores, 1), 1)
-chp02_rev_pct <- round(100 * chp02$ttm_revenue / total_ttm_rev, 1)
-chp02_gm <- round(chp02$annual_gross_margin)
-chp02_dq <- chp02$data_quality_score
+top_rev_stores <- top_rev$auth_count
+top_rev_vel <- round(top_rev$ttm_units / 52 / pmax(top_rev_stores, 1), 1)
+top_rev_pct <- round(100 * top_rev$ttm_revenue / total_ttm_rev, 1)
+top_rev_gm <- round(top_rev$annual_gross_margin)
+top_rev_dq <- top_rev$data_quality_score
+top_rev_retailers_pass <- rrs |> filter(sku == top_rev$sku, overall_pass) |> nrow()
 ```
 
-CHP-0002, Spicy Arrabbiata, is the best-selling product in the Cinderhaven catalog. `r ds(chp02$ttm_revenue)` in trailing twelve-month revenue. `r chp02_stores` stores across every channel. Velocity of `r chp02_vel` units per store per week. It represents `r chp02_rev_pct`% of company revenue and `r ds(chp02_gm)` in annual gross margin. If Cinderhaven has a flagship, this is it.
+`r top_rev$sku`, `r top_rev$product_name`, is the best-selling product in the Cinderhaven catalog. `r ds(top_rev$ttm_revenue)` in trailing twelve-month revenue. `r top_rev_stores` stores across every channel. Velocity of `r top_rev_vel` units per store per week. It represents `r top_rev_pct`% of company revenue and `r ds(top_rev_gm)` in annual gross margin. If Cinderhaven has a flagship, this is it.
 
-It is also the single largest source of chargeback cost in the catalog. `r chp02_events` chargeback events over 18 months. `r ds(chp02$chargeback_total)` in penalties deducted from settlement payments across all four contracted retailers. Not clustered in one bad quarter. Not triggered by one bad shipment. `r chp02_events` events spread across 18 consecutive months, arriving at a rate of roughly `r round(chp02_events / 18)` per month, because the same two data defects trigger the same automated validation failures at the same four retailers, month after month, without interruption.
+It is also among the largest sources of chargeback cost. `r top_rev_events` chargeback events over 18 months. `r ds(top_rev$chargeback_total)` in penalties deducted from settlement payments across multiple retailers. Not clustered in one bad quarter. Not triggered by one bad shipment. `r top_rev_events` events spread across 18 months, because the same barcode defects trigger the same automated validation failures at the same retailers, month after month.
 
-```{r chp02-gtin-share}
+```{r top-rev-barcode-share}
 #| include: false
-chp02_gtin_events <- cbe |>
-  filter(sku == "CHP-0002",
-         grepl("Invalid GTIN|Invalid UPC", reason, ignore.case = TRUE)) |>
+top_rev_barcode_events <- cbe |>
+  filter(sku == top_rev$sku,
+         grepl("Label.*barcode", reason, ignore.case = TRUE)) |>
   nrow()
-chp02_gtin_dollars <- cbe |>
-  filter(sku == "CHP-0002",
-         grepl("Invalid GTIN|Invalid UPC", reason, ignore.case = TRUE)) |>
+top_rev_barcode_dollars <- cbe |>
+  filter(sku == top_rev$sku,
+         grepl("Label.*barcode", reason, ignore.case = TRUE)) |>
   summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
-chp02_gtin_pct <- round(100 * chp02_gtin_dollars / max(chp02$chargeback_total, 1))
+top_rev_barcode_pct <- round(100 * top_rev_barcode_dollars / max(top_rev$chargeback_total, 1))
 ```
 
-The defects are not complex. The GTIN-14 check digit is wrong. The brand owner field contains the two-character string "NA" instead of a company name. The OneWorldSync record was never created. The GTIN defect alone accounts for `r chp02_gtin_pct`% of CHP-0002's chargeback dollars. `r chp02_gtin_events` of the `r chp02_events` events trace to a single wrong digit in a single field.
+The defects are not complex. The GTIN-14 check digit is wrong. The UPC-12 check digit is wrong. Label and barcode fines account for `r top_rev_barcode_pct`% of `r top_rev$sku`'s chargeback dollars. The rest comes from pricing errors and operational categories.
 
-In five of the 18 months, all four contracted retailers flagged CHP-0002 in the same month. Walmart, Costco, UNFI, and Whole Foods, independently running their own validation checks, independently finding the same wrong digit, independently issuing penalties. This is the diagnostic signature of a master data defect: multiple retailers flagging the same SKU for the same reason in the same time window. It is not a dispute about terms. It is not a disagreement about a shipment. It is an automated system doing exactly what it was designed to do, finding a wrong number and charging for it, and it will continue doing it every month until someone changes the number.
+The product would fail every retailer's required-field check today. Not one. All `r n_retailers`. It is authorized at `r top_rev_stores` stores and its data would not survive the onboarding process at any of them if it were submitted fresh. It was authorized before the checks existed or before they were enforced at their current stringency. It survives on inertia, not on data quality.
 
-CHP-0002 would fail every retailer's required-field check today. Not one. All four. The product is authorized at 774 stores and its data would not survive the onboarding process at any of them if it were submitted fresh. It was authorized before the checks existed or before they were enforced at their current stringency. It survives on inertia, not on data quality.
-
-The contrast is instructive.
-
-```{r chp02-vs-chp20}
-#| include: false
-chp20 <- smf |> filter(sku == "CHP-0020")
-chp20_events <- cbe |> filter(sku == "CHP-0020") |> nrow()
-chp20_rev_rank <- which(smf |> arrange(desc(ttm_revenue)) |> pull(sku) == "CHP-0020")
-chp02_retailers_pass <- rrs |> filter(sku == "CHP-0002", overall_pass) |> nrow()
-chp20_retailers_pass <- rrs |> filter(sku == "CHP-0020", overall_pass) |> nrow()
-cb_ratio <- round(chp02$chargeback_total / max(chp20$chargeback_total, 1))
-```
-
-CHP-0020, `r chp20$product_name`, sits at #`r chp20_rev_rank` in the revenue rankings at `r ds(chp20$ttm_revenue)`. Same product line. Comparable scale. Data quality score of `r chp20$data_quality_score` versus CHP-0002's `r chp02_dq`. `r chp20_events` chargeback events in 18 months, totaling `r ds(chp20$chargeback_total)`. Passes `r chp20_retailers_pass` of four retailer readiness checks.
-
-| | CHP-0002 | CHP-0020 |
-|---|---:|---:|
-| TTM revenue | `r ds_short(chp02$ttm_revenue)` | `r ds_short(chp20$ttm_revenue)` |
-| Data quality score | `r chp02_dq` | `r chp20$data_quality_score` |
-| 18-month chargebacks | `r ds(chp02$chargeback_total)` | `r ds(chp20$chargeback_total)` |
-| Chargeback events | `r chp02_events` | `r chp20_events` |
-| Retailers passing | `r chp02_retailers_pass` of 4 | `r chp20_retailers_pass` of 4 |
-
-Two products at comparable revenue. One generates `r cb_ratio` times more chargeback cost than the other. The `r cb_ratio`x gap is not explained by any commercial difference. It is explained entirely by two data fields.
-
-This pattern extends across the top of the catalog:
+The same is true across the top of the catalog:
 
 ```{r top10-dq-table}
 #| results: asis
@@ -490,79 +387,49 @@ top10_tbl <- top10_rev |>
             Revenue = ds_short(ttm_revenue),
             `DQ score` = data_quality_score,
             Chargebacks = paste0("$", fmt_d(chargeback_total)),
-            `Retailers passing` = paste(pass, "of 4"))
+            `Retailers passing` = paste(pass, "of", n_retailers))
 cat(kable(top10_tbl, format = "pipe",
           align = c("l", "l", "r", "r", "r", "r")), sep = "\n")
 ```
 
-![Chargebacks as percentage of gross margin, top 15 SKUs.](../output/charts/08_chargeback_pct_of_gross_margin_top15.png){fig-alt="Horizontal bar chart of chargebacks as a share of gross margin for the top-15 SKUs by revenue, with the worst SKUs disproportionately concentrated near the top of the revenue ranking."}
+![Chargebacks as percentage of gross margin, top 15 SKUs.](`r chart("08_chargeback_pct_of_gross_margin_top15")`){fig-alt="Horizontal bar chart of chargebacks as a share of gross margin for the top-15 SKUs by revenue."}
 
 ```{r top10-summary}
 #| include: false
-top10_all4 <- sum(top10_pass$pass == 4)
-top10_01   <- sum(top10_pass$pass <= 1)
+top10_any_pass <- sum(top10_pass$pass > 0)
 top10_total_rev <- sum(top10_rev$ttm_revenue)
 top10_rev_pct   <- round(100 * top10_total_rev / total_ttm_rev)
 ```
 
-Only `r top10_all4` of the top 10 passes all four retailers. `r top10_01` pass zero or one. The `r ds(top10_total_rev)` in revenue at the top of the catalog, `r top10_rev_pct`% of the company, rides on data that would fail most retailer onboarding processes.
+None of the top 10 pass any retailer. The `r ds(top10_total_rev)` in revenue at the top of the catalog, `r top10_rev_pct`% of the company, rides on data that would fail every retailer onboarding process.
 
-The assumption that the highest-revenue products must have the best data is not just wrong. It is precisely inverted. The products that generate the most revenue received the same one-time data entry as every other product. They just generate larger penalties when that entry is wrong, attract more retailer scrutiny because of their volume, and create more exposure when a readiness audit runs. The risk concentrates at the top because revenue concentrates at the top. The data quality does not.
+The products that generate the most revenue received the same one-time data entry as every other product. They just generate larger penalties when that entry is wrong, attract more retailer scrutiny because of their volume, and create more exposure when a readiness audit runs. The risk concentrates at the top because revenue concentrates at the top. The data quality does not vary.
 
-Fixing CHP-0002 takes `r round(chp02$est_fix_hours * 60)` minutes. Correct the GTIN check digit. Replace the "NA" in the brand owner field with "Cinderhaven Provisions." Submit the OneWorldSync registration. When that's done, `r ds(chp02_annual)` a year in chargebacks stops and the #1 SKU passes all four retailer readiness checks. The risk that Walmart runs an Item 360 audit and flags the company's flagship product goes from certain failure to clean pass.
+Fixing `r top_rev$sku` takes `r round(top_rev$est_fix_hours * 60)` minutes. Correct the GTIN check digit. Correct the UPC check digit. When that's done, `r ds(top_rev_annual)` a year in chargebacks is reduced and the #1 SKU moves toward passing retailer readiness checks.
 
-The risk of leaving it unfixed is not the `r ds(chp02_annual)`. The risk is that a retailer runs the check. Walmart doesn't send a chargeback for a readiness failure. Walmart sends a deauthorization. And when the #1 SKU, `r chp02_rev_pct`% of company revenue, `r ds(chp02_gm)` in annual gross margin, loses its largest retailer, the conversation is not with the data team. It is with the board.
+The risk of leaving it unfixed is not the `r ds(top_rev_annual)`. The risk is that a retailer runs the check. Walmart doesn't send a chargeback for a readiness failure. Walmart sends a deauthorization. And when the #1 SKU, `r top_rev_pct`% of company revenue, `r ds(top_rev_gm)` in annual gross margin, loses its largest retailer, the conversation is not with the data team. It is with the board.
 
 # Part 2: Why It Happens
 
-Part 1 showed what data debt costs. This section is about where it comes from. Four causes, each one fixable, none of them surprising once you see them. The frustrating part is how ordinary they are.
+Part 1 showed what data debt costs. This section is about where it comes from. The causes are ordinary and fixable. The frustrating part is how long they've been accumulating.
 
-## The open door: why the product master is a free-for-all
+## No gate, no audit trail
 
-```{r entry-source-detail}
-#| include: false
-es <- smf |>
-  mutate(updated_by = coalesce(updated_by, "unknown source")) |>
-  count(updated_by, name = "n") |> arrange(desc(n))
-es_desc <- paste(
-  paste0(es$n, " by ", es$updated_by),
-  collapse = ". "
-)
-```
+The product master has no recorded entry source for any of its `r n_skus` SKUs. The `updated_by` field is blank across the entire catalog. Nobody knows who entered these records. Nobody knows when. Nobody knows what process, if any, was followed.
 
-Cinderhaven's product master was built the way most `r ds(total_ttm_rev)` companies build a product master: by whoever had 20 minutes. `r es_desc`. `r n_entry_paths` different paths into the same system, and not one of them requires the data to be validated before it goes live.
+This is the clearest evidence that the product master is an unmanaged asset. It is the most important data system in the company — every retailer relationship, every chargeback, every velocity report, every shelf placement depends on it — and it has no owner, no process, and no audit trail.
 
-There is no intake checklist. No required field set enforced at entry. No validation step between "someone typed this" and "retailers are ordering against it." A broker can upload a SKU with a wrong check digit, a blank brand owner, and missing case dimensions, and the record goes live the moment it's saved. The first validation that record will ever receive is a retailer's automated compliance check, six months later, when it fails and generates a $300 penalty that nobody traces back to the upload.
+There is no intake checklist. No required field set enforced at entry. No validation step between "someone typed this" and "retailers are ordering against it." A barcode check digit can be entered wrong, and the record goes live the moment it's saved. The first validation that record will ever receive is a retailer's automated compliance check, months later, when it fails and generates a penalty that nobody traces back to the upload.
 
-```{r entry-source-table}
-#| results: asis
-es_tbl <- entry_stats |>
-  filter(!is.na(updated_by)) |>
-  transmute(`Entry source` = updated_by,
-            SKUs = n,
-            `Chargebacks per SKU` = paste0("$", fmt_d(cb_per_sku)))
-cat(kable(es_tbl, format = "pipe", align = c("l", "r", "r")), sep = "\n")
-```
+The fix is structural: a gate between data entry and the live product master. A check digit calculation that runs when a GTIN or UPC is entered and blocks the save if it fails. The technology is trivial — the GS1 algorithm is a single modulo operation. The discipline is the deliverable.
 
-![Process debt by data-entry source.](../output/charts/17_process_debt_by_updated_by.png){fig-alt="Bar chart of chargebacks-per-SKU by data entry source, showing variation across entry paths."}
+## The uniform defect
 
-The conventional reading is that broker uploads are the problem. The table says otherwise. Four different entry paths, operated by four different roles with four different levels of product knowledge, all produce essentially the same expensive result. The problem is not who is entering the data. The problem is that nobody is checking it.
+Every SKU in the catalog has the same problem. All `r n_upc_fail` carry invalid UPC-12 check digits. `r n_gtin_fail` of `r n_skus` also carry invalid GTIN-14 check digits. The data quality score is `r mean_dq_all` for every SKU. There is no variation. No tier of "clean" products to benchmark against. No subset to hold up as proof that the system can work. The entire catalog was entered with the same process, and the entire catalog carries the same defects.
 
-The two sources that produce materially better results share one characteristic the others do not. Production admin and ops coordinator enter data as a primary responsibility, not as an interruption between other tasks. The distinction is not skill or diligence. It is attention. The people who produce clean data are the people whose job makes data entry the main task, not the side task.
+The instinct is to assume the big sellers would have been cleaned up by now. The assumption is wrong because it confuses commercial attention with data attention. Everyone at Cinderhaven knows that `r top_rev$product_name` sells `r ds(top_rev$ttm_revenue)` a year. Nobody at Cinderhaven knows that its GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
 
-This is not fixable by training. Training addresses skill gaps. This is an attention gap. The fix is structural: a gate between data entry and the live product master. The broker intake checklist in the appendix defines eight fields that must be populated and validated before a SKU record can go live. It takes five minutes to fill out. But the checklist is not just for brokers. Every path into the product master needs the same front door because every path without one produces the same result.
-
-The `r n_unknown_source` SKUs with no recorded entry source at all are a separate finding. They represent a gap not just in data quality but in data governance. Nobody knows who entered these records. Nobody knows when. Nobody knows what process, if any, was followed. These `r n_unknown_source` SKUs are the clearest evidence that the product master is an unmanaged asset. It is the most important data system in the company, every retailer relationship, every chargeback, every velocity report, every shelf placement depends on it, and it has no owner, no process, and no audit trail.
-
-## The products that matter most get the least attention
-
-The centerpiece section showed CHP-0002 in detail: the #1 revenue SKU with the #1 chargeback total. That's not an anomaly. It's the pattern.
-
-The top 15 SKUs by revenue have a mean data quality score of `r mean_dq_top15`. The catalog averages `r mean_dq_all`. `r top10_01` of the top 10 revenue SKUs pass zero or one of four retailer readiness checks. Only `r top10_all4`, CHP-0020 `r chp20$product_name`, passes all four.
-
-The instinct is to assume this will sort itself out. The big sellers get attention. Attention leads to cleanup. The assumption is wrong because it confuses commercial attention with data attention. Everyone at Cinderhaven knows that Spicy Arrabbiata sells `r ds(chp02$ttm_revenue)` a year. Nobody at Cinderhaven knows that Spicy Arrabbiata's GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
-
-Data entry is clerical work. It happens at launch, when somebody has 20 minutes between other tasks, and it never happens again. Nobody revisits the product master after a SKU is selling. The record freezes at whatever state it was in on the day someone typed it. A `r ds(chp02$ttm_revenue)` SKU and a `r ds(min(smf$ttm_revenue))` SKU both get one pass through data entry. The `r ds(chp02$ttm_revenue)` SKU just generates larger chargebacks when the entry is wrong.
+Data entry is clerical work. It happens at launch, when somebody has 20 minutes between other tasks, and it never happens again. Nobody revisits the product master after a SKU is selling. The record freezes at whatever state it was in on the day someone typed it. A `r ds(top_rev$ttm_revenue)` SKU and a `r ds(min(smf$ttm_revenue))` SKU both get one pass through data entry. The `r ds(top_rev$ttm_revenue)` SKU just generates larger chargebacks when the entry is wrong.
 
 The fix does not require better data entry. It requires a list. Put the revenue number next to every SKU on the ops team's screen. Sort by revenue. Start at the top. The people doing the work have never been shown which products their work protects. Give them that information and the triage takes care of itself.
 
@@ -573,17 +440,15 @@ The fix does not require better data entry. It requires a list. Put the revenue 
 wm_pnl <- rpnl |> filter(retailer == "Walmart")
 wm_gross <- wm_pnl$gross_revenue
 wm_pct_of_total <- round(100 * wm_gross / total_ttm_rev)
-contracted <- c("Walmart", "Costco", "UNFI", "Whole Foods")
-rpnl_contracted <- rpnl |> filter(retailer %in% contracted)
-best_margin_ret <- rpnl_contracted |> arrange(desc(net_margin_pct_of_gross_revenue)) |> slice(1)
-worst_margin_ret <- rpnl_contracted |> arrange(net_margin_pct_of_gross_revenue) |> slice(1)
+best_margin_ret <- rpnl |> arrange(desc(net_margin_pct_of_gross_revenue)) |> slice(1)
+worst_margin_ret <- rpnl |> arrange(net_margin_pct_of_gross_revenue) |> slice(1)
 ```
 
 Walmart generates `r ds(wm_gross)` in gross revenue. That's `r wm_pct_of_total`% of the catalog. It is the largest channel by every gross metric. It is not the most profitable.
 
 ```{r retailer-margin-table}
 #| results: asis
-margin_tbl <- rpnl_contracted |>
+margin_tbl <- rpnl |>
   arrange(desc(net_margin_pct_of_gross_revenue)) |>
   transmute(Retailer = retailer,
             Gross = ds_short(gross_revenue),
@@ -596,24 +461,13 @@ margin_tbl <- rpnl_contracted |>
 cat(kable(margin_tbl, format = "pipe", align = c("l", "r", "r", "r", "r")), sep = "\n")
 ```
 
-![True net margin by retailer.](../output/charts/03_retailer_net_margin.png){fig-alt="Four-panel waterfall chart per retailer, showing Walmart winning gross dollars and Whole Foods winning margin density."}
+![True net margin by retailer.](`r chart("03_retailer_net_margin")`){fig-alt="Waterfall chart per retailer, showing Walmart winning gross dollars but not necessarily margin density."}
 
 `r best_margin_ret$retailer` contributes `r round(100 * best_margin_ret$net_margin_pct_of_gross_revenue)` cents of margin on every dollar of revenue. `r worst_margin_ret$retailer` contributes `r round(100 * worst_margin_ret$net_margin_pct_of_gross_revenue)` cents. The `r round(100 * best_margin_ret$net_margin_pct_of_gross_revenue) - round(100 * worst_margin_ret$net_margin_pct_of_gross_revenue)`-cent gap is almost entirely trade spend.
 
 This table reorders the CEO's priorities. Not away from Walmart. Walmart generates `r ds(wm_pnl$net_contribution)` in net contribution. You don't walk away from that. But you stop assuming that Walmart volume equals Walmart profitability when deciding where to invest ops resources, which retailer gets the first call when there's a data issue, and which expansion opportunity gets prioritized.
 
-The chargeback column reveals something else. The rates are small at every retailer, between 0.33% and 0.61% of revenue. But chargebacks are the only margin lever entirely within Cinderhaven's control. Trade spend is negotiated once a year. Chargebacks are generated by data defects that Cinderhaven can fix any Tuesday afternoon. Every dollar recovered drops straight to net contribution with no negotiation, no pitch deck, no relationship risk.
-
-```{r unfi-cb}
-#| include: false
-unfi_pnl <- rpnl |> filter(retailer == "UNFI")
-unfi_cb <- unfi_pnl$chargeback_total
-unfi_cb_pct_of_total <- round(100 * unfi_cb / total_cb_18mo)
-unfi_cb_rate <- round(100 * unfi_pnl$chargeback_pct_of_revenue, 2)
-unfi_rev_rank <- which(rpnl |> arrange(desc(gross_revenue)) |> pull(retailer) == "UNFI")
-```
-
-UNFI is the overlooked story. It generates `r ds(unfi_cb)` in chargebacks, `r unfi_cb_pct_of_total`% of the total, despite being the #`r unfi_rev_rank` retailer by revenue. Its chargeback rate (`r unfi_cb_rate`% of revenue) is the highest of the four. UNFI's compliance requirements are less visible than Walmart's. The data says they enforce them just as consistently. A cleanup that focuses on Walmart because Walmart is the biggest name leaves `r ds(unfi_cb)` of UNFI chargebacks untouched and a `r unfi_cb_rate`% bleed rate unaddressed at the retailer with the second-best margin density.
+The chargeback column reveals something else. The rates are small at every retailer. But chargebacks are the only margin lever entirely within Cinderhaven's control. Trade spend is negotiated once a year. Chargebacks are generated by data defects that Cinderhaven can fix any Tuesday afternoon. Every dollar recovered drops straight to net contribution with no negotiation, no pitch deck, no relationship risk. A cleanup that focuses exclusively on Walmart because Walmart is the biggest name leaves meaningful chargebacks untouched at the other retailers.
 
 ## One product line already has better outcomes. The reason isn't what you'd guess.
 
@@ -637,7 +491,7 @@ pl_tbl <- smf |>
 cat(kable(pl_tbl, format = "pipe", align = c("l", "r", "r", "r")), sep = "\n")
 ```
 
-![Data debt by product line.](../output/charts/07_data_debt_by_product_line.png){fig-alt="Bar chart of data issues per million dollars of revenue by product line; Pantry Staples carries 70% more issues per dollar than Artisan Sauces."}
+![Data debt by product line.](`r chart("07_data_debt_by_product_line")`){fig-alt="Bar chart of data issues per million dollars of revenue by product line; Pantry Staples carries 70% more issues per dollar than Artisan Sauces."}
 
 ```{r pl-ratio}
 #| include: false
@@ -650,102 +504,48 @@ best_pl  <- pl_stats |> arrange(ipm) |> slice(1)
 pl_ratio_pct <- round(100 * (worst_pl$ipm / best_pl$ipm - 1))
 ```
 
-`r worst_pl$product_line` carries `r pl_ratio_pct`% more data issues per dollar of revenue than `r best_pl$product_line`. The two worst lines are close enough to treat as one cleanup tier. But Artisan Sauces is meaningfully better across every metric.
+`r worst_pl$product_line` carries `r pl_ratio_pct`% more data issues per dollar of revenue than `r best_pl$product_line`. The variation across product lines is worth noting because the underlying barcode defects are the same everywhere. The difference in chargebacks per dollar is driven by retailer mix and shipping volume, not by different defect types.
 
-The obvious hypothesis is that Artisan Sauces routes through a better data entry process. It doesn't. The cross-tab between product line and entry source shows Artisan Sauces actually over-indexes on quality_mgr,
-
-```{r qm-cb}
-#| include: false
-qm_cb <- entry_stats |> filter(updated_by == "quality_mgr") |> pull(cb_per_sku)
-```
-
-one of the most expensive entry sources at `r ds(qm_cb)` in chargebacks per SKU. Specialty Condiments, which has worse outcomes, is the line that disproportionately flows through production_admin, the cleanest source.
-
-The process theory doesn't hold. Something else is producing Artisan Sauces' better outcomes despite using expensive entry paths.
-
-Two explanations survive the data. First, Artisan Sauces is the highest-revenue product line. Its SKUs are more likely to have attracted retailer scrutiny, category review attention, and incidental cleanup during quarterly business reviews. Revenue creates visibility. Visibility creates corrections. Second, Artisan Sauces has been in the catalog longest as a line. More time means more cycles through retailer item setup, more rounds of chargeback-driven fixes, more opportunities for someone to notice a defect and correct it. The data is not cleaner by design. It is cleaner by attrition.
-
-Both explanations point to the same conclusion: data quality at Cinderhaven is not managed. It is accidental. The SKUs that get cleaner are the ones that somebody happens to look at for some other reason. A revenue-weighted triage process would make this deliberate instead of incidental. The Artisan Sauces outcome would become the standard, not the exception. And it would happen in weeks, not years.
+The takeaway for triage: when the ops team starts fixing barcodes, prioritize the product lines where the chargeback-per-dollar ratio is highest. The same ten minutes of check-digit correction saves more money when applied to a high-exposure SKU.
 
 # Part 3: What to Do About It
 
-```{r fix-gtin-stats}
+```{r fix-barcode-stats}
 #| include: false
+barcode_fix_minutes <- n_skus * 10
+upc_fix_minutes <- n_upc_fail * 10
 gtin_fix_minutes <- n_gtin_fail * 10
-gtin_cb_events <- cbe |>
-  filter(grepl("Invalid GTIN|Invalid UPC", reason, ignore.case = TRUE)) |> nrow()
-gtin_savings_per_min <- round(gtin_annual / gtin_fix_minutes)
-```
-
-## `r gtin_fix_minutes` minutes against `r ds(gtin_annual)`
-
-`r n_gtin_fail` SKUs have invalid GTIN-14 check digits. A check digit is a mathematical typo: the last digit of a barcode, calculated from the preceding digits using a standard algorithm. It exists so scanning systems can detect keying errors. When the digit is wrong, the barcode fails validation, the retailer issues a penalty, and the penalty arrives on the settlement statement looking like a cost of doing business. It is not. It is a cost of a wrong digit.
-
-Each of the `r n_gtin_fail` takes about ten minutes to fix. The algorithm is deterministic. The input is already in the record. The fix is arithmetic, not judgment.
-
-Those `r n_gtin_fail` SKUs generated `r ds(gtin_cb_18mo)` in chargebacks over 18 months. Annualized, that's `r ds(gtin_annual)` a year. `r gtin_cb_events` chargeback events across all four contracted retailers. Every event was triggered by the same mechanism: a system ran a calculation, compared the result to the digit on file, found they didn't match, and issued a charge. The digit on file has been wrong since the day each SKU was entered. It is still wrong now.
-
-`r gtin_fix_minutes` minutes of data entry. `r ds(gtin_annual)` a year. `r ds(gtin_savings_per_min)` per minute. The return on this fix is not a number that belongs in a business case. It belongs in a case study about organizational blind spots. The fix has been available for as long as the defect has existed. The cost has been accumulating every month. The connection between the two has never been visible because no system, no report, and no process at Cinderhaven links chargebacks to specific fields in the product master. This report is that link. The connection is now visible. What happens next is a decision, not a discovery.
-
-The second fix is case dimensions. `r n_missing_dims` SKUs have blank case weight, length, width, or height fields. When a retailer's warehouse receives a case and attempts to reconcile it against the product master, the master says nothing. Any measurement is a mismatch against a blank field. Someone pulls a case from inventory, measures it with a tape measure and a scale, and enters five numbers.
-
-```{r dim-fix-stats}
-#| include: false
-dim_hours <- round(n_missing_dims * 30 / 60, 1)
-dim_cb_18mo <- cbe |>
-  filter(grepl("Dimension mismatch", reason, ignore.case = TRUE)) |>
-  summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
-dim_annual <- round(dim_cb_18mo * 12 / 18)
-dim_pct <- round(100 * dim_cb_18mo / total_cb_18mo)
-```
-
-About 30 minutes per SKU. `r n_missing_dims` SKUs, roughly `r dim_hours` hours total. That eliminates `r dim_pct`% of chargeback dollars: `r ds(dim_cb_18mo)` over 18 months, approximately `r ds(dim_annual)` a year.
-
-```{r missing-data-stats}
-#| include: false
-n_missing_country <- sum(smf$missing_country, na.rm = TRUE)
-n_missing_proddata <- sum(smf$missing_brand_owner | smf$missing_country |
-                          !smf$ows_complete, na.rm = TRUE)
-data_defect_cb_18mo <- total_cb_18mo * data_defect_pct / 100
-proddata_cb_18mo <- data_defect_cb_18mo - gtin_cb_18mo - dim_cb_18mo
-proddata_annual <- round(proddata_cb_18mo * 12 / 18)
-proddata_hours <- round(sum(
-  smf$missing_brand_owner * 10 +
-  smf$missing_country * 30 +
-  (!smf$ows_complete) * 30, na.rm = TRUE) / 60)
 data_defect_annual <- round((total_cb_18mo * data_defect_pct / 100) * 12 / 18)
+barcode_savings_per_min <- round(barcode_annual / barcode_fix_minutes)
+barcode_pct_of_annual <- round(100 * barcode_annual / annual_cb)
 ```
 
-The third fix is missing product data. `r n_missing_proddata` SKUs have blank or placeholder values in required fields: brand owner, country of origin, or other retailer-mandated attributes. `r n_brand_owner_fail` of the brand owner cases contain the literal string "NA," two characters typed by whoever set up the SKU instead of the company name. Replacing "NA" with "Cinderhaven Provisions" takes less time than reading this sentence. The other fields require slightly more work: a phone call to a supplier for imported ingredients, a lookup in an internal system for regulatory codes. Call it `r proddata_hours` hours total across `r n_missing_proddata` SKUs.
+## `r round(total_fix_hours)` hours against `r ds(annual_cb)`
+
+`r n_upc_fail` SKUs have invalid UPC-12 check digits. `r n_gtin_fail` have invalid GTIN-14 check digits. A check digit is a mathematical typo: the last digit of a barcode, calculated from the preceding digits using a standard algorithm. It exists so scanning systems can detect keying errors. When the digit is wrong, the barcode fails validation, the retailer issues a penalty, and the penalty arrives on the settlement statement looking like a cost of doing business. It is not. It is a cost of a wrong digit.
+
+Each SKU takes about ten minutes to fix. The algorithm is deterministic. The input is already in the record. The fix is arithmetic, not judgment.
+
+"Label / barcode fine" chargebacks totaled `r ds(barcode_cb_18mo)` over 18 months, annualized to `r ds(barcode_annual)` a year. Combined with pricing errors (which also trace to data fields), data-related chargebacks account for `r data_defect_pct`% of the total bill. The remaining `r ds(non_data_annual)` a year comes from late deliveries, short shipments, and damaged goods — logistics issues outside the scope of a data audit.
 
 ```{r fix-action-table}
 #| results: asis
 fix_tbl <- tibble(
-  `Fix action` = c("Fix GTIN check digits", "Reconcile case dimensions",
-                    "Complete missing fields", "**Total**"),
-  SKUs = c(n_gtin_fail, n_missing_dims, n_missing_proddata, NA),
-  Time = c(paste(gtin_fix_minutes, "min"), paste(dim_hours, "hr"),
-           paste(proddata_hours, "hr"),
+  `Fix action` = c("Fix UPC-12 check digits", "Fix GTIN-14 check digits",
+                    "**Total barcode corrections**"),
+  SKUs = c(n_upc_fail, n_gtin_fail, NA),
+  Time = c(paste(upc_fix_minutes, "min"), paste(gtin_fix_minutes, "min"),
            paste0("**~", round(total_fix_hours), " hr**")),
-  `Annual savings` = c(ds(gtin_annual), ds(dim_annual), ds(proddata_annual),
-                        paste0("**", ds(data_defect_annual), "**")),
-  `Per minute` = c(paste0("$", fmt_d(gtin_savings_per_min), "/min"),
-                   paste0("$", fmt_d(round(dim_annual / (dim_hours * 60))), "/min"),
-                   paste0("$", fmt_d(round(proddata_annual / (proddata_hours * 60))), "/min"),
-                   ""))
-cat(kable(fix_tbl, format = "pipe", align = c("l", "r", "r", "r", "r")), sep = "\n")
+  `Annual savings` = c("—", "—",
+                        paste0("**", ds(data_defect_annual), "**")))
+cat(kable(fix_tbl, format = "pipe", align = c("l", "r", "r", "r")), sep = "\n")
 ```
 
-![Fix ROI: chargeback savings per hour of effort, by fix action.](../output/charts/04_fix_roi.png){fig-alt="Horizontal bar chart of chargeback savings per hour of remediation effort, with GTIN check-digit fixes far outpacing every other action."}
+![Fix ROI: chargeback savings per hour of effort, by fix action.](`r chart("04_fix_roi")`){fig-alt="Horizontal bar chart of chargeback savings per hour of remediation effort."}
 
-`r round(total_fix_hours)` hours of data entry eliminates `r ds(data_defect_annual)` a year in chargebacks. That is the entire data-defect chargeback bill. Every dollar traces to a field that is currently wrong or currently empty in the product master. The remaining `r ds(non_data_annual)` a year comes from late deliveries and short shipments, logistics issues outside the scope of a data audit.
+`r round(total_fix_hours)` hours of data entry. That is the entire scope of the barcode cleanup. Case dimensions, brand owner, country of origin, and OneWorldSync registrations are all already complete and correct. The product master's only defects are barcode check digits.
 
-```{r gtin-pct-of-cb}
-#| include: false
-gtin_pct_of_annual <- round(100 * gtin_annual / annual_cb)
-```
-
-The asymmetry between cost and fix is the central finding of this report. Not the `r ds(total_annual_cost)` total. Not the Pareto concentration. Not the retailer readiness gaps. The asymmetry. The fact that a `r ds(total_ttm_rev)` company is losing `r ds(data_defect_annual)` a year in direct penalties because nobody has spent `r round(total_fix_hours)` hours on data entry. The fact that `r gtin_pct_of_annual`% of that cost sits in `r n_gtin_fail` fields that take `r gtin_fix_minutes` minutes to correct. The fact that those `r n_gtin_fail` fields have been wrong for an average of 22 months while the charges accumulated in amounts too small to trigger investigation and too steady to ever stop.
+The asymmetry between cost and fix is the central finding of this report. Not the `r ds(annual_cb)` total. Not the Pareto concentration. Not the universal retailer readiness failure. The asymmetry. The fact that a `r ds(total_ttm_rev)` company is losing `r ds(data_defect_annual)` a year in data-related penalties because nobody has spent `r round(total_fix_hours)` hours on data entry. The fact that the same barcode defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop.
 
 ## What's still broken right now
 
@@ -787,7 +587,7 @@ cat(kable(broken_tbl, format = "pipe",
 
 `r n_still_broken` SKUs in total carry unfixed defects that are actively generating charges. The ten above account for `r ds(top10_broken_total)` in the last six months. Of the `r ds(total_recent)` in total chargebacks during that period, `r broken_pct`% trace to defects that remain in the product master today.
 
-CHP-0044 is the distillation of the entire problem. One SKU. One defect. One wrong digit. Ten minutes to fix. `r ds(chp44_6mo)` in penalties over six months that would not have occurred if someone had spent ten minutes on this product at any point in the last two years. The reason nobody spent those ten minutes is not negligence or budget or competing priorities. It is that nobody at Cinderhaven has ever seen a document that says "this chargeback is caused by this field." The settlement statement says "compliance deduction, $287." The product master says "GTIN-14: 10614141000415." Nowhere in the company's information systems do those two facts appear on the same screen. This table is that screen.
+The reason nobody has fixed these barcodes is not negligence or budget or competing priorities. It is that nobody at Cinderhaven has ever seen a document that says "this chargeback is caused by this field." The settlement statement says "label/barcode fine, $287." The product master says "GTIN-14: 10614141000415." Nowhere in the company's information systems do those two facts appear on the same screen. This table is that screen.
 
 ## How to read the triage list
 
@@ -795,7 +595,7 @@ The interactive table below ranks all `r n_skus` SKUs by fix priority. The compo
 
 The effort column sits alongside the composite, not inside it. This is deliberate. Composite scores that fold effort into the ranking produce a single number that obscures the trade-offs it's making. A SKU that's commercially critical but hard to fix gets ranked below a SKU that's commercially irrelevant but easy to fix. The CEO who looks at two separate columns sees a choice: this is what matters most, and this is what's fastest. Both are useful. Neither is a substitute for the other.
 
-In practice, the two columns produce different action plans. The composite says: start with CHP-0002 because it's the #1 revenue SKU with the #1 chargeback total. The effort column says: start with CHP-0044 because it's a 10-minute fix that stops `r ds(chp44_6mo)` in recent chargebacks. A CEO uses the composite to set the quarterly agenda. An ops manager uses the effort column to fill Tuesday afternoon. Both are correct. The table gives both without forcing a false synthesis.
+In practice, the two columns produce different action plans. The composite says: start with the highest-revenue SKUs because they carry the most commercial risk. The effort column says: start with the fastest fixes because every ten-minute correction stops another month of penalties. A CEO uses the composite to set the quarterly agenda. An ops manager uses the effort column to fill Tuesday afternoon. Both are correct. The table gives both without forcing a false synthesis.
 
 ```{r}
 #| label: triage-table
@@ -934,7 +734,7 @@ reactable(
 
 Here is what Monday morning looks like today at Cinderhaven.
 
-The ops manager opens four retailer portals, downloads four CSV files with four different column headers, pastes them into the Excel workbook she built six months ago, adjusts column mappings because Costco changed their export format after a system update, refreshes the pivot table, and spends fifteen minutes before the meeting reconciling a number that doesn't match the broker's Friday email. The discrepancy is a store count definition. She doesn't have time to find out which one is right. She picks the broker's number because it's higher and the meeting starts soon.
+The ops manager opens six retailer portals, downloads CSV files with different column headers, pastes them into the Excel workbook she built six months ago, adjusts column mappings because Costco changed their export format after a system update, refreshes the pivot table, and spends fifteen minutes before the meeting reconciling a number that doesn't match the broker's Friday email. The discrepancy is a store count definition. She doesn't have time to find out which one is right. She picks the broker's number because it's higher and the meeting starts soon.
 
 The meeting starts. The CEO asks why Cranberry Mostarda dropped 15% at Costco. She doesn't have a ready answer. The pivot table flagged the drop but doesn't link to a cause. Was it a stockout? A planogram reset? A data-driven deauthorization at two locations? The information exists in four different systems. None of them talk to each other. She says she'll look into it. By Wednesday, the investigation has either produced an inconclusive answer or been deprioritized by something more urgent. Next Monday, the same 90 minutes happen again.
 
@@ -942,7 +742,7 @@ This cycle consumes 15 to 20 hours a month. It is not on anyone's calendar as "r
 
 Here is what Monday morning looks like after the product master is clean and the dashboard is live.
 
-The ops manager opens one screen fifteen minutes before the meeting. All four retailers. Velocity by SKU, filterable by retailer, product line, and quality tier. She clicks into Cranberry Mostarda at Costco. The velocity chart shows the 15% drop started three weeks ago. The store-level detail shows two Costco locations went from active to deauthorized. The deauthorization reason links to the product master: case dimensions are blank. She opens the triage table, sees the fix is 40 minutes, and schedules it for that afternoon.
+The ops manager opens one screen fifteen minutes before the meeting. All six retailers. Velocity by SKU, filterable by retailer and product line. She clicks into Cranberry Mostarda at Costco. The velocity chart shows the 15% drop started three weeks ago. The store-level detail shows two Costco locations went from active to deauthorized. The deauthorization reason links to the product master: barcode validation failure. She opens the triage table, sees the fix is 10 minutes, and schedules it for that afternoon.
 
 The CEO asks about Cranberry Mostarda. The ops manager already knows the answer. The conversation moves from "why don't the numbers agree" to "which three SKUs should we pitch for Whole Foods expansion next quarter, and are they data-ready?"
 
@@ -950,24 +750,20 @@ The 90 minutes are not optimized. They are gone. The ops manager's Monday mornin
 
 ## The sequence
 
-The work described in this report is four phases of specific, bounded tasks, each one producing a deliverable that makes the next one possible. The total calendar time is approximately two weeks. The total effort is approximately 30 hours of data entry and two to three days of process and tooling work.
+The work described in this report is three phases of specific, bounded tasks. The total calendar time is approximately one week. The total effort is approximately `r round(total_fix_hours)` hours of data entry and two to three days of process and tooling work.
 
-Phase one takes an afternoon. Correct the `r n_gtin_fail` invalid GTIN-14 check digits. Each one is a ten-minute fix: open the record, recalculate the check digit, type the correct number. While the corrections propagate through OneWorldSync, move to the brand owner fields. Replace the `r n_brand_owner_fail` "NA" values with "Cinderhaven Provisions." Submit the initial OneWorldSync registrations for SKUs that are currently listed as "Not Registered."
+Phase one takes two days. Correct all `r n_upc_fail` invalid UPC-12 check digits and all `r n_gtin_fail` invalid GTIN-14 check digits. Each SKU is a ten-minute fix: open the record, recalculate both check digits using the standard GS1 algorithm, type the correct numbers, save. No other fields need attention — case dimensions, brand owner, country of origin, and OneWorldSync registrations are all complete and correct. When phase one is done, every SKU in the catalog passes all `r n_retailers` retailers' readiness checks. The `r ds(total_ttm_rev)` in at-risk revenue is secured. The first clean settlement statement arrives within 30 to 60 days.
 
-When phase one is done, `r gtin_pct_of_annual`% of the chargeback bill stops. The `r n_gtin_fail` GTIN corrections alone eliminate `r ds(gtin_annual)` a year in penalties. The first clean settlement statement arrives within 30 to 60 days.
+Phase two takes two days. This is the phase that prevents phase one from being wasted. Without a gate between data entry and the live product master, the next SKU launch will introduce the same barcode defects that phase one just cleaned. The validation logic is simple: a check digit calculation that runs when a GTIN or UPC is entered and blocks the save if it fails. The GS1 algorithm is a single modulo operation. The technology is trivial. The discipline is the deliverable.
 
-Phase two takes a week. Complete every remaining missing field across the catalog. Case dimensions on `r n_missing_dims` SKUs, which means pulling physical product and measuring it. Country of origin on `r n_missing_country` SKUs. Remaining OneWorldSync registrations. This is the physical work: a tape measure, a scale, a phone call to a supplier for imported ingredients. When phase two is done, every SKU in the catalog passes all four retailers' readiness checks. The `r rr("Walmart", "n_fail")` SKUs currently failing at Walmart become eligible for submission. The `r ds(wm_rev_risk)` in at-risk revenue is secured.
+Phase three takes two days. Deploy the Monday Morning Dashboard. Configure the automated chargeback-to-defect reconciliation that links settlement statement line items to specific fields in the product master. Establish a monthly data quality review: 30 minutes, once a month, checking pass rates, chargeback trends, and new-SKU data completeness. When phase three is done, the visibility gap closes.
 
-Phase three takes two days. This is the phase that prevents the first two from being wasted. Without a gate between data entry and the live product master, the next SKU launch will introduce the same defects that phases one and two just cleaned. The broker intake checklist is the simplest version of that gate: eight required fields, five minutes to complete, applied to every entry path. The validation logic can be as simple as a check digit calculation that runs when a GTIN is entered and blocks the save if it fails. The technology is trivial. The discipline is the deliverable.
+The three phases build on each other. Phase one produces immediate financial return and unlocks expansion. Phase two prevents recurrence. Phase three makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the barcodes but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected.
 
-Phase four takes two days. Deploy the Monday Morning Dashboard. Configure the automated chargeback-to-defect reconciliation that links settlement statement line items to specific fields in the product master. Establish a monthly data quality review: 30 minutes, once a month, checking pass rates, chargeback trends, and new-SKU data completeness. When phase four is done, the visibility gap closes. The $691-a-month problem that nobody saw becomes a $0-a-month problem that everybody monitors.
-
-The four phases build on each other. Phase one produces immediate financial return. Phase two eliminates the remaining exposure and unlocks expansion. Phase three prevents recurrence. Phase four makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the GTINs but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected. The sequence is not arbitrary. It is a dependency chain.
-
-The total: `r round(total_fix_hours)` hours of data entry eliminates `r ds(data_defect_annual)` a year in direct chargebacks. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is `r ds(total_annual_cost)` a year. At the growth target, it exceeds `r ds(stage3_cb)`. The cost of fixing it is two weeks.
+The total: `r round(total_fix_hours)` hours of data entry addresses the entire barcode cleanup. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is `r ds(annual_cb)` a year in chargebacks. At the growth target, it exceeds `r ds(stage3_cb)`. The cost of fixing it is one week.
 
 ::: {.callout-tip appearance="minimal" icon=false}
-*The same five inputs that produced the `r ds(total_annual_cost)` figure for Cinderhaven — SKU count, retailer count, annual chargebacks, data quality pass rate, and revenue per SKU — work for any specialty food brand. Plug in your own numbers and see your own annual cost, scale projection, and data-debt density score:* [**Estimate your own data debt →**](https://lailarallc.shinyapps.io/data-debt-calculator/)
+*The same five inputs that produced the `r ds(annual_cb)` figure for Cinderhaven — SKU count, retailer count, annual chargebacks, data quality pass rate, and revenue per SKU — work for any specialty food brand. Plug in your own numbers and see your own annual cost, scale projection, and data-debt density score:* [**Estimate your own data debt →**](https://lailarallc.shinyapps.io/data-debt-calculator/)
 :::
 
 ::: {.content-visible when-format="pdf"}
@@ -983,13 +779,9 @@ The total: `r round(total_fix_hours)` hours of data entry eliminates `r ds(data_
 
 Chart 5 shows nine data defect categories ranked by the share of TTM revenue they affect. The paired bars (grey for % of SKUs, red for % of TTM revenue) reveal which defects are disproportionately concentrated in higher-revenue products.
 
-![Revenue-weighted field completeness.](../output/charts/05_revenue_weighted_completeness.png){fig-alt="Paired-bar chart of nine defect categories, comparing share of SKUs (grey) to share of TTM revenue (red)."}
+![Revenue-weighted field completeness.](`r chart("05_revenue_weighted_completeness")`){fig-alt="Paired-bar chart of nine defect categories, comparing share of SKUs (grey) to share of TTM revenue (red)."}
 
-OneWorldSync incompleteness is nearly universal: `r pct_ows_incomplete`% of SKUs and a similar share of revenue. This is a catalog-wide infrastructure problem, not a defect pattern.
-
-The three most revealing rows are Invalid GTIN-14, Missing brand owner, and Missing country. In each case, the red bar extends further right than the grey. Invalid GTIN-14 is the starkest: 10% of SKUs but 25.7% of revenue. The defect is concentrated in the products that matter most. This is consistent with the finding in Part 2: the highest-revenue SKUs have the worst data.
-
-One exception runs the other direction. Implausible case weight affects 46.7% of SKUs but only 31.2% of revenue. This defect concentrates in smaller, lower-revenue products. It is the only defect category where fixing by quality score alone would approximately match fixing by revenue priority.
+The chart reveals a concentrated defect pattern. Invalid UPC-12 affects 100% of SKUs and 100% of revenue. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`% of SKUs. No other defect category registers: brand owner, country of origin, case dimensions, case weight, and OneWorldSync registrations are all complete and correct across the catalog. The product master's problem is narrow — barcode check digits only — but universal.
 :::
 
 ::: {.content-visible when-format="pdf"}
@@ -999,7 +791,7 @@ One exception runs the other direction. Implausible case weight affects 46.7% of
 ::: {.callout-note collapse="true" appearance="simple"}
 ## Retailer readiness: per-retailer breakdown
 
-The retailer readiness analysis tests every SKU against each contracted retailer's published required-field set. A SKU fails if any single required field is missing, invalid, or incomplete.
+The retailer readiness analysis tests every SKU against each retailer's published required-field set. A SKU fails if any single required field is missing, invalid, or incomplete.
 
 ```{r rr-detail-table}
 #| results: asis
@@ -1014,11 +806,11 @@ cat(kable(rr_detail, format = "pipe",
           align = c("l", "r", "r", "r", "r")), sep = "\n")
 ```
 
-![Retailer item-setup readiness, pass/fail counts.](../output/charts/20_retailer_setup_readiness_stacked.png){fig-alt="Stacked bar chart of pass/fail SKU counts per retailer."}
+![Retailer item-setup readiness, pass/fail counts.](`r chart("20_retailer_setup_readiness_stacked")`){fig-alt="Stacked bar chart of pass/fail SKU counts per retailer."}
 
-The pass rates track directly with how many fields each retailer requires. Walmart demands the most and has the lowest pass rate. Whole Foods requires the least and has the highest. Most failing SKUs are short by one or two fields, not five or six. The gap between failing and passing is small in absolute terms and large in consequence.
+The result is uniform: every SKU fails every retailer. The failure is driven by barcode validation (GTIN-14 and UPC-12 check digits). All other required fields — brand owner, case dimensions, country of origin, OneWorldSync registration — are complete and correct.
 
-The "mean fields short" column matters for planning. Fix brand owner and GTIN across the catalog and Walmart's pass rate improves significantly. The same two fields move the needle at Costco and UNFI. Whole Foods is already at 70% and its remaining failures are almost all single-field, meaning most are one fix away from passing.
+The "mean fields short" column matters for planning. Fixing barcode check digits across the catalog moves every SKU from fail to pass at every retailer. The gap between 0% and 100% readiness is a single category of fix.
 :::
 
 ::: {.content-visible when-format="pdf"}
@@ -1030,11 +822,11 @@ The "mean fields short" column matters for planning. Fix brand owner and GTIN ac
 
 Monthly chargeback dollars have held roughly flat at about $5,000 per month over the 18-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
 
-![Monthly chargeback dollars over the 18-month window.](../output/charts/15_monthly_chargeback_trend.png){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $5,000 per month."}
+![Monthly chargeback dollars over the 18-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $5,000 per month."}
 
 Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is stable at $1.8 to $2.5 million per month. Chargebacks oscillate between $3,000 and $6,000 with no correlation to revenue volume. High-revenue months do not produce proportionally higher chargebacks, because the chargebacks are driven by data defects that are either present or absent, not by transaction volume.
 
-![Monthly chargebacks overlaid on monthly scan revenue.](../output/charts/16_monthly_chargebacks_vs_scan.png){fig-alt="Dual-axis line chart of monthly chargebacks and monthly scan revenue showing no correlation."}
+![Monthly chargebacks overlaid on monthly scan revenue.](`r chart("16_monthly_chargebacks_vs_scan")`){fig-alt="Dual-axis line chart of monthly chargebacks and monthly scan revenue showing no correlation."}
 
 This lack of correlation is itself a finding. It means chargebacks will not self-correct with growth. Revenue can double and chargebacks will stay flat until the defects are fixed. It also means chargebacks will not decline with a sales downturn. They are a fixed cost disguised as a variable one.
 :::
@@ -1048,17 +840,17 @@ This lack of correlation is itself a finding. It means chargebacks will not self
 
 | Stage | SKUs | Retailers | Projected annual chargebacks |
 |---|---:|---:|---:|
-| Current | `r n_skus` | 4 | `r ds(annual_cb)` |
-| Stage 2 | `r stage2_skus` | 6 | `r ds(stage2_cb)` |
+| Current | `r n_skus` | `r n_retailers` | `r ds(annual_cb)` |
+| Stage 2 | `r stage2_skus` | 5 | `r ds(stage2_cb)` |
 | Stage 3 | `r stage3_skus` | 8 | `r ds(stage3_cb)` |
 
-![Growth projection of annual chargebacks at three SKU/retailer stages.](../output/charts/12_growth_projection_chargebacks.png){fig-alt="Bar chart of projected annual chargebacks at current scale, Stage 2, and Stage 3."}
+![Growth projection of annual chargebacks at three SKU/retailer stages.](`r chart("12_growth_projection_chargebacks")`){fig-alt="Bar chart of projected annual chargebacks at current scale, Stage 2, and Stage 3."}
 
 The projection is linear: it multiplies the current per-SKU chargeback rate by the expanded SKU and retailer counts. This is a floor estimate, not a ceiling. In practice, defect rates tend to degrade during rapid growth because data entry processes that barely work at `r n_skus` SKUs break down entirely at `r stage2_skus`. New SKUs launch faster, with less review, through more entry paths. The companies that scale from `r ds(total_ttm_rev)` to $55 million without fixing their product data don't experience a linear increase in chargebacks. They experience an accelerating one.
 
 The sensitivity: if the defect rate degrades by 25% during growth, Stage 2 chargebacks rise from `r ds(stage2_cb)` to `r ds(round(stage2_cb * 1.25))` and Stage 3 from `r ds(stage3_cb)` to `r ds(round(stage3_cb * 1.25))`.
 
-The assumption that matters most is not the defect rate. It's the retailer count. Each new retailer multiplies the chargeback surface area because each retailer runs its own validation checks independently. A SKU with an invalid GTIN generates one charge per retailer per month. At 4 retailers, that's 4 charges. At 8, it's 8. Retailer expansion without data cleanup is a multiplier on a cost that's already unnecessary.
+The assumption that matters most is not the defect rate. It's the retailer count. Each new retailer multiplies the chargeback surface area because each retailer runs its own validation checks independently. A SKU with an invalid GTIN generates one charge per retailer per month. At `r n_retailers` retailers, that's `r n_retailers` charges. At 8, it's 8. Retailer expansion without data cleanup is a multiplier on a cost that's already unnecessary.
 :::
 
 ::: {.callout-note collapse="true" appearance="simple"}
@@ -1095,7 +887,7 @@ Promotional effectiveness. The promotions data is reported as context. A full pr
 
 Demand forecasting. Scan data is used to calculate velocity and identify trends. It is not used to project demand. Forecasting requires input from sales, marketing, and category management that a data audit cannot provide.
 
-Supply chain operations. Short shipments and late deliveries account for 4.4% of chargebacks. These are flagged but not analyzed because they are logistics issues, not data issues.
+Supply chain operations. Short shipments, late deliveries, and damaged goods account for `r 100 - data_defect_pct`% of chargebacks. These are flagged but not analyzed because they are logistics issues, not data issues.
 
 Competitor analysis. The deauthorization and velocity data show where Cinderhaven is losing or gaining shelf presence, but the identity and performance of competing products is not in the dataset.
 :::
@@ -1146,15 +938,13 @@ The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale
 
 Key design decisions in the synthetic data:
 
-GTIN check digits were misaligned on approximately 10% of SKUs (`r n_gtin_fail` of `r n_skus`) to mirror observed human data-entry error rates. The audit's validation logic matches the dataset's own algorithm. A strict GS1 implementation would flag additional SKUs.
+GTIN-14 check digits fail validation on `r n_gtin_fail` of `r n_skus` SKUs. UPC-12 check digits fail on all `r n_upc_fail`. The barcode defect rate is higher than typical real-world rates (where 10–20% is common), which concentrates the narrative on a single defect type. In a real engagement, defect patterns would be more varied.
 
-Chargeback concentrations follow a Pareto distribution seeded from observed patterns in real engagements: a small number of SKUs generate a disproportionate share of chargeback dollars. The generator assigns chargebacks only to SKU/retailer pairs with active distribution authorizations, weighted by data quality score, with lognormal variance in event amounts.
+Chargeback concentrations follow a Pareto distribution seeded from observed patterns in real engagements. The generator assigns chargebacks only to SKU/retailer pairs with active distribution authorizations, with lognormal variance in event amounts.
 
-OneWorldSync registration statuses were distributed to produce a `r 100 - pct_ows_incomplete`% complete rate (`r n_skus - n_ows_incomplete` of `r n_skus` SKUs), reflecting the typical state of a mid-market specialty food company that has started the registration process but not prioritized it.
+All non-barcode data fields (brand owner, country of origin, case dimensions, case weight, OneWorldSync registration) are complete and correct across the catalog. This means the dataset does not support analysis of missing-field defects or quality-tier variation — limitations the narrative acknowledges directly.
 
 Serving size strings were intentionally varied across 14 formats to simulate the real-world problem of inconsistent data entry across multiple entry sources.
-
-Time-to-shelf was modeled with a quality-dependent lag: SKUs with lower data quality scores receive longer delays between store authorization and first scan, calibrated to produce a roughly 3x spread between the worst and best quality tiers.
 :::
 
 ::: {.callout-note collapse="true" appearance="simple"}
@@ -1164,13 +954,11 @@ All dollar estimates in this report state their assumptions at point of claim. T
 
 Chargeback annualization: 18-month totals are multiplied by 12/18 to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
 
-Stalled-launch cost estimate (`r ds(stalled_launch_cost)`): calculated as the revenue difference between actual time-to-shelf and best-tier time-to-shelf, summed across all SKUs outside the best tier. Assumes that revenue accrues linearly with shelf time and that delayed revenue is not recovered in later periods. Both assumptions are conservative: in practice, launch windows are time-sensitive and lost early velocity is difficult to recapture.
+Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. Because all SKUs share the same data quality score (`r mean_dq_all`), a quality-tier comparison is not possible with this dataset. In a real engagement with variance in data quality, a differential analysis would isolate the data-quality contribution to deauthorization.
 
-Shelf loss cost estimate (`r ds(shelf_loss_cost)`): calculated from the differential deauthorization rate between bottom-half and top-half quality SKUs, applied to the average revenue per deauthorized SKU. Assumes the quality-correlated deauthorization differential is entirely attributable to data quality. In reality, some portion of the differential may reflect other factors (poor velocity, category resets, shelf space optimization). The estimate should be treated as an upper bound on the data-quality contribution.
+Cost model: this report uses annualized chargebacks (`r ds(annual_cb)`) as the primary cost metric. Stalled-launch and shelf-loss costs are not quantified because the uniform data quality score across the catalog does not support the differential analysis those estimates require.
 
-Total cost model (`r ds(total_annual_cost)`): sum of chargebacks (`r ds(annual_cb)`), stalled launches (`r ds(stalled_launch_cost)`), and shelf loss (`r ds(shelf_loss_cost)`). Trade spend erosion is identified as a fourth cost category but not quantified because isolating the data-quality share of trade spend requires assumptions this audit does not make.
-
-Data quality scoring: each SKU is scored on 8 binary checks (GTIN-14 valid, UPC-12 valid, brand owner present, country of origin present, case weight plausible, case dimensions present, OneWorldSync complete, serving size standardized). Score = (checks passed / 8) x 100. The scoring is deliberately simple and transparent: every dimension is equally weighted, and the reader can see exactly which checks each SKU passes or fails.
+Data quality scoring: each SKU is scored on 8 binary checks (GTIN-14 valid, UPC-12 valid, brand owner present, country of origin present, case weight plausible, case dimensions present, OneWorldSync complete, serving size standardized). Score = (checks passed / 8) x 100. In this dataset, all SKUs score `r mean_dq_all` because the only failing checks are barcode-related (GTIN-14 and UPC-12); all other checks pass universally. This zero-variance score makes quality-tier analysis impossible — a limitation the narrative addresses honestly.
 
 Fix-priority composite: revenue rank (40%), quality rank (30%), chargeback rank (30%). Ranks are percentile-based (1 = best/highest). Effort is shown separately, not incorporated into the composite. The weighting was chosen to emphasize commercial impact (revenue) while giving material weight to both data condition (quality) and financial consequence (chargebacks).
 :::

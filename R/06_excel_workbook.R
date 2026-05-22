@@ -169,11 +169,11 @@ dict_sections <- list(
 ~column,                       ~definition,
 "sku",                         "Cinderhaven product identifier (CHP-XXXX).",
 "product_name",                "Product display name.",
-"retailer",                    "Contracted retailer name (Walmart, Costco, UNFI, Whole Foods).",
+"retailer",                    "Contracted retailer name (Walmart, Costco, Whole Foods).",
 "product_line",                "Product line (Artisan Sauces, Specialty Condiments, Pantry Staples).",
 "stores_4w",                   "Number of stores with active authorization for this SKU at this retailer.",
-"ups_per_w_4w",                "Units sold per store per week, averaged over the most recent 4-week window.",
-"ups_per_w_12w",               "Units sold per store per week, averaged over the most recent 12-week window.",
+"ups_per_wk_4wk",                "Units sold per store per week, averaged over the most recent 4-week window.",
+"ups_per_wk_12wk",               "Units sold per store per week, averaged over the most recent 12-week window.",
 "ups_pct_change_4w_vs_prev",   "Percentage change from the prior 4-week velocity to the current 4-week velocity. Positive = accelerating. Negative = decelerating.",
 "data_quality_flag",           "Data quality flag. \"REVIEW\" = SKU has 3 or more active defects in the product master. \"OK\" = fewer than 3 defects.")),
 
@@ -222,7 +222,7 @@ dict_sections <- list(
 "retailer",                    "Retailer that issued the chargeback.",
 "month",                       "Date the chargeback was recorded.",
 "amount",                      "Dollar amount of the chargeback.",
-"reason",                      "Reason category assigned by the retailer. Values: Invalid GTIN/UPC, Dimension mismatch, Missing product data, Late delivery, Short shipment.")),
+"reason",                      "Reason category assigned by the retailer. Values: Label / barcode fine, Pricing error, Damaged goods, Late delivery, Short shipment.")),
 
   list(name = "Tab 5: Revenue by SKU x Retailer",
        rows = tribble(

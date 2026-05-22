@@ -31,28 +31,46 @@ con <- dbConnect(
   user     = m[2],
   password = m[3]
 )
-dbExecute(con, "SET search_path TO public_marts, public_staging, public_intermediate, raw, public")
+dbExecute(con, "SET search_path TO raw, public")
 
-# Staging views (stg_*) live in public_staging; retailer_requirements
-# has no staging model and is read from the raw schema. The database
-# search_path includes both, so unqualified names resolve correctly.
 pg_to_local <- c(
-  "stg_product_master"    = "product_master",
-  "stg_sku_costs"         = "sku_costs",
-  "stg_chargebacks"       = "chargebacks",
-  "stg_stores"            = "stores",
-  "stg_distribution_log"  = "distribution_log",
-  "stg_scan_data"         = "scan_data",
-  "stg_promotions"        = "promotions",
+  "product_master"        = "product_master",
+  "sku_costs"             = "sku_costs",
+  "retailer_chargebacks"  = "chargebacks",
+  "stores"                = "stores",
+  "distribution_log"      = "distribution_log",
+  "scan_data"             = "scan_data",
+  "promotions"            = "promotions",
   "retailer_requirements" = "retailer_requirements"
 )
 
-cat("Loading", length(pg_to_local), "tables from Postgres...\n")
+cat("Loading", length(pg_to_local), "tables from Postgres (raw schema)...\n")
 raw <- setNames(
   lapply(names(pg_to_local), function(t) as_tibble(dbReadTable(con, t))),
   unname(pg_to_local)
 )
+retailer_map <- as_tibble(dbReadTable(con, "retailers")) |>
+  select(retailer_id, retailer_name = name)
 dbDisconnect(con)
+
+raw$stores <- raw$stores |>
+  rename(retailer = chain_name) |>
+  select(-retailer_id)
+
+raw$chargebacks <- raw$chargebacks |>
+  left_join(retailer_map, by = "retailer_id") |>
+  transmute(sku, retailer = retailer_name, amount,
+            reason, month = format(month, "%Y-%m"))
+
+raw$promotions <- raw$promotions |>
+  left_join(retailer_map, by = "retailer_id") |>
+  mutate(retailer = coalesce(retailer_name, retailer_id)) |>
+  select(-retailer_id, -retailer_name)
+
+raw$retailer_requirements <- raw$retailer_requirements |>
+  left_join(retailer_map, by = "retailer_id") |>
+  mutate(retailer = coalesce(retailer_name, retailer_id)) |>
+  select(-retailer_id, -retailer_name)
 
 cat("\n--- Row counts ---\n")
 for (t in names(raw)) cat(sprintf("  %-22s %10d rows  %3d cols\n",
