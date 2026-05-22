@@ -27,17 +27,15 @@ suppressPackageStartupMessages({
 ROOT <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
-source(file.path(ROOT, "R", "00_theme.R"))   # palette, theme, helpers
+source(file.path(ROOT, "R", "00_setup.R"))
+source(file.path(ROOT, "R", "00_theme.R"))
 
-FRM_DIR <- file.path(ROOT, "output", "frames")
 OUT_DIR <- file.path(ROOT, "output", "charts")
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
-
-read_p <- function(name) readRDS(file.path(FRM_DIR, paste0(name, ".rds")))
-sku_master_full   <- read_p("sku_master_full")
-time_to_shelf_sku <- read_p("time_to_shelf_sku")
-retailer_pnl      <- read_p("retailer_pnl")
-chargebacks_enriched     <- read_p("chargebacks_enriched")
+sku_master_full   <- read_frame("sku_master_full")
+time_to_shelf_sku <- read_frame("time_to_shelf_sku")
+retailer_pnl      <- read_frame("retailer_pnl")
+chargebacks_enriched     <- read_frame("chargebacks_enriched")
 
 save_chart <- function(p, name, w = 9, h = 5.5, dpi = 300) {
   rds_path <- file.path(OUT_DIR, paste0(name, ".rds"))

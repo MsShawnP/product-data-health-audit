@@ -11,22 +11,21 @@ suppressPackageStartupMessages({
   library(openxlsx2)
 })
 
-ROOT     <- normalizePath(
+ROOT <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
+source(file.path(ROOT, "R", "00_setup.R"))
+
 cfg      <- yaml::read_yaml(file.path(ROOT, "config.yml"))
-PROC_DIR <- file.path(ROOT, "output", "frames")
 OUT_DIR  <- file.path(ROOT, "output")
 OUT_FILE <- file.path(OUT_DIR, paste0(cfg$data$output_prefix, "_audit.xlsx"))
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
-
-read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
-sku_dim          <- read_p("sku_dim")
-sku_master_full  <- read_p("sku_master_full")
-sku_retailer_rev <- read_p("sku_retailer_revenue")
-chargebacks_enriched    <- read_p("chargebacks_enriched")
-retailer_rs_long <- read_p("retailer_readiness_long")
-velocity         <- read_p("velocity")
+sku_dim          <- read_frame("sku_dim")
+sku_master_full  <- read_frame("sku_master_full")
+sku_retailer_rev <- read_frame("sku_retailer_revenue")
+chargebacks_enriched    <- read_frame("chargebacks_enriched")
+retailer_rs_long <- read_frame("retailer_readiness_long")
+velocity         <- read_frame("velocity")
 
 # ---- helpers --------------------------------------------------------------
 
