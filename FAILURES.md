@@ -32,6 +32,13 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix (not yet applied):** Switch to `ragg::agg_png` as the ggsave device (uses system FreeType with better hinting), bump DPI to 300, increase `theme_lailara` base_size to 14-15, increase all `geom_text` size params from 3.0-4.2 to 4.5-5.5. Also set `showtext_opts(dpi = 300)` to match.
 - **Tags:** showtext, ragg, chart-quality, CI, fonts
 
+### 2026-05-22 — replace_all on substring matches inside longer strings
+
+- **What happened:** Used Edit tool's `replace_all` to rename `chargebacks_e` → `chargebacks_enriched`. The substring `chargebacks_e` also matched inside `read_p("chargebacks_enriched")`, producing `read_p("chargebacks_enrichednriched")`.
+- **Why it failed:** `replace_all` does literal substring replacement across the entire file. When the old string is a prefix of a longer identifier or string literal, it matches both the intended target and the longer occurrence.
+- **Fix:** Grep for the old string after a replace_all to verify no unintended matches. Or use a more specific old_string that includes surrounding context (e.g., the assignment operator or line structure) to avoid ambiguous matches.
+- **Tags:** tooling, edit, rename, substring-match
+
 ### 2026-05-22 — Global `dev: "svglite"` in _quarto.yml breaks PDF rendering
 
 - **What happened:** Set `dev: "svglite"` in `_quarto.yml` knitr opts_chunk to get crisp vector charts in HTML. PDF render immediately failed.
