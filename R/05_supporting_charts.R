@@ -38,7 +38,7 @@ sku_dim         <- read_p("sku_dim")
 sku_master_full <- read_p("sku_master_full")
 retailer_pnl    <- read_p("retailer_pnl")
 retailer_rs     <- read_p("retailer_readiness_summary")
-chargebacks_e   <- read_p("chargebacks_enriched")
+chargebacks_enriched   <- read_p("chargebacks_enriched")
 deauth_summary  <- read_p("deauth_summary")
 process_debt    <- read_p("process_debt")
 time_to_shelf_s <- read_p("time_to_shelf_sku")
@@ -610,7 +610,7 @@ save_pair(p13_base(FALSE), to_girafe(p13_base(TRUE), w_in = 10, h_in = 5),
 
 cat("\n[14] Chargeback dollars by reason\n")
 
-c14 <- chargebacks_e |>
+c14 <- chargebacks_enriched |>
   group_by(reason) |>
   summarise(amt = sum(amount), n = n(), .groups = "drop") |>
   arrange(desc(amt)) |>
@@ -662,7 +662,7 @@ save_pair(p14_base(FALSE), to_girafe(p14_base(TRUE), w_in = 9, h_in = 4.5),
 
 cat("\n[15] Monthly chargeback trend\n")
 
-c15 <- chargebacks_e |>
+c15 <- chargebacks_enriched |>
   mutate(month = floor_date(month_date, "month")) |>
   group_by(month) |>
   summarise(amt = sum(amount), n = n(), .groups = "drop") |>

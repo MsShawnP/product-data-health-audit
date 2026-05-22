@@ -24,7 +24,7 @@ read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
 sku_dim          <- read_p("sku_dim")
 sku_master_full  <- read_p("sku_master_full")
 sku_retailer_rev <- read_p("sku_retailer_revenue")
-chargebacks_e    <- read_p("chargebacks_enriched")
+chargebacks_enriched    <- read_p("chargebacks_enriched")
 retailer_rs_long <- read_p("retailer_readiness_long")
 velocity         <- read_p("velocity")
 
@@ -109,7 +109,7 @@ readiness_matrix <- retailer_rs_long |>
 
 cat("[4/8] Chargeback Detail\n")
 
-chargeback_detail <- chargebacks_e |>
+chargeback_detail <- chargebacks_enriched |>
   transmute(
     month, sku, product_name, product_line,
     retailer, reason, amount,

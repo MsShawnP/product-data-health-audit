@@ -18,7 +18,12 @@ ROOT    <- normalizePath(
   winslash = "/", mustWork = FALSE)
 OUT_DIR <- file.path(ROOT, "output", "frames")
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
-raw     <- readRDS(file.path(OUT_DIR, "raw_tables.rds"))
+raw <- tryCatch(
+  readRDS(file.path(OUT_DIR, "raw_tables.rds")),
+  error = function(e) stop(
+    "Cannot read raw_tables.rds: ", conditionMessage(e),
+    "\nRe-run 01_load_raw.R or restore from git.", call. = FALSE)
+)
 
 product_master        <- raw$product_master
 optional_pm_cols <- list(
@@ -351,30 +356,39 @@ recent_cb_reasons <- chargebacks_enriched |>
   filter(month_date >= cb_window_start) |>
   distinct(sku, reason)
 
-defect_for_reason <- function(r, row) {
-  switch(r,
-    "Label / barcode fine"  = c(
-      if (!isTRUE(row$gtin_valid)) "GTIN-14 check digit",
-      if (!isTRUE(row$upc_valid))  "UPC-12 check digit"),
-    "Damaged goods"         = c(
-      if (isTRUE(row$missing_case_dims))   "Case dimensions blank",
-      if (isTRUE(row$missing_case_weight)) "Case weight blank",
-      if (!is.na(row$weight_plausible) && !row$weight_plausible)
-                                           "Implausible case weight"),
-    "Pricing error"         = c(
-      if (isTRUE(row$missing_brand_owner)) "Brand owner blank",
-      if (isTRUE(row$missing_country))     "Country of origin blank",
-      if (!isTRUE(row$ows_complete))       "OneWorldSync incomplete"),
-    character())
-}
+reason_defect_map <- tibble::tribble(
+  ~reason,                  ~defect_field,          ~defect_label,
+  "Label / barcode fine",   "gtin_valid",           "GTIN-14 check digit",
+  "Label / barcode fine",   "upc_valid",            "UPC-12 check digit",
+  "Damaged goods",          "missing_case_dims",    "Case dimensions blank",
+  "Damaged goods",          "missing_case_weight",  "Case weight blank",
+  "Damaged goods",          "weight_implausible",   "Implausible case weight",
+  "Pricing error",          "missing_brand_owner",  "Brand owner blank",
+  "Pricing error",          "missing_country",      "Country of origin blank",
+  "Pricing error",          "ows_incomplete",       "OneWorldSync incomplete"
+)
 
-still_broken_vec <- vapply(sku_master_full$sku, function(s) {
-  reasons <- recent_cb_reasons$reason[recent_cb_reasons$sku == s]
-  if (length(reasons) == 0) return(NA_character_)
-  row <- sku_master_full[sku_master_full$sku == s, , drop = FALSE]
-  defects <- unique(unlist(lapply(reasons, defect_for_reason, row = row)))
-  if (length(defects) == 0) NA_character_ else paste(defects, collapse = "; ")
-}, character(1))
+sku_defect_flags <- sku_master_full |>
+  transmute(sku,
+    gtin_valid          = is.na(gtin_valid) | !gtin_valid,
+    upc_valid           = is.na(upc_valid)  | !upc_valid,
+    missing_case_dims   = missing_case_dims,
+    missing_case_weight = missing_case_weight,
+    weight_implausible  = !is.na(weight_plausible) & !weight_plausible,
+    missing_brand_owner = missing_brand_owner,
+    missing_country     = missing_country,
+    ows_incomplete      = is.na(ows_complete) | !ows_complete
+  ) |>
+  pivot_longer(-sku, names_to = "defect_field", values_to = "has_defect") |>
+  filter(has_defect) |>
+  select(-has_defect)
+
+still_broken_df <- recent_cb_reasons |>
+  inner_join(reason_defect_map, by = "reason") |>
+  inner_join(sku_defect_flags, by = c("sku", "defect_field")) |>
+  group_by(sku) |>
+  summarise(still_broken = paste(unique(defect_label), collapse = "; "),
+            .groups = "drop")
 
 sku_master_full <- sku_master_full |>
   mutate(
@@ -391,7 +405,7 @@ sku_master_full <- sku_master_full |>
       est_fix_hours > 0,
       (chargeback_total * 12 / 18) / est_fix_hours,
       NA_real_),
-    still_broken     = still_broken_vec) |>
+    still_broken     = still_broken_df$still_broken[match(sku, still_broken_df$sku)]) |>
   select(-fix_minutes_est)
 
 # ---- F10. process_debt: by updated_by source ------------------------------
