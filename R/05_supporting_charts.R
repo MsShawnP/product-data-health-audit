@@ -206,8 +206,8 @@ p6_base <- function(use_interactive) {
       "Costco"      = cinderhaven_palette$recede,
       "Whole Foods" = cinderhaven_palette$recede),
       guide = "none") +
-    labs(title    = sprintf("%s of revenue rides on data Walmart could reject today",
-                           dollar_short(c6$rev_at_risk[c6$retailer == "Walmart"])),
+    labs(title    = wrap_title(sprintf("Revenue at risk: %s rides on data Walmart could reject today",
+                           dollar_short(c6$rev_at_risk[which(c6$retailer == "Walmart")]))),
          subtitle = "Bar = annual revenue from SKUs that fail at least one required field for that retailer",
          x = "Revenue at risk", y = NULL,
          caption = "Source: retailer_readiness_summary + sku_master_full, audit run 2026-05-03") +
@@ -258,7 +258,7 @@ p7_base <- function(use_interactive) {
       "Pantry Staples"       = cinderhaven_palette$red),
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
-    labs(title    = {
+    labs(title    = wrap_title({
            ps_ipm <- c7$issues_per_million[c7$product_line == "Pantry Staples"]
            as_ipm <- c7$issues_per_million[c7$product_line == "Artisan Sauces"]
            if (length(ps_ipm) && length(as_ipm) && !is.na(ps_ipm) && !is.na(as_ipm) && as_ipm > 0) {
@@ -268,7 +268,7 @@ p7_base <- function(use_interactive) {
            } else {
              "Data debt by product line (revenue data unavailable for ratio)"
            }
-         },
+         }),
          subtitle = "Issues per $1M of annual revenue. Higher = more data debt per dollar earned.",
          x = NULL, y = "Issues per $1M revenue",
          caption = "Source: sku_master_full, audit run 2026-05-03") +
@@ -314,7 +314,7 @@ p8_base <- function(use_interactive) {
     scale_fill_manual(values = c(`TRUE`  = cinderhaven_palette$red,
                                  `FALSE` = cinderhaven_palette$recede),
                       guide = "none") +
-    labs(title    = "Chargebacks as % of gross margin — top 15 SKUs",
+    labs(title    = wrap_title("Chargebacks as % of gross margin — top 15 SKUs"),
          subtitle = "Where chargeback dollars are largest relative to the margin the SKU earns",
          x = NULL, y = NULL,
          caption = "Source: sku_master_full (annual_gross_margin = ttm_revenue − ttm_units × cogs_per_unit)") +
@@ -383,7 +383,7 @@ p9_base <- function(use_interactive) {
       "Best 25%"      = cinderhaven_palette$recede),
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0.02, 0.14))) +
-    labs(title    = "Per-SKU view: bottom-half SKUs reach the shelf three times slower",
+    labs(title    = wrap_title("Per-SKU view: bottom-half SKUs reach the shelf three times slower"),
          subtitle = "Days from authorization to first scan — one dot per SKU, by data-quality tier",
          x = NULL,
          y = "Days to first scan",
@@ -449,13 +449,13 @@ p11_base <- function(use_interactive) {
               color = cinderhaven_palette$text) +
     scale_y_continuous(labels = percent_format(accuracy = 0.1),
                        expand = expansion(mult = c(0, 0.20))) +
-    labs(title    = {
+    labs(title    = wrap_title({
            worst_rate <- c11_summary$mean_rate[c11_summary$quality_tier == "Worst 25%"]
            best_rate  <- c11_summary$mean_rate[c11_summary$quality_tier == "Best 25%"]
            ratio <- if (best_rate > 0) round(worst_rate / best_rate, 0) else Inf
            sprintf("Worst-quarter SKUs lose shelf slots at %d× the rate of best-quarter SKUs",
                    ratio)
-         },
+         }),
          subtitle = "Deauthorization rate by data-quality tier",
          x        = NULL,
          y        = "Deauthorization rate",
@@ -514,8 +514,8 @@ p12_base <- function(use_interactive) {
               vjust = -0.4, size = 4) +
     scale_y_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                        expand = expansion(mult = c(0, 0.16))) +
-    labs(title    = sprintf("Chargebacks scale to %s if you grow without fixing the data",
-                           dollar_short(max(c12$proj_chargebacks))),
+    labs(title    = wrap_title(sprintf("Chargebacks scale to %s if you grow without fixing the data",
+                           dollar_short(max(c12$proj_chargebacks)))),
          subtitle = "Linear scaling of current chargeback rate by SKU count × retailer count. Assumes constant defect rate per SKU.",
          x = NULL, y = "Projected annual chargebacks",
          caption = paste0(
@@ -583,8 +583,8 @@ p13_base <- function(use_interactive) {
                        name = NULL,
                        breaks = c("Fail", "Pass")) +
     coord_fixed(clip = "off") +
-    labs(title    = sprintf("%d SKUs fail barcode validation — fails are the red dots",
-                           sum(c13_counts$n_fail)),
+    labs(title    = wrap_title(sprintf("%d SKUs fail barcode validation — fails are the red dots",
+                           sum(c13_counts$n_fail))),
          subtitle = "Each dot is one SKU. Red = invalid check digit. Validator uses the dataset's mod-10 algorithm (see methodology).",
          x = NULL, y = NULL,
          caption = "Source: sku_dim") +
@@ -640,11 +640,11 @@ p14_base <- function(use_interactive) {
     scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
                                  `FALSE` = cinderhaven_palette$recede),
                       guide = "none") +
-    labs(title    = {
+    labs(title    = wrap_title({
            data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
            sprintf("Three data-defect reasons account for %.0f%% of chargeback dollars",
                    data_defect_pct)
-         },
+         }),
          subtitle = {
            data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
            sprintf("Three data-defect reasons (red) account for %.1f%% of chargeback dollars.",
@@ -688,7 +688,7 @@ p15_base <- function(use_interactive) {
     scale_x_date(date_breaks = "3 months", date_labels = "%b\n%Y") +
     scale_y_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                        limits = c(0, NA), expand = expansion(mult = c(0, 0.05))) +
-    labs(title    = "Monthly chargebacks have held flat at about $5k/month",
+    labs(title    = wrap_title("Monthly chargebacks have held flat at about $5k/month"),
          subtitle = "Eighteen months of chargeback dollars; trend line is essentially flat",
          x = NULL, y = "Chargeback $",
          caption = "Source: chargebacks_enriched") +
@@ -748,7 +748,7 @@ p16_base <- function(use_interactive) {
       sec.axis = sec_axis(~ . / scale_factor,
                           name = "Monthly chargebacks",
                           labels = label_dollar(scale = 1e-3, suffix = "k"))) +
-    labs(title    = "Chargebacks falling while scan revenue holds",
+    labs(title    = wrap_title("Chargebacks falling while scan revenue holds"),
          subtitle = "Grey bars = monthly scan revenue. Red line = monthly chargebacks (right axis).",
          x = NULL,
          caption = "Source: scan_data + chargebacks_enriched. Months with <$1M in scans excluded.") +
@@ -806,12 +806,12 @@ p17_base <- function(use_interactive) {
     scale_y_continuous(labels = label_dollar(),
                        expand = expansion(mult = c(0.05, 0.20))) +
     coord_cartesian(clip = "off") +
-    labs(title    = {
+    labs(title    = wrap_title({
            cpsku <- c17$chargeback_per_sku[!is.na(c17$chargeback_per_sku)]
            spread <- if (min(cpsku) > 0) round(max(cpsku) / min(cpsku), 1) else Inf
            sprintf("Chargebacks per SKU vary %.1f× depending on who entered the data",
                    spread)
-         },
+         }),
          subtitle = {
            prod_cpsku <- c17$chargeback_per_sku[c17$updated_by == "production_admin"]
            worst_cpsku <- max(c17$chargeback_per_sku, na.rm = TRUE)
@@ -866,7 +866,7 @@ p19_base <- function(use_interactive) {
     scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
                                  `FALSE` = cinderhaven_palette$recede),
                       guide = "none") +
-    labs(title    = paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs are fully registered in OneWorldSync"),
+    labs(title    = wrap_title(paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs are fully registered in OneWorldSync")),
          subtitle = paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs (", round(100 * sum(c19$n[c19$is_complete]) / sum(c19$n)), "%) are 'Registered - Complete'."),
          x = "SKU count", y = NULL,
          caption = "Source: product_master.oneworldsync_status") +
@@ -975,7 +975,7 @@ p21_base <- function(use_interactive) {
     scale_x_continuous(breaks = seq(0, 1000, 180),
                        expand = expansion(mult = c(0, 0.02))) +
     scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-    labs(title    = "Half the catalog hasn't been updated in over 500 days",
+    labs(title    = wrap_title("Half the catalog hasn't been updated in over 500 days"),
          subtitle = sprintf(
            "Days since last `last_updated` per SKU. Median %d days, max %d.",
            as.integer(median(c21$days_since_update)),
@@ -1039,7 +1039,7 @@ p22_base <- function(use_interactive) {
              color = cinderhaven_palette$red,
              hjust = 0, size = 3.3, fontface = "bold") +
     scale_x_continuous(expand = expansion(mult = c(0, 0.40))) +
-    labs(title    = "Serving size is recorded fourteen different ways",
+    labs(title    = wrap_title("Serving size is recorded fourteen different ways"),
          subtitle = paste0(nrow(c22),
            " distinct strings — casing varies ('2 tbsp' vs '2 Tbsp') and the gram weight on '1 tsp' shifts between 2g, 3g, and 5g."),
          x = "SKU count", y = NULL,
@@ -1105,7 +1105,7 @@ p23_base <- function(use_interactive) {
                       breaks = c("Fix now", "High", "Medium", "Low priority")) +
     scale_x_continuous(breaks = seq(0, 100, 20),
                        expand = expansion(mult = c(0, 0.06))) +
-    labs(title    = "Most SKUs cluster in the middle — five need immediate attention",
+    labs(title    = wrap_title("Most SKUs cluster in the middle — five need immediate attention"),
          subtitle = paste0("All ", nrow(c23), " SKUs ranked by fix-priority score (composite of revenue · quality · chargeback). Higher = fix sooner."),
          x = "Fix-priority score",
          y = NULL,

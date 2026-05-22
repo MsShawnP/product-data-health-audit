@@ -191,7 +191,7 @@ p2 <- ggplot(tier_summary, aes(mean_days, tier, fill = tier)) +
   scale_y_discrete(expand = expansion(add = c(0.6, 1.0))) +
   coord_cartesian(clip = "off") +
 
-  labs(title    = "Worst-data SKUs take three times as long to reach the shelf",
+  labs(title    = wrap_title("Worst-data SKUs take three times as long to reach the shelf"),
        subtitle = "Days from store authorization to first sale, by data-quality tier",
        x        = "Mean days from authorization to first sale",
        y        = NULL,
@@ -303,7 +303,7 @@ p3 <- ggplot(c3_long,
   scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
                      expand = expansion(mult = c(0, 0.20))) +
 
-  labs(title    = "Walmart wins on dollars; Whole Foods wins on margin",
+  labs(title    = wrap_title("Walmart wins on dollars; Whole Foods wins on margin"),
        subtitle = "Annual gross revenue → trade spend → chargebacks → net contribution, by retailer",
        x        = NULL,
        y        = NULL,
@@ -385,8 +385,8 @@ p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   scale_x_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                      expand = expansion(mult = c(0, 0.65))) +
 
-  labs(title    = sprintf("%.0f hours of barcode fixes eliminate half your chargeback bill",
-                          barcode_hours),
+  labs(title    = wrap_title(sprintf("%.0f hours of barcode fixes eliminate half your chargeback bill",
+                          barcode_hours)),
        subtitle = "Annualized chargeback dollars saved per hour of effort, by fix action",
        x        = "Saved per hour of effort",
        y        = NULL,

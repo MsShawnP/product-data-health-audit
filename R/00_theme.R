@@ -1,5 +1,5 @@
 # 00_theme.R
-# Lailara Design System v2 — single source of truth for every chart.
+# Lailara Design System v2 -- single source of truth for every chart.
 # Sourced by every chart-producing script and by every Quarto setup chunk.
 
 suppressPackageStartupMessages({
@@ -16,7 +16,7 @@ font_add_google("Source Sans 3", "Source Sans 3")
 showtext_auto()
 showtext_opts(dpi = 300)
 
-# ---- Lailara Design System v2 — Color Families ----------------------------
+# ---- Lailara Design System v2 -- Color Families ----------------------------
 
 LL_CANVAS     <- "#f5f3ee"
 
@@ -88,7 +88,7 @@ LL_DIV_NEU <- "#d9d9d9"
 LL_DIV_NEG <- c("#e68a9a", "#b82d4a", "#6e1a2c")
 
 # ---- product-line colors ---------------------------------------------------
-# Three product lines → dark stops from three families.
+# Three product lines -> dark stops from three families.
 product_line_colors <- c(
   "Artisan Sauces"       = LL_CHICAGO,
   "Specialty Condiments" = LL_TOKYO,
@@ -96,7 +96,7 @@ product_line_colors <- c(
 )
 
 # ---- retailer colors -------------------------------------------------------
-# Three retailers → dark stops from three families.
+# Three retailers -> dark stops from three families.
 retailer_colors <- c(
   "Walmart"     = LL_CHICAGO,
   "Costco"      = LL_TOKYO,
@@ -148,7 +148,8 @@ theme_lailara <- function(base_size = 14) {
       strip.text         = element_text(face = "bold", color = LL_INK,
                                         hjust = 0, margin = margin(b = 4)),
       plot.title.position = "plot",
-      plot.caption.position = "plot"
+      plot.caption.position = "plot",
+      plot.margin = margin(t = 10, r = 14, b = 8, l = 14)
     )
 }
 
@@ -184,7 +185,7 @@ cinderhaven_palette <- list(
 # ---- formatters ------------------------------------------------------------
 
 fmt_dollar_short <- function(x) {
-  ifelse(is.na(x), "—",
+  ifelse(is.na(x), "--",
    ifelse(abs(x) >= 1e6, sprintf("$%.2fM", x / 1e6),
     ifelse(abs(x) >= 1e3, sprintf("$%.0fk", x / 1e3),
                            paste0("$", formatC(round(x), big.mark = ",",
@@ -205,6 +206,12 @@ scale_x_dollar_k <- function(...) {
 
 scale_x_dollar_m <- function(...) {
   scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"), ...)
+}
+
+# ---- title wrapper ---------------------------------------------------------
+wrap_title <- function(x, width = 50) {
+  out <- stringr::str_wrap(x, width = width)
+  paste0("  ", out)
 }
 
 # ---- caption helper --------------------------------------------------------
@@ -303,3 +310,4 @@ if (identical(Sys.getenv("CINDERHAVEN_THEME_TEST"), "1")) {
   cat("theme smoketest written:",
       file.path(TEST_OUT, "00_theme_smoketest.png"), "\n")
 }
+
