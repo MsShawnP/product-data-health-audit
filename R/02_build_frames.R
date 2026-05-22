@@ -21,6 +21,17 @@ dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 raw     <- readRDS(file.path(OUT_DIR, "raw_tables.rds"))
 
 product_master        <- raw$product_master
+optional_pm_cols <- list(
+  oneworldsync_status = NA_character_, active_retailers = NA_character_,
+  updated_by = NA_character_,
+  serving_size = NA_character_, calories_per_serving = NA_real_,
+  sodium_mg = NA_real_, total_fat_g = NA_real_, total_carb_g = NA_real_,
+  protein_g = NA_real_
+)
+for (col in names(optional_pm_cols)) {
+  if (!col %in% names(product_master))
+    product_master[[col]] <- optional_pm_cols[[col]]
+}
 sku_costs             <- raw$sku_costs
 chargebacks           <- raw$chargebacks
 stores                <- raw$stores
@@ -28,6 +39,21 @@ distribution_log      <- raw$distribution_log
 scan_data             <- raw$scan_data
 promotions            <- raw$promotions
 retailer_requirements <- raw$retailer_requirements
+
+# ---- Remove UNFI (distributor, not a retailer) from all source tables ------
+stores                <- stores |> filter(retailer != "UNFI")
+chargebacks           <- chargebacks |> filter(retailer != "UNFI")
+promotions            <- promotions |> filter(retailer != "UNFI")
+retailer_requirements <- retailer_requirements |> filter(retailer != "UNFI")
+
+# Map raw reason codes to presentable labels for charts and narrative.
+chargebacks <- chargebacks |>
+  mutate(reason = recode(reason,
+    label_fine    = "Label / barcode fine",
+    pricing_error = "Pricing error",
+    damaged       = "Damaged goods",
+    late_delivery = "Late delivery",
+    short_ship    = "Short shipment"))
 
 # Coerce date columns once.
 chargebacks      <- chargebacks      |> mutate(month_date = ymd(paste0(month, "-01")))
@@ -50,8 +76,10 @@ trade_spend_long <- sku_costs |>
     trade_spend_pct_walmart      = "Walmart",
     trade_spend_pct_costco       = "Costco",
     trade_spend_pct_whole_foods  = "Whole Foods",
-    trade_spend_pct_regional     = "Regional",
-    trade_spend_pct_unfi         = "UNFI",
+    trade_spend_pct_sprouts      = "Sprouts",
+    trade_spend_pct_regional     = "Regional Group",
+
+    trade_spend_pct_kehe         = "KeHE",
     trade_spend_pct_dtc          = "DTC")) |>
   select(sku, retailer, trade_spend_pct)
 
@@ -67,6 +95,7 @@ sku_dim <- product_master |>
     missing_country      = is.na(country_of_origin) | country_of_origin == "",
     missing_brand_owner  = is.na(brand_owner)      | brand_owner == "",
     ows_complete         = oneworldsync_status == "Registered - Complete",
+    weight_plausible_simple = !is.na(unit_weight_lbs) & unit_weight_lbs > 0 & unit_weight_lbs < 100,
     weight_plausible = ifelse(
       is.na(case_weight_lbs) | is.na(unit_weight_lbs) | is.na(case_pack_qty), NA,
       abs(case_weight_lbs - unit_weight_lbs * case_pack_qty) /
@@ -84,11 +113,20 @@ sku_dim <- product_master |>
       as.integer(missing_country) +
       as.integer(missing_brand_owner) +
       as.integer(is.na(ows_complete) | !ows_complete) +
-      as.integer(!is.na(weight_plausible) & !weight_plausible)
+      as.integer(!is.na(weight_plausible) & !weight_plausible),
+    chk_gtin_len = !is.na(gtin14) & nchar(as.character(gtin14)) == 14,
+    chk_upc_len  = !is.na(upc) & nchar(as.character(upc)) >= 12,
+    checks_passed_6 =
+      as.integer(chk_gtin_len) +
+      as.integer(chk_upc_len) +
+      as.integer(weight_plausible_simple) +
+      as.integer(!missing_case_dims) +
+      as.integer(!missing_country) +
+      as.integer(!missing_brand_owner)
   ) |>
   mutate(
-    # 8 binary checks → quality score on 0-100 scale.
-    data_quality_score = round(100 * (1 - issue_count / 8), 1)
+    # 8 binary checks → quality score on 0-100 scale (matches DB: 6 checks / 8).
+    data_quality_score = round(checks_passed_6 / 8 * 100, 1)
   )
 
 # ---- F2. sku_revenue: trailing-12-month rollup ----------------------------
@@ -117,6 +155,9 @@ sku_revenue <- scan_ttm |>
 scan_with_retailer <- scan_ttm |>
   left_join(stores |> select(store_id, retailer), by = "store_id")
 
+regional_trade_spend <- sku_costs |>
+  select(sku, trade_spend_pct = trade_spend_pct_regional)
+
 sku_retailer_revenue <- scan_with_retailer |>
   group_by(sku, retailer) |>
   summarise(
@@ -125,7 +166,10 @@ sku_retailer_revenue <- scan_with_retailer |>
     store_count_ttm = n_distinct(store_id),
     weeks_with_sales= n_distinct(week_ending),
     .groups = "drop") |>
-  left_join(trade_spend_long, by = c("sku", "retailer"))
+  left_join(trade_spend_long, by = c("sku", "retailer")) |>
+  left_join(regional_trade_spend, by = "sku", suffix = c("", "_fallback")) |>
+  mutate(trade_spend_pct = coalesce(trade_spend_pct, trade_spend_pct_fallback)) |>
+  select(-trade_spend_pct_fallback)
 
 # ---- F4. chargebacks_enriched + sku_chargebacks ---------------------------
 
@@ -214,6 +258,8 @@ retailer_pnl <- sku_retailer_revenue |>
   mutate(
     chargeback_total = coalesce(chargeback_total, 0),
     chargeback_count = coalesce(chargeback_count, 0L),
+    trade_spend = trade_spend_total,
+    total_chargebacks = chargeback_total,
     net_contribution = revenue_after_trade - chargeback_total,
     chargeback_pct_of_revenue       = chargeback_total / gross_revenue,
     trade_spend_pct_of_revenue      = trade_spend_total / gross_revenue,
@@ -248,6 +294,7 @@ deauth_summary <- distribution_log |>
     auth_count       = n(),
     deauth_count     = sum(!is.na(deauthorized_date)),
     deauth_rate      = deauth_count / auth_count,
+    deauth_rate_pct  = round(deauth_count / auth_count * 100, 1),
     .groups = "drop")
 
 # ---- F9. sku_master_full: the wide analytical spine for the report --------
@@ -270,13 +317,13 @@ sku_master_full <- sku_dim |>
     # priority on that dimension (highest revenue, most issues, most
     # chargeback dollars). Composite = weighted average of (1 - rank/n),
     # so higher score = fix sooner.
-    revenue_rank      = rank(-ttm_revenue,      ties.method = "average"),
-    quality_rank      = rank(-issue_count,      ties.method = "average"),
-    chargeback_rank   = rank(-chargeback_total, ties.method = "average"),
+    revenue_rank      = percent_rank(desc(ttm_revenue)),
+    quality_rank      = percent_rank(data_quality_score),
+    chargeback_rank   = percent_rank(desc(chargeback_total)),
     fix_priority_score = round(
-      0.40 * (1 - revenue_rank   / n()) * 100 +
-      0.30 * (1 - quality_rank   / n()) * 100 +
-      0.30 * (1 - chargeback_rank/ n()) * 100, 1)
+      (0.40 * revenue_rank +
+       0.30 * quality_rank +
+       0.30 * chargeback_rank) * 100, 1)
   )
 
 # ---- F9b. Triage effort + ROI + still-broken reconciliation --------------
@@ -309,15 +356,15 @@ recent_cb_reasons <- chargebacks_enriched |>
 
 defect_for_reason <- function(r, row) {
   switch(r,
-    "Invalid GTIN/UPC"     = c(
+    "Label / barcode fine"  = c(
       if (!isTRUE(row$gtin_valid)) "GTIN-14 check digit",
       if (!isTRUE(row$upc_valid))  "UPC-12 check digit"),
-    "Dimension mismatch"   = c(
+    "Damaged goods"         = c(
       if (isTRUE(row$missing_case_dims))   "Case dimensions blank",
       if (isTRUE(row$missing_case_weight)) "Case weight blank",
       if (!is.na(row$weight_plausible) && !row$weight_plausible)
                                            "Implausible case weight"),
-    "Missing product data" = c(
+    "Pricing error"         = c(
       if (isTRUE(row$missing_brand_owner)) "Brand owner blank",
       if (isTRUE(row$missing_country))     "Country of origin blank",
       if (!isTRUE(row$ows_complete))       "OneWorldSync incomplete"),
@@ -335,13 +382,13 @@ still_broken_vec <- vapply(sku_master_full$sku, function(s) {
 sku_master_full <- sku_master_full |>
   mutate(
     fix_minutes_est =
-      (!gtin_valid)            * 10 +
-      (!upc_valid)             * 10 +
-      (missing_case_weight | missing_case_dims) * 30 +
-      missing_brand_owner      * 10 +
-      missing_country          * 30 +
-      (!ows_complete)          * 30 +
-      (!is.na(weight_plausible) & !weight_plausible) * 15,
+      as.integer(is.na(gtin_valid) | !gtin_valid)            * 10 +
+      as.integer(is.na(upc_valid)  | !upc_valid)             * 10 +
+      as.integer(missing_case_weight | missing_case_dims)     * 30 +
+      as.integer(missing_brand_owner)                         * 10 +
+      as.integer(missing_country)                             * 30 +
+      as.integer(is.na(ows_complete) | !ows_complete)         * 30 +
+      as.integer(!is.na(weight_plausible) & !weight_plausible)* 15,
     est_fix_hours    = fix_minutes_est / 60,
     savings_per_hour = ifelse(
       est_fix_hours > 0,
@@ -429,10 +476,10 @@ vel_agg <- function(df) df |>
             weeks   = n_distinct(week_ending),
             .groups = "drop")
 
-vel_4w   <- vel_agg(filter(scan_vel, week_ending >  vel_cut_4w)) |>
+vel_4w   <- vel_agg(filter(scan_vel, week_ending >= vel_cut_4w)) |>
   rename(units_4w = units, dollars_4w = dollars,
          stores_4w = stores, weeks_4w = weeks)
-vel_12w  <- vel_agg(filter(scan_vel, week_ending >  vel_cut_12w)) |>
+vel_12w  <- vel_agg(filter(scan_vel, week_ending >= vel_cut_12w)) |>
   rename(units_12w = units, dollars_12w = dollars,
          stores_12w = stores, weeks_12w = weeks)
 vel_prev <- vel_agg(filter(scan_vel, week_ending <= vel_cut_4w &
@@ -450,15 +497,15 @@ velocity <- vel_4w |>
                                                     "REVIEW", "OK")),
             by = "sku") |>
   mutate(
-    ups_per_w_4w    = units_4w    / pmax(stores_4w    * weeks_4w,    1),
-    ups_per_w_12w   = units_12w   / pmax(stores_12w   * weeks_12w,   1),
+    ups_per_wk_4wk  = round(units_4w    / pmax(stores_4w    * weeks_4w,    1), 2),
+    ups_per_wk_12wk = round(units_12w   / pmax(stores_12w   * weeks_12w,   1), 2),
     ups_per_w_prev4 = units_prev4 / pmax(stores_prev4 * weeks_prev4, 1),
     ups_pct_change_4w_vs_prev = ifelse(
       is.na(ups_per_w_prev4) | ups_per_w_prev4 == 0, NA_real_,
-      ups_per_w_4w / ups_per_w_prev4 - 1)) |>
+      ups_per_wk_4wk / ups_per_w_prev4 - 1)) |>
   select(sku, product_name, product_line, retailer,
-         units_4w, dollars_4w, stores_4w, ups_per_w_4w,
-         units_12w, dollars_12w, stores_12w, ups_per_w_12w,
+         units_4w, dollars_4w, stores_4w, ups_per_wk_4wk,
+         units_12w, dollars_12w, stores_12w, ups_per_wk_12wk,
          ups_per_w_prev4, ups_pct_change_4w_vs_prev,
          data_quality_score, issue_count, data_quality_flag) |>
   arrange(desc(dollars_12w))

@@ -39,14 +39,17 @@ time_to_shelf_sku <- read_p("time_to_shelf_sku")
 retailer_pnl      <- read_p("retailer_pnl")
 chargebacks_e     <- read_p("chargebacks_enriched")
 
-save_chart <- function(p, name, w = 9, h = 5.5, dpi = 200) {
+save_chart <- function(p, name, w = 9, h = 5.5, dpi = 300) {
   rds_path <- file.path(OUT_DIR, paste0(name, ".rds"))
   png_path <- file.path(OUT_DIR, paste0(name, ".png"))
+  svg_path <- file.path(OUT_DIR, paste0(name, ".svg"))
   saveRDS(p, rds_path)
   ggsave(png_path, p, width = w, height = h, dpi = dpi, bg = LL_CANVAS)
-  cat(sprintf("  %s.rds (%4.1f KB)  +  %s.png (%4.0f KB)\n",
+  ggsave(svg_path, p, width = w, height = h, bg = LL_CANVAS, device = svglite::svglite)
+  cat(sprintf("  %s.rds (%4.1f KB)  +  %s.png (%4.0f KB)  +  %s.svg (%4.0f KB)\n",
               name, file.info(rds_path)$size / 1024,
-              name, file.info(png_path)$size / 1024))
+              name, file.info(png_path)$size / 1024,
+              name, file.info(svg_path)$size / 1024))
 }
 
 # ---- 1. Chargeback Pareto ------------------------------------------------
@@ -202,7 +205,7 @@ save_chart(p2, "02_time_to_shelf", w = 9, h = 5.5)
 
 cat("\n[3/4] True net margin by retailer (stacked composition)\n")
 
-contracted <- c("Walmart", "UNFI", "Whole Foods", "Costco")
+contracted <- c("Walmart", "Whole Foods", "Costco")
 
 # One row per retailer, ordered by gross revenue desc so Walmart sits at
 # the top of the chart. Both trade and chargeback shares get tiny on
@@ -352,19 +355,23 @@ fix_roi <- tibble(
   hours  = c(round(barcode_hours, 1),
              round(proddata_hours, 1),
              round(dim_hours, 1)),
-  amt_18mo = c(amt_18("Invalid GTIN/UPC"),
-               amt_18("Missing product data"),
-               amt_18("Dimension mismatch"))
+  amt_18mo = c(amt_18("Label / barcode fine"),
+               amt_18("Pricing error"),
+               amt_18("Damaged goods"))
 ) |>
+  filter(hours > 0) |>
   mutate(annual_saved = amt_18mo * 12 / 18,
-         per_hour     = annual_saved / hours,
-         action       = fct_reorder(action, per_hour),
+         per_hour     = ifelse(hours > 0, annual_saved / hours, 0),
          is_top       = per_hour == max(per_hour),
          label        = sprintf(
            "%s saved per hour  ·  %s/year  ·  %.1f hours total",
            fmt_dollar_short(per_hour),
            fmt_dollar_short(annual_saved),
            hours))
+
+if (nrow(fix_roi) > 0 && any(fix_roi$per_hour > 0)) {
+  fix_roi <- fix_roi |> mutate(action = fct_reorder(action, per_hour))
+}
 
 p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   geom_col(width = 0.55) +

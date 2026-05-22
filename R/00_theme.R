@@ -14,6 +14,7 @@ suppressPackageStartupMessages({
 font_add_google("Playfair Display", "Playfair Display")
 font_add_google("Source Sans 3", "Source Sans 3")
 showtext_auto()
+showtext_opts(dpi = 300)
 
 # ---- Lailara Design System v2 — Color Families ----------------------------
 
@@ -95,11 +96,10 @@ product_line_colors <- c(
 )
 
 # ---- retailer colors -------------------------------------------------------
-# Four retailers → dark stops from four families.
+# Three retailers → dark stops from three families.
 retailer_colors <- c(
   "Walmart"     = LL_CHICAGO,
   "Costco"      = LL_TOKYO,
-  "UNFI"        = LL_SG_DARK,
   "Whole Foods" = LL_HK_DARK
 )
 
@@ -117,7 +117,7 @@ risk_band_colors <- c(
 )
 
 # ---- the theme -------------------------------------------------------------
-theme_lailara <- function(base_size = 12) {
+theme_lailara <- function(base_size = 14) {
   theme_minimal(base_size = base_size, base_family = "Source Sans 3") +
     theme(
       plot.background    = element_rect(fill = LL_CANVAS, color = NA),
@@ -152,7 +152,7 @@ theme_lailara <- function(base_size = 12) {
     )
 }
 
-theme_lailara_horizontal <- function(base_size = 12) {
+theme_lailara_horizontal <- function(base_size = 14) {
   theme_lailara(base_size = base_size) +
     theme(
       panel.grid.major.x = element_line(color = LL_GRIDLINE, linewidth = 0.3),

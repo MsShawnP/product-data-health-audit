@@ -61,7 +61,7 @@ ramp_teal <- function(x) {
 # ---- velocity (canonical frame from R/02_build_frames.R) ----------------
 
 velocity <- read_p("velocity") |>
-  rename(ups_4w = ups_per_w_4w, ups_12w = ups_per_w_12w,
+  rename(ups_4w = ups_per_wk_4wk, ups_12w = ups_per_wk_12wk,
          ups_prev = ups_per_w_prev4, pct_change = ups_pct_change_4w_vs_prev) |>
   mutate(
     quality_tier = case_when(
@@ -73,7 +73,7 @@ velocity <- read_p("velocity") |>
       levels = c("Worst 25%", "Below average", "Above average", "Best 25%")),
     dq_flag = ifelse(issue_count >= 3, "REVIEW", "OK")
   ) |>
-  filter(retailer %in% c("Walmart", "Costco", "UNFI", "Whole Foods")) |>
+  filter(retailer %in% c("Walmart", "Costco", "Whole Foods")) |>
   arrange(desc(dollars_12w))
 ```
 
@@ -249,10 +249,10 @@ reactable(
 #| fig-width: 11
 #| fig-height: 5
 
-contracted <- c("Walmart", "UNFI", "Whole Foods", "Costco")
+contracted <- c("Walmart", "Whole Foods", "Costco")
 
 # Inflate the small segments just enough to keep the dollar labels
-# readable on Costco / UNFI / Whole Foods. Labels still print real $.
+# readable on Costco / Whole Foods. Labels still print real $.
 MIN_TRADE_VISUAL <- 0.7e6
 MIN_CB_VISUAL    <- 0.5e6
 

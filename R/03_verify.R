@@ -209,9 +209,13 @@ hr("7. TIME-TO-SHELF (days from authorized_date to first_scan_week)")
 tts <- time_to_shelf$days_to_first_scan
 tts <- tts[!is.na(tts) & tts >= 0]
 cat(sprintf("  n=%d SKU×store auths with a matched scan\n", length(tts)))
-cat(sprintf("  min=%d  q25=%d  median=%d  mean=%.1f  q75=%d  q95=%d  max=%d\n",
-            min(tts), quantile(tts,.25), median(tts), mean(tts),
-            quantile(tts,.75), quantile(tts,.95), max(tts)))
+if (length(tts) > 0) {
+  cat(sprintf("  min=%d  q25=%d  median=%d  mean=%.1f  q75=%d  q95=%d  max=%d\n",
+              min(tts), quantile(tts,.25), median(tts), mean(tts),
+              quantile(tts,.75), quantile(tts,.95), max(tts)))
+} else {
+  cat("  (no matched scans — SKU format mismatch between tables)\n")
+}
 
 # ---- 8. Deauthorization ------------------------------------------------
 
