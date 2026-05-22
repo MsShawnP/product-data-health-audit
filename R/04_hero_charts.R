@@ -37,7 +37,7 @@ read_p <- function(name) readRDS(file.path(FRM_DIR, paste0(name, ".rds")))
 sku_master_full   <- read_p("sku_master_full")
 time_to_shelf_sku <- read_p("time_to_shelf_sku")
 retailer_pnl      <- read_p("retailer_pnl")
-chargebacks_e     <- read_p("chargebacks_enriched")
+chargebacks_enriched     <- read_p("chargebacks_enriched")
 
 save_chart <- function(p, name, w = 9, h = 5.5, dpi = 300) {
   rds_path <- file.path(OUT_DIR, paste0(name, ".rds"))
@@ -321,7 +321,7 @@ cat("\n[4/4] Fix ROI\n")
 # sku_master_full (defect counts). Effort-per-defect minutes are from
 # the methodology appendix; SKU counts and hours are computed from data.
 
-reason_amts <- chargebacks_e |>
+reason_amts <- chargebacks_enriched |>
   group_by(reason) |>
   summarise(amt_18mo = sum(amount), .groups = "drop")
 
