@@ -22,27 +22,24 @@ safe_fct_reorder <- function(f, x, ...) {
   forcats::fct_reorder(f, x, ...)
 }
 
-ROOT     <- normalizePath(
+ROOT <- normalizePath(
   Sys.getenv("PROJECT_ROOT", unset = "."),
   winslash = "/", mustWork = FALSE)
-PROC_DIR <- file.path(ROOT, "output", "frames")
-OUT_DIR  <- file.path(ROOT, "output", "charts")
+source(file.path(ROOT, "R", "00_setup.R"))
+
+OUT_DIR <- file.path(ROOT, "output", "charts")
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-# Canonical palette + theme + helpers (cinderhaven_palette, theme_cinderhaven,
-# theme_cinderhaven_horizontal, fmt_dollar_short, src_caption, etc.).
 source(file.path(ROOT, "R", "00_theme.R"))
-
-read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
-sku_dim         <- read_p("sku_dim")
-sku_master_full <- read_p("sku_master_full")
-retailer_pnl    <- read_p("retailer_pnl")
-retailer_rs     <- read_p("retailer_readiness_summary")
-chargebacks_enriched   <- read_p("chargebacks_enriched")
-deauth_summary  <- read_p("deauth_summary")
-process_debt    <- read_p("process_debt")
-time_to_shelf_s <- read_p("time_to_shelf_sku")
-raw             <- read_p("raw_tables")
+sku_dim         <- read_frame("sku_dim")
+sku_master_full <- read_frame("sku_master_full")
+retailer_pnl    <- read_frame("retailer_pnl")
+retailer_rs     <- read_frame("retailer_readiness_summary")
+chargebacks_enriched   <- read_frame("chargebacks_enriched")
+deauth_summary  <- read_frame("deauth_summary")
+process_debt    <- read_frame("process_debt")
+time_to_shelf_s <- read_frame("time_to_shelf_sku")
+raw             <- read_frame("raw_tables")
 
 # ---- shared helpers -------------------------------------------------------
 # fmt_dollar_short, product_line_colors, retailer_colors, theme_cinderhaven,

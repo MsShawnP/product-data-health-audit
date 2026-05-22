@@ -14,26 +14,22 @@ suppressPackageStartupMessages({
   library(stringr)
 })
 
-ROOT    <- normalizePath(
-  Sys.getenv("PROJECT_ROOT", unset = "."),
-  winslash = "/", mustWork = FALSE)
-OUT_DIR <- file.path(ROOT, "output", "frames")
+source(file.path(normalizePath(Sys.getenv("PROJECT_ROOT", unset = "."),
+  winslash = "/", mustWork = FALSE), "R", "00_setup.R"))
 
-read_p <- function(name) readRDS(file.path(OUT_DIR, paste0(name, ".rds")))
-
-raw                       <- read_p("raw_tables")
-sku_dim                   <- read_p("sku_dim")
-sku_master_full           <- read_p("sku_master_full")
-sku_retailer_revenue      <- read_p("sku_retailer_revenue")
-sku_chargebacks           <- read_p("sku_chargebacks")
-chargebacks_enriched      <- read_p("chargebacks_enriched")
-retailer_pnl              <- read_p("retailer_pnl")
-retailer_readiness_summary<- read_p("retailer_readiness_summary")
-time_to_shelf             <- read_p("time_to_shelf_sku_store")
-time_to_shelf_sku         <- read_p("time_to_shelf_sku")
-deauth_summary            <- read_p("deauth_summary")
-process_debt              <- read_p("process_debt")
-promo_effectiveness       <- read_p("promo_effectiveness")
+raw                       <- read_frame("raw_tables")
+sku_dim                   <- read_frame("sku_dim")
+sku_master_full           <- read_frame("sku_master_full")
+sku_retailer_revenue      <- read_frame("sku_retailer_revenue")
+sku_chargebacks           <- read_frame("sku_chargebacks")
+chargebacks_enriched      <- read_frame("chargebacks_enriched")
+retailer_pnl              <- read_frame("retailer_pnl")
+retailer_readiness_summary<- read_frame("retailer_readiness_summary")
+time_to_shelf             <- read_frame("time_to_shelf_sku_store")
+time_to_shelf_sku         <- read_frame("time_to_shelf_sku")
+deauth_summary            <- read_frame("deauth_summary")
+process_debt              <- read_frame("process_debt")
+promo_effectiveness       <- read_frame("promo_effectiveness")
 
 hr <- function(t) cat("\n", strrep("=", 70), "\n", t, "\n", strrep("=", 70), "\n", sep = "")
 
