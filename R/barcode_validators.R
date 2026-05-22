@@ -2,18 +2,18 @@
 #
 # Sourced by 02_build_frames.R and tests/test_mod10.R.
 
-# Note on the algorithm choice: the synthetic Cinderhaven dataset was generated
-# using EAN-13-style weights (1,3,1,3,... from the leftmost data digit) for both
-# GTIN-14 and UPC-A. This is non-standard for GTIN-14 — strict GS1 weights for a
-# 13-digit body are (3,1,3,1,...) from left — but matching the dataset's
-# generator is what lets us identify the SKUs the author deliberately corrupted.
-# Validating with the strict algorithm flags ~81% of SKUs (every record),
-# which would erase the signal the report needs to surface. The trade-off is
-# documented in the methodology appendix.
+# GS1-standard mod-10 check digit. Weight pattern depends on body length:
+#   GTIN-14 (13-digit body): (3,1,3,1,...) from left
+#   EAN-13  (12-digit body): (1,3,1,3,...) from left
+#   UPC-A   (11-digit body): (3,1,3,1,...) from left
 mod10_check_digit <- function(body_digits) {
   d <- as.integer(strsplit(body_digits, "")[[1]])
   if (length(d) == 0 || any(is.na(d))) return(NA_integer_)
-  weights <- rep(c(1L, 3L), length.out = length(d))
+  if (length(d) == 12L) {
+    weights <- rep(c(1L, 3L), length.out = length(d))
+  } else {
+    weights <- rep(c(3L, 1L), length.out = length(d))
+  }
   s <- sum(d * weights)
   (10L - (s %% 10L)) %% 10L
 }
