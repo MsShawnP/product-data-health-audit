@@ -78,6 +78,8 @@ The R pipeline builds all canonical data frames, generates 21 charts, renders th
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
+Live site → https://audit.lailarallc.com · Data Debt Calculator → https://calculator.lailarallc.com
+
 ### Refreshing source data
 
 The cached `raw_tables.rds` is sufficient for reproducing all artifacts. To refresh the underlying data from the Cinderhaven Data Platform (Postgres), set `DATABASE_URL` in `.Renviron`:
