@@ -140,7 +140,7 @@ cost_of_delay <- function(N, R, C, P, A) {
 
 # URL for the case-study link in the top-right of the navbar. Points at the
 # rendered HTML report on the project's GitHub Pages site.
-CASE_STUDY_URL <- "https://msshawnp.github.io/product-data-health-audit/quarto/report.html"
+CASE_STUDY_URL <- "https://audit.lailarallc.com/quarto/report.html"
 
 dollar_short <- function(x) {
   vapply(x, function(v) {
