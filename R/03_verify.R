@@ -217,7 +217,7 @@ if (length(tts) > 0) {
 
 hr("8. DEAUTHORIZATION")
 cat(sprintf("Overall deauth rate: %.1f%% of SKU×store authorizations\n",
-            100 * mean(!is.na(raw$distribution_log$deauthorized_date))))
+            100 * mean(!is.na(raw$distribution$deauthorized_date))))
 cat("\nDeauth-rate distribution by SKU:\n")
 print(summary(deauth_summary$deauth_rate))
 
