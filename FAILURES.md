@@ -74,6 +74,13 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Lesson:** When a metric has zero variance, investigate whether the metric is broken before writing narrative around the uniformity. A variable named `X_6` divided by 8 is a code smell.
 - **Tags:** data-quality, denominator-bug, zero-variance, misleading-metric
 
+### 2026-06-03 — search_path used `marts` instead of `public_marts` for dbt schema
+
+- **What happened:** Refactored `01_load_raw.R` to read from the dbt mart layer with `SET search_path TO marts, public`. R script failed: `relation "dim_products" does not exist`.
+- **Why it failed:** The dbt profiles.yml sets `schema: public`, and the dbt_project.yml configures marts with `+schema: marts`. dbt concatenates these as `public_marts`, not `marts`. The actual Postgres schema is `public_marts`.
+- **Fix:** Changed to `SET search_path TO public_marts, public`. When connecting to a dbt-managed database, always check the actual schema names in Postgres (or look at the dbt run output which prints them).
+- **Tags:** dbt, postgres, search_path, schema, naming
+
 ### 2026-05-22 — Edit tool string-not-found after sequential edits to large file
 
 - **What happened:** After several large edits to report.qmd in sequence, an Edit call failed because the target `old_string` no longer matched the file content. Prior edits had changed surrounding lines, shifting the context.
