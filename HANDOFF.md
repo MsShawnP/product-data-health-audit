@@ -206,3 +206,13 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 - **What was fixed session 3:** All 4 critical items (DQ denominator, readiness field mapping, UPC validation, narrative update). Committed as 141c7d8.
 - **What was fixed session 4:** All remaining items (#7-#12) plus dependency audit. Committed as d770702, ce80690, c017a73, e18a0bc.
 - **All items resolved.** Next review: 2026-06-22
+
+## 2026-06-03 18:25
+
+**What changed:** Refactored Audit to consume dbt mart layer (dim_products, fct_chargebacks, dim_stores, fct_scan_data, fct_promotions, dim_retailer_requirements) instead of raw.* tables. Removed R-side retailer joins, sku_costs join, and first_scan aggregation — all now owned by dbt. dim_products is the sole product-master definition.
+
+**Why:** Eliminate duplicated transforms between the Audit's R code and the platform's dbt models. One definition of the product master, consumed not reconstructed.
+
+**State:** All 15 analytical frames verified value-identical to pre-refactor baseline at 1e-10 tolerance. All 16 protected metrics match. Offline cache (raw_tables.rds) updated to mart schema. Pipeline runs clean against live Postgres. Commits: 238aaa0 (refactor), a04ab67 (cache).
+
+**Next:** Consumer audit identified Retailer Deduction Recovery and Retail Velocity Decision Tool as needing the same mart-layer refactor. Each will be a separate task with baseline-diff verification. Channel Profitability and Contract to Cash are clean.
