@@ -209,10 +209,14 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 
 ## 2026-06-03 18:25
 
-**What changed:** Refactored Audit to consume dbt mart layer (dim_products, fct_chargebacks, dim_stores, fct_scan_data, fct_promotions, dim_retailer_requirements) instead of raw.* tables. Removed R-side retailer joins, sku_costs join, and first_scan aggregation — all now owned by dbt. dim_products is the sole product-master definition.
+**Started from:** Project in maintenance mode. Audit read raw.* tables and duplicated transforms dbt already owned.
 
-**Why:** Eliminate duplicated transforms between the Audit's R code and the platform's dbt models. One definition of the product master, consumed not reconstructed.
+**Did:**
+- Refactored R pipeline to consume dbt mart layer exclusively (dim_products, fct_chargebacks, dim_stores, fct_scan_data, fct_promotions, dim_retailer_requirements). Removed R-side retailer joins, sku_costs join, first_scan aggregation.
+- Created 5 new dbt mart models in the platform, expanded dim_products with 19 columns.
+- Full baseline-diff verification via stash: all 15 frames match on shared columns at 1e-10, all 16 protected metrics identical, retailer-name standardization affected zero rows.
+- Read-only audit of 4 other consumers: CPA clean, C2C clean, RDR needs work (reads int/stg), RVDT needs work (reads staging, re-derives margins, has SQLite source).
 
-**State:** All 15 analytical frames verified value-identical to pre-refactor baseline at 1e-10 tolerance. All 16 protected metrics match. Offline cache (raw_tables.rds) updated to mart schema. Pipeline runs clean against live Postgres. Commits: 238aaa0 (refactor), a04ab67 (cache).
+**State:** Pipeline reads marts exclusively. dim_products is the sole product-master definition. Commits: 238aaa0 (refactor), a04ab67 (cache), e79e6e5 (log). Not pushed.
 
-**Next:** Consumer audit identified Retailer Deduction Recovery and Retail Velocity Decision Tool as needing the same mart-layer refactor. Each will be a separate task with baseline-diff verification. Channel Profitability and Contract to Cash are clean.
+**Next:** Retailer Deduction Recovery refactor — repoint from int_all_*/stg_retailer_* to fct_*/dim_* marts. Some staging-only tables need new mart models first. Same baseline-diff verification pattern.
