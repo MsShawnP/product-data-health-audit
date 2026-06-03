@@ -1,6 +1,8 @@
 # 02_build_frames.R
 # Build the flat analytical frames every artifact consumes.
-# All inputs come from output/frames/raw_tables.rds (produced by 01_load_raw.R).
+# All inputs come from output/frames/raw_tables.rds (produced by 01_load_raw.R
+# from the dbt mart layer). product_master is dim_products (the canonical
+# product master including costs); no separate sku_costs table.
 # All outputs go to output/frames/ as both .rds (canonical) and .csv (browse).
 
 suppressPackageStartupMessages({
@@ -37,10 +39,9 @@ for (col in names(optional_pm_cols)) {
   if (!col %in% names(product_master))
     product_master[[col]] <- optional_pm_cols[[col]]
 }
-sku_costs             <- raw$sku_costs
 chargebacks           <- raw$chargebacks
 stores                <- raw$stores
-distribution_log      <- raw$distribution_log
+distribution          <- raw$distribution
 scan_data             <- raw$scan_data
 promotions            <- raw$promotions
 retailer_requirements <- raw$retailer_requirements
@@ -62,7 +63,7 @@ chargebacks <- chargebacks |>
 
 # Coerce date columns once.
 chargebacks      <- chargebacks      |> mutate(month_date = ymd(paste0(month, "-01")))
-distribution_log <- distribution_log |> mutate(authorized_date = ymd(authorized_date),
+distribution     <- distribution     |> mutate(authorized_date = ymd(authorized_date),
                                                deauthorized_date = ymd(deauthorized_date))
 scan_data        <- scan_data        |> mutate(week_ending = ymd(week_ending))
 promotions       <- promotions       |> mutate(start_week = ymd(start_week),
@@ -73,8 +74,8 @@ product_master   <- product_master   |> mutate(last_updated = ymd(last_updated))
 
 source(file.path(ROOT, "R", "barcode_validators.R"))
 
-# Map sku_costs trade-spend wide cols to canonical retailer labels in `stores`.
-trade_spend_long <- sku_costs |>
+# Map trade-spend wide cols to canonical retailer labels in `stores`.
+trade_spend_long <- product_master |>
   select(sku, starts_with("trade_spend_pct_")) |>
   pivot_longer(-sku, names_to = "ts_col", values_to = "trade_spend_pct") |>
   mutate(retailer = recode(ts_col,
@@ -91,7 +92,6 @@ trade_spend_long <- sku_costs |>
 # ---- F1. sku_dim: one row per SKU with quality scoring --------------------
 
 sku_dim <- product_master |>
-  left_join(sku_costs, by = "sku") |>
   mutate(
     gtin_valid           = is_valid_gtin14(gtin14),
     upc_valid            = is_valid_upc(upc),
@@ -159,7 +159,7 @@ sku_revenue <- scan_ttm |>
 scan_with_retailer <- scan_ttm |>
   left_join(stores |> select(store_id, retailer), by = "store_id")
 
-regional_trade_spend <- sku_costs |>
+regional_trade_spend <- product_master |>
   select(sku, trade_spend_pct = trade_spend_pct_regional)
 
 sku_retailer_revenue <- scan_with_retailer |>
@@ -269,13 +269,10 @@ retailer_pnl <- sku_retailer_revenue |>
   )
 
 # ---- F7. time_to_shelf: SKU × store gap from authorization to first scan --
+# fct_distribution already has first_scan_week per sku × store (from the
+# scan_data aggregation in the dbt model), so no R-side computation needed.
 
-first_scan_per_sku_store <- scan_data |>
-  group_by(sku, store_id) |>
-  summarise(first_scan_week = min(week_ending), .groups = "drop")
-
-time_to_shelf <- distribution_log |>
-  left_join(first_scan_per_sku_store, by = c("sku", "store_id")) |>
+time_to_shelf <- distribution |>
   mutate(days_to_first_scan  = as.integer(first_scan_week - authorized_date),
          weeks_to_first_scan = days_to_first_scan / 7)
 
@@ -290,7 +287,7 @@ time_to_shelf_sku <- time_to_shelf |>
 
 # ---- F8. deauth_summary: deauthorization rates by SKU ---------------------
 
-deauth_summary <- distribution_log |>
+deauth_summary <- distribution |>
   group_by(sku) |>
   summarise(
     auth_count       = n(),

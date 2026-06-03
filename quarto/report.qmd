@@ -928,11 +928,11 @@ db_desc <- paste(
   collapse = ", ")
 ```
 
-The analysis runs against a SQLite database containing `r length(raw)` tables: `r db_desc`.
+The analysis runs against the Cinderhaven Data Platform's dbt mart layer (Postgres) containing `r length(raw)` tables: `r db_desc`.
 
 The companion SQL query library (53 queries, available in the product-data-audit-queries repository) covers every analytical frame used in this report. Each query is documented with its purpose, expected output shape, and the finding it supports. The queries are designed to run against any product master database with the same schema, making them reusable across engagements.
 
-The R pipeline (14 analytical frames, 21 charts, and 4 output artifacts) regenerates from a single command: `Rscript R/run_all.R`. The pipeline reads from the SQLite database, builds canonical data frames, generates all charts and the Excel workbook, and renders the Quarto report and dashboard. Total execution time: under two minutes.
+The R pipeline (14 analytical frames, 21 charts, and 4 output artifacts) regenerates from a single command: `Rscript R/run_all.R`. The pipeline reads from the dbt mart layer, builds canonical data frames, generates all charts and the Excel workbook, and renders the Quarto report and dashboard. Total execution time: under two minutes.
 :::
 
 ::: {.callout-note collapse="true" appearance="simple"}
