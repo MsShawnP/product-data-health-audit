@@ -2,7 +2,7 @@
 
 A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs of growing food brands.
 
-Cinderhaven Provisions is a $25 million specialty food brand with 50 SKUs, 3 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+Cinderhaven Provisions is a $25 million specialty food brand with 50 SKUs, 5 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
 
 ## Why now
 
@@ -147,3 +147,6 @@ product-data-health-audit/
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+Built by [Lailara LLC](https://lailarallc.com) — data hygiene and analytics consulting for specialty food brands scaling into national retail.
