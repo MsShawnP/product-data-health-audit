@@ -12,7 +12,7 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 
 3. **CI pipeline** — added all 55+ R package dependencies to `renv.lock` via `renv::snapshot()`. Modified `R/run_all.R` to skip the Postgres load step when `DATABASE_URL` is empty and `raw_tables.rds` exists. Committed `raw_tables.rds` (1.5 MB) so CI can run without a database.
 
-4. **GitHub Pages deployment** — CI deploys to https://msshawnp.github.io/product-data-health-audit/ on every push to main. Landing page links to report, dashboard, tearsheet, compliance timeline, scorecard, and Excel workbook.
+4. **GitHub Pages deployment** — CI deploys to https://audit.lailarallc.com on every push to main. Landing page links to report, dashboard, tearsheet, compliance timeline, scorecard, and Excel workbook.
 
 ## Key files
 
