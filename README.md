@@ -2,7 +2,11 @@
 
 A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs of growing food brands.
 
-Cinderhaven Provisions is a $25 million specialty food brand with 50 SKUs, 5 product lines, and 4 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+Cinderhaven Provisions is a $25 million specialty food brand with 50 SKUs, 5 product lines (Artisan Sauces, Pantry Staples, Specialty Condiments, Dried Goods, Snack Bites), and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+
+## Data Contract
+
+Cinderhaven canonical platform data: 50 SKUs across 5 product lines (Artisan Sauces, Pantry Staples, Specialty Condiments, Dried Goods, Snack Bites), 6 contracted retailers (Walmart, Costco, Whole Foods, Sprouts, Kroger, Regional Group), 3 distributors (UNFI, KeHE, DPI Northwest) + 1 DTC channel (Shopify). Source: `CINDERHAVEN_CANONICAL.md` in `cinderhaven-data-platform`.
 
 ## Why now
 
@@ -78,8 +82,7 @@ The R pipeline builds all canonical data frames, generates 21 charts, renders th
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
-**Live:** https://audit.lailarallc.com
-**Data Debt Calculator:** https://calculator.lailarallc.com
+Live site → https://audit.lailarallc.com · Data Debt Calculator → https://calculator.lailarallc.com
 
 ### Refreshing source data
 
@@ -148,6 +151,3 @@ product-data-health-audit/
 ## License
 
 MIT — see [LICENSE](LICENSE).
-
----
-Built by [Lailara LLC](https://lailarallc.com) — data hygiene and analytics consulting for specialty food brands scaling into national retail.
