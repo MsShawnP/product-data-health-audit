@@ -1,7 +1,7 @@
 # shiny/app.R — Data Debt Calculator
 #
 # Standalone tool. Not specific to any company. The default inputs are a
-# reference catalog of 50 SKUs and 4 retailers; change them to match
+# reference catalog of 50 SKUs and 6 retailers; change them to match
 # your own and the rest of the page updates.
 #
 # Cost model (3 components):
