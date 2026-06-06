@@ -44,6 +44,9 @@ LL_SG         <- "#ee8a2a"
 LL_SG_LIGHT   <- "#f6b97c"
 LL_SG_DARK    <- "#7a3d10"
 
+# New York (amber) — reserve palette
+LL_NY         <- "#f9c31f"
+
 # London greyscale
 LL_INK        <- "#0d0d0d"
 LL_TEXT        <- "#333333"
@@ -88,19 +91,24 @@ LL_DIV_NEU <- "#d9d9d9"
 LL_DIV_NEG <- c("#e68a9a", "#b82d4a", "#6e1a2c")
 
 # ---- product-line colors ---------------------------------------------------
-# Three product lines -> dark stops from three families.
+# Five product lines -> dark stops from five families.
 product_line_colors <- c(
   "Artisan Sauces"       = LL_CHICAGO,
   "Specialty Condiments" = LL_TOKYO,
-  "Pantry Staples"       = LL_HK
+  "Pantry Staples"       = LL_HK,
+  "Dried Goods"          = LL_SG,
+  "Snack Bites"          = LL_NY
 )
 
 # ---- retailer colors -------------------------------------------------------
-# Three retailers -> dark stops from three families.
+# Six contracted retailers.
 retailer_colors <- c(
-  "Walmart"     = LL_CHICAGO,
-  "Costco"      = LL_TOKYO,
-  "Whole Foods" = LL_HK_DARK
+  "Walmart"        = LL_CHICAGO,
+  "Costco"         = LL_TOKYO,
+  "Whole Foods"    = LL_HK_DARK,
+  "Sprouts"        = LL_SG,
+  "Kroger"         = LL_NY,
+  "Regional Group" = LL_REFERENCE
 )
 
 # ---- pass / fail and risk-tier colors --------------------------------------

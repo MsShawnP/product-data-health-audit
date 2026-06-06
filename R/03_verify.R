@@ -86,7 +86,7 @@ for (i in seq_len(nrow(reason_cb))) {
 hr(paste0("2. MISSINGNESS BY FIELD (product_master, n=", nrow(raw$product_master), ")"))
 
 miss_tbl <- raw$product_master |>
-  summarise(across(everything(), ~ mean(is.na(.) | (. == "" & is.character(.))))) |>
+  summarise(across(everything(), ~ mean(is.na(.) | {if (is.character(.)) . == "" else FALSE}))) |>
   pivot_longer(everything(), names_to = "field", values_to = "pct_missing") |>
   arrange(desc(pct_missing))
 

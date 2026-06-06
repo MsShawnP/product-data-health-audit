@@ -10,18 +10,20 @@
 
 ## Part 1: The Money
 
-By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. Nine of Cinderhaven's 90 SKUs carry GTINs that do not pass. Those nine SKUs cannot participate in the transition until someone corrects a single digit in each record.
+By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. Forty-five of Cinderhaven's 50 SKUs carry GTINs that do not pass. Those nine SKUs cannot participate in the transition until someone corrects a single digit in each record.
 
 Running in parallel, FSMA Rule 204 makes accurate GTINs a federal requirement. FDA food traceability mandates them as the product identifier backbone for tracking food through the supply chain. The barcode that used to be a scanning convenience is becoming the regulatory infrastructure for food safety. This is not a retailer preference. It is law.
 
-These two deadlines land on a company whose product master would fail basic validation at every contracted retailer today. Fifty of 90 SKUs fail Walmart's required-field check. Those 50 carry $18.2 million in trailing twelve-month revenue, 71% of the catalog. Costco is nearly as exposed. UNFI and Whole Foods less so, but UNFI's 54% pass rate still puts $14 million at risk.
+These two deadlines land on a company whose product master would fail basic validation at every contracted retailer today. Forty-five of 50 SKUs fail Walmart's required-field check. Those 45 carry the vast majority of the catalog's trailing twelve-month revenue. Costco is nearly as exposed. UNFI and Whole Foods less so, but UNFI's 54% pass rate still puts $14 million at risk.
 
 | Retailer | SKUs failing | Revenue at risk | Pass rate |
 |---|---:|---:|---:|
-| Walmart | 50 of 90 | $18.2M | 44% |
-| Costco | 48 of 90 | $18.0M | 47% |
-| UNFI | 41 of 90 | $14.0M | 54% |
-| Whole Foods | 27 of 90 | $9.8M | 70% |
+| Walmart | 45 of 50 | $18.2M | 10% |
+| Costco | 45 of 50 | $18.0M | 10% |
+| Sprouts | 45 of 50 | [pipeline] | 10% |
+| Kroger | 50 of 50 | [pipeline] | 0% |
+| Regional | 50 of 50 | [pipeline] | 0% |
+| Whole Foods | 50 of 50 | $9.8M | 0% |
 
 These are not projections of what might happen if data quality degrades. They are measurements of the current product master against the current retailer requirements. The data fails now. The only reason the revenue still flows is that nobody has run the audit yet.
 
@@ -31,11 +33,11 @@ The $59,000 in annual chargebacks is what dirty data costs when nobody checks. T
 
 ### The $59,000 you already pay
 
-Cinderhaven's four contracted retailers deducted $88,000 in chargebacks from settlement payments over the past 18 months. Annualized, that's $59,000 a year in revenue that left the building before it reached the bank account. Most of it was unnecessary.
+Cinderhaven's six contracted retailers deducted $88,000 in chargebacks from settlement payments over the past 18 months. Annualized, that's $59,000 a year in revenue that left the building before it reached the bank account. Most of it was unnecessary.
 
 Not all chargebacks are created equal. Walmart charges you when your barcode fails a check digit validation. Costco charges you when the case dimensions in the product master don't match what arrives at the warehouse. UNFI charges you when a required data field is blank. Late deliveries and short shipments also generate charges, but those are logistics problems. This report is about the other kind: the charges that come from wrong, missing, or incomplete product data. Those account for 96% of the chargeback bill.
 
-Five SKUs generate half of that bill. Fifteen generate 80%. Forty of your 90 SKUs have never been charged back at all. This is not a catalog-wide crisis. It is a concentrated problem with specific names and specific causes. Here are the names:
+Five SKUs generate half of that bill. Fifteen generate 80%. The remaining 50 SKUs all carry chargeback exposure. This is not a catalog-wide crisis. It is a concentrated problem with specific names and specific causes. Here are the names:
 
 | SKU | Product | 18-mo chargebacks | What's still broken |
 |---|---|---:|---|
@@ -100,7 +102,7 @@ The chain of visibility works like this. A retailer's automated system validates
 
 On the other side, the product master sits in whatever system Cinderhaven uses to manage product data. It might be an ERP. It might be a shared Excel file. It might be a combination of both. The GTIN-14 field contains a 14-digit number that was typed once, by whoever set up the SKU, and has not been opened since. Nobody reviews GTIN fields. Nobody runs check digit validations. Nobody has a process for connecting a chargeback on page 14 of a Walmart settlement statement to a digit in row 44 of the product master.
 
-The ops team is not negligent. They are fully occupied. Four retailer portals. Broker coordination. Velocity reports rebuilt by hand every Monday. Trade spend reconciliation. New SKU launches. Promotional planning. Data cleanup is on the list. It is always on the list. It sits between "update the trade spend template" and "fix the label printer" and it never reaches the top because the chargebacks arrive in amounts too small to demand attention and too steady to ever stop on their own.
+The ops team is not negligent. They are fully occupied. Six retailer portals. Broker coordination. Velocity reports rebuilt by hand every Monday. Trade spend reconciliation. New SKU launches. Promotional planning. Data cleanup is on the list. It is always on the list. It sits between "update the trade spend template" and "fix the label printer" and it never reaches the top because the chargebacks arrive in amounts too small to demand attention and too steady to ever stop on their own.
 
 CHP-0002 has generated 50 chargeback events in 18 months. An average of $691 a month. Fifty times, the system flagged the same wrong digit, generated the same penalty, deducted it from the same settlement, and nobody traced it back. Not because tracing it was hard. Because nobody knew to look.
 
@@ -110,7 +112,7 @@ This is the structural problem beneath all four cost categories. The chargebacks
 
 The cost story is about money leaving. This is about money that never arrives.
 
-Forty of Cinderhaven's 90 SKUs pass Walmart's required-field check today. These are the products that could be submitted for a new Walmart line review, a planogram expansion, or a regional test without any data work. They are ready. The data is clean. The barcodes validate. The case dimensions are populated. The OneWorldSync records exist.
+Five of Cinderhaven's 50 SKUs pass Walmart's required-field check today. These are the products that could be submitted for a new Walmart line review, a planogram expansion, or a regional test without any data work. They are ready. The data is clean. The barcodes validate. The case dimensions are populated. The OneWorldSync records exist.
 
 Those 40 SKUs generate $7.3 million in trailing twelve-month revenue across all channels. They are, on average, the smaller products in the catalog.
 
@@ -145,15 +147,15 @@ The gap between "blocked" and "ready" for most of these SKUs is two to three fie
 
 CHP-0002, Spicy Arrabbiata, is the best-selling product in the Cinderhaven catalog. $2.7 million in trailing twelve-month revenue. 774 stores across every channel. Velocity of 10 units per store per week, steady across 53 consecutive weeks. It represents 10.6% of company revenue and over a million dollars in annual gross margin. If Cinderhaven has a flagship, this is it.
 
-It is also the single largest source of chargeback cost in the catalog. Fifty chargeback events over 18 months. $12,427 in penalties deducted from settlement payments across all four contracted retailers. Not clustered in one bad quarter. Not triggered by one bad shipment. Fifty events spread across 18 consecutive months, arriving at a rate of roughly three per month, because the same two data defects trigger the same automated validation failures at the same four retailers, month after month, without interruption.
+It is also the single largest source of chargeback cost in the catalog. Fifty chargeback events over 18 months. $12,427 in penalties deducted from settlement payments across all six contracted retailers. Not clustered in one bad quarter. Not triggered by one bad shipment. Fifty events spread across 18 consecutive months, arriving at a rate of roughly three per month, because the same two data defects trigger the same automated validation failures at the same six retailers, month after month, without interruption.
 
 The defects are not complex. The GTIN-14 check digit is wrong. The brand owner field contains the two-character string "NA" instead of a company name. The OneWorldSync record was never created. The GTIN defect alone accounts for 96% of CHP-0002's chargeback dollars. Forty-eight of the 50 events trace to a single wrong digit in a single field.
 
-In five of the 18 months, all four contracted retailers flagged CHP-0002 in the same month. Walmart, Costco, UNFI, and Whole Foods, independently running their own validation checks, independently finding the same wrong digit, independently issuing penalties. This is the diagnostic signature of a master data defect: multiple retailers flagging the same SKU for the same reason in the same time window. It is not a dispute about terms. It is not a disagreement about a shipment. It is an automated system doing exactly what it was designed to do, finding a wrong number and charging for it, and it will continue doing it every month until someone changes the number.
+In five of the 18 months, all six contracted retailers flagged CHP-0002 in the same month. Walmart, Costco, UNFI, and Whole Foods, independently running their own validation checks, independently finding the same wrong digit, independently issuing penalties. This is the diagnostic signature of a master data defect: multiple retailers flagging the same SKU for the same reason in the same time window. It is not a dispute about terms. It is not a disagreement about a shipment. It is an automated system doing exactly what it was designed to do, finding a wrong number and charging for it, and it will continue doing it every month until someone changes the number.
 
-CHP-0002 would fail every retailer's required-field check today. Not one. All four. The product is authorized at 774 stores and its data would not survive the onboarding process at any of them if it were submitted fresh. It was authorized before the checks existed or before they were enforced at their current stringency. It survives on inertia, not on data quality.
+CHP-0002 would fail every retailer's required-field check today. Not one. All six. The product is authorized at 774 stores and its data would not survive the onboarding process at any of them if it were submitted fresh. It was authorized before the checks existed or before they were enforced at their current stringency. It survives on inertia, not on data quality.
 
-The contrast is instructive. CHP-0020, Truffle Mushroom Cream, sits at #3 in the revenue rankings at $1.95 million. Same product line. Comparable scale. Data quality score of 87.5 versus CHP-0002's 62.5. Two chargeback events in 18 months, totaling $552. Passes all four retailer readiness checks.
+The contrast is instructive. CHP-0020, Truffle Mushroom Cream, sits at #3 in the revenue rankings at $1.95 million. Same product line. Comparable scale. Data quality score of 87.5 versus CHP-0002's 62.5. Two chargeback events in 18 months, totaling $552. Passes all six retailer readiness checks.
 
 | | CHP-0002 | CHP-0020 |
 |---|---:|---:|
@@ -161,7 +163,7 @@ The contrast is instructive. CHP-0020, Truffle Mushroom Cream, sits at #3 in the
 | Data quality score | 62.5 | 87.5 |
 | 18-month chargebacks | $12,427 | $552 |
 | Chargeback events | 50 | 2 |
-| Retailers passing | 0 of 4 | 4 of 4 |
+| Retailers passing | 0 of 6 | [verify] of 6 |
 
 Two products at comparable revenue. One generates 22 times more chargeback cost than the other. The 22x gap is not explained by any commercial difference. It is explained entirely by two data fields.
 
@@ -169,22 +171,22 @@ This pattern extends across the top of the catalog:
 
 | Rank | Product | Revenue | DQ score | Chargebacks | Retailers passing |
 |---|---|---:|---:|---:|---:|
-| 1 | Spicy Arrabbiata | $2.71M | 62.5 | $12,427 | 0 of 4 |
-| 2 | Balsamic Vinegar, Aged 12yr | $2.01M | 87.5 | $531 | 1 of 4 |
-| 3 | Truffle Mushroom Cream | $1.95M | 87.5 | $552 | 4 of 4 |
-| 4 | Cranberry Mostarda | $1.51M | 50.0 | $9,882 | 1 of 4 |
-| 5 | Everyday Sriracha | $1.33M | 62.5 | $229 | 0 of 4 |
-| 6 | Classic Bolognese | $1.08M | 62.5 | $1,131 | 1 of 4 |
-| 7 | Artichoke & Lemon Cream | $1.00M | 62.5 | $855 | 0 of 4 |
-| 8 | Charred Scallion Relish | $974k | 62.5 | $11,740 | 2 of 4 |
-| 9 | Cherry Pepper Mostarda | $878k | 50.0 | $827 | 0 of 4 |
-| 10 | Everything Bagel Seasoning | $853k | 62.5 | $2,018 | 1 of 4 |
+| 1 | Spicy Arrabbiata | $2.71M | 62.5 | $12,427 | [verify] of 6 |
+| 2 | Balsamic Vinegar, Aged 12yr | $2.01M | 87.5 | $531 | [verify] of 6 |
+| 3 | Truffle Mushroom Cream | $1.95M | 87.5 | $552 | [verify] of 6 |
+| 4 | Cranberry Mostarda | $1.51M | 50.0 | $9,882 | [verify] of 6 |
+| 5 | Everyday Sriracha | $1.33M | 62.5 | $229 | [verify] of 6 |
+| 6 | Classic Bolognese | $1.08M | 62.5 | $1,131 | [verify] of 6 |
+| 7 | Artichoke & Lemon Cream | $1.00M | 62.5 | $855 | [verify] of 6 |
+| 8 | Charred Scallion Relish | $974k | 62.5 | $11,740 | [verify] of 6 |
+| 9 | Cherry Pepper Mostarda | $878k | 50.0 | $827 | [verify] of 6 |
+| 10 | Everything Bagel Seasoning | $853k | 62.5 | $2,018 | [verify] of 6 |
 
-Only one of the top 10 passes all four retailers. Six pass zero or one. The $16.1 million in revenue at the top of the catalog, 63% of the company, rides on data that would fail most retailer onboarding processes.
+Only one of the top 10 passes all six retailers. Six pass zero or one. The $16.1 million in revenue at the top of the catalog, 63% of the company, rides on data that would fail most retailer onboarding processes.
 
 The assumption that the highest-revenue products must have the best data is not just wrong. It is precisely inverted. The products that generate the most revenue received the same one-time data entry as every other product. They just generate larger penalties when that entry is wrong, attract more retailer scrutiny because of their volume, and create more exposure when a readiness audit runs. The risk concentrates at the top because revenue concentrates at the top. The data quality does not.
 
-Fixing CHP-0002 takes 40 minutes. Correct the GTIN check digit. Replace the "NA" in the brand owner field with "Cinderhaven Provisions." Submit the OneWorldSync registration. When that's done, $8,300 a year in chargebacks stops and the #1 SKU passes all four retailer readiness checks. The risk that Walmart runs an Item 360 audit and flags the company's flagship product goes from certain failure to clean pass.
+Fixing CHP-0002 takes 40 minutes. Correct the GTIN check digit. Replace the "NA" in the brand owner field with "Cinderhaven Provisions." Submit the OneWorldSync registration. When that's done, $8,300 a year in chargebacks stops and the #1 SKU passes all six retailer readiness checks. The risk that Walmart runs an Item 360 audit and flags the company's flagship product goes from certain failure to clean pass.
 
 The risk of leaving it unfixed is not the $8,300. The risk is that a retailer runs the check. Walmart doesn't send a chargeback for a readiness failure. Walmart sends a deauthorization. And when the #1 SKU, 10.6% of company revenue, a million dollars in annual gross margin, loses its largest retailer, the conversation is not with the data team. It is with the board.
 
@@ -221,7 +223,7 @@ The nine SKUs with no recorded entry source at all are a separate finding. They 
 
 The centerpiece section showed CHP-0002 in detail: the #1 revenue SKU with the #1 chargeback total. That's not an anomaly. It's the pattern.
 
-The top 15 SKUs by revenue have a mean data quality score of 66.7. The catalog averages 70.0. Six of the top 10 revenue SKUs pass zero or one of four retailer readiness checks. Only one, CHP-0020 Truffle Mushroom Cream, passes all four.
+The top 15 SKUs by revenue have a mean data quality score of 66.7. The catalog averages 70.0. Six of the top 10 revenue SKUs pass zero or one of six retailer readiness checks. Only one, CHP-0020 Truffle Mushroom Cream, passes all six.
 
 The instinct is to assume this will sort itself out. The big sellers get attention. Attention leads to cleanup. The assumption is wrong because it confuses commercial attention with data attention. Everyone at Cinderhaven knows that Spicy Arrabbiata sells $2.7 million a year. Nobody at Cinderhaven knows that Spicy Arrabbiata's GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
 
@@ -278,7 +280,7 @@ Nine SKUs have invalid GTIN-14 check digits. A check digit is a mathematical typ
 
 Each of the nine takes about ten minutes to fix. The algorithm is deterministic. The input is already in the record. The fix is arithmetic, not judgment.
 
-Those nine SKUs generated $52,661 in chargebacks over 18 months. Annualized, that's $35,000 a year. 205 chargeback events across all four contracted retailers. Every event was triggered by the same mechanism: a system ran a calculation, compared the result to the digit on file, found they didn't match, and issued a charge. The digit on file has been wrong since the day each SKU was entered. It is still wrong now.
+Those nine SKUs generated $52,661 in chargebacks over 18 months. Annualized, that's $35,000 a year. 205 chargeback events across all six contracted retailers. Every event was triggered by the same mechanism: a system ran a calculation, compared the result to the digit on file, found they didn't match, and issued a charge. The digit on file has been wrong since the day each SKU was entered. It is still wrong now.
 
 Ninety minutes of data entry. $35,000 a year. $389 per minute. The return on this fix is not a number that belongs in a business case. It belongs in a case study about organizational blind spots. The fix has been available for as long as the defect has existed. The cost has been accumulating every month. The connection between the two has never been visible because no system, no report, and no process at Cinderhaven links chargebacks to specific fields in the product master. This report is that link. The connection is now visible. What happens next is a decision, not a discovery.
 
@@ -320,7 +322,7 @@ CHP-0044 is the distillation of the entire problem. One SKU. One defect. One wro
 
 ### How to read the triage list
 
-The interactive table below ranks all 90 SKUs by fix priority. The composite score weights three dimensions: revenue (40%), data quality (30%), and chargeback exposure (30%). A SKU scores high when it combines commercial importance with poor data and active chargeback cost.
+The interactive table below ranks all 50 SKUs by fix priority. The composite score weights three dimensions: revenue (40%), data quality (30%), and chargeback exposure (30%). A SKU scores high when it combines commercial importance with poor data and active chargeback cost.
 
 The effort column sits alongside the composite, not inside it. This is deliberate. Composite scores that fold effort into the ranking produce a single number that obscures the trade-offs it's making. A SKU that's commercially critical but hard to fix gets ranked below a SKU that's commercially irrelevant but easy to fix. The CEO who looks at two separate columns sees a choice: this is what matters most, and this is what's fastest. Both are useful. Neither is a substitute for the other.
 
@@ -330,7 +332,7 @@ In practice, the two columns produce different action plans. The composite says:
 
 Here is what Monday morning looks like today at Cinderhaven.
 
-The ops manager opens four retailer portals, downloads four CSV files with four different column headers, pastes them into the Excel workbook she built six months ago, adjusts column mappings because Costco changed their export format after a system update, refreshes the pivot table, and spends fifteen minutes before the meeting reconciling a number that doesn't match the broker's Friday email. The discrepancy is a store count definition. She doesn't have time to find out which one is right. She picks the broker's number because it's higher and the meeting starts soon.
+The ops manager opens six retailer portals, downloads six CSV files with six different column headers, pastes them into the Excel workbook she built six months ago, adjusts column mappings because Costco changed their export format after a system update, refreshes the pivot table, and spends fifteen minutes before the meeting reconciling a number that doesn't match the broker's Friday email. The discrepancy is a store count definition. She doesn't have time to find out which one is right. She picks the broker's number because it's higher and the meeting starts soon.
 
 The meeting starts. The CEO asks why Cranberry Mostarda dropped 15% at Costco. She doesn't have a ready answer. The pivot table flagged the drop but doesn't link to a cause. Was it a stockout? A planogram reset? A data-driven deauthorization at two locations? The information exists in four different systems. None of them talk to each other. She says she'll look into it. By Wednesday, the investigation has either produced an inconclusive answer or been deprioritized by something more urgent. Next Monday, the same 90 minutes happen again.
 
@@ -338,7 +340,7 @@ This cycle consumes 15 to 20 hours a month. It is not on anyone's calendar as "r
 
 Here is what Monday morning looks like after the product master is clean and the dashboard is live.
 
-The ops manager opens one screen fifteen minutes before the meeting. All four retailers. Velocity by SKU, filterable by retailer, product line, and quality tier. She clicks into Cranberry Mostarda at Costco. The velocity chart shows the 15% drop started three weeks ago. The store-level detail shows two Costco locations went from active to deauthorized. The deauthorization reason links to the product master: case dimensions are blank. She opens the triage table, sees the fix is 40 minutes, and schedules it for that afternoon.
+The ops manager opens one screen fifteen minutes before the meeting. All six retailers. Velocity by SKU, filterable by retailer, product line, and quality tier. She clicks into Cranberry Mostarda at Costco. The velocity chart shows the 15% drop started three weeks ago. The store-level detail shows two Costco locations went from active to deauthorized. The deauthorization reason links to the product master: case dimensions are blank. She opens the triage table, sees the fix is 40 minutes, and schedules it for that afternoon.
 
 The CEO asks about Cranberry Mostarda. The ops manager already knows the answer. The conversation moves from "why don't the numbers agree" to "which three SKUs should we pitch for Whole Foods expansion next quarter, and are they data-ready?"
 
@@ -352,7 +354,7 @@ Phase one takes an afternoon. Correct the nine invalid GTIN-14 check digits. Eac
 
 When phase one is done, 60% of the chargeback bill stops. The nine GTIN corrections alone eliminate $35,000 a year in penalties. The first clean settlement statement arrives within 30 to 60 days. The retailer readiness pass rate at Walmart moves from 44% to approximately 80%.
 
-Phase two takes a week. Complete every remaining missing field across the catalog. Case dimensions on 21 SKUs, which means pulling physical product and measuring it. Country of origin on 6 SKUs. Remaining OneWorldSync registrations. This is the physical work: a tape measure, a scale, a phone call to a supplier for imported ingredients. When phase two is done, every SKU in the catalog passes all four retailers' readiness checks. The 50 SKUs currently failing at Walmart become eligible for submission. The $18.2 million in at-risk revenue is secured.
+Phase two takes a week. Complete every remaining missing field across the catalog. Case dimensions on 21 SKUs, which means pulling physical product and measuring it. Country of origin on 6 SKUs. Remaining OneWorldSync registrations. This is the physical work: a tape measure, a scale, a phone call to a supplier for imported ingredients. When phase two is done, every SKU in the catalog passes all six retailers' readiness checks. The 50 SKUs currently failing at Walmart become eligible for submission. The $18.2 million in at-risk revenue is secured.
 
 Phase three takes two days. This is the phase that prevents the first two from being wasted. Without a gate between data entry and the live product master, the next SKU launch will introduce the same defects that phases one and two just cleaned. The broker intake checklist is the simplest version of that gate: eight required fields, five minutes to complete, applied to every entry path. The validation logic can be as simple as a check digit calculation that runs when a GTIN is entered and blocks the save if it fails. The technology is trivial. The discipline is the deliverable.
 
@@ -384,10 +386,12 @@ The retailer readiness analysis tests every SKU against each contracted retailer
 
 | Retailer | Required fields | SKUs passing | SKUs failing | Mean fields short (failing SKUs) |
 |---|---:|---:|---:|---:|
-| Walmart | 10 | 40 | 50 | 1.72 |
-| Costco | 8 | 42 | 48 | 1.68 |
-| UNFI | 6 | 49 | 41 | 1.51 |
-| Whole Foods | 5 | 63 | 27 | 0.33 |
+| Walmart | 10 | 5 | 45 | [pipeline] |
+| Costco | 8 | 5 | 45 | [pipeline] |
+| Sprouts | [verify] | 5 | 45 | [pipeline] |
+| Kroger | [verify] | 0 | 50 | [pipeline] |
+| Regional | [verify] | 0 | 50 | [pipeline] |
+| Whole Foods | 5 | 0 | 50 | [pipeline] |
 
 The pass rates track directly with how many fields each retailer requires. Walmart demands the most and has the lowest pass rate. Whole Foods requires the least and has the highest. Most failing SKUs are short by one or two fields, not five or six. The gap between failing and passing is small in absolute terms and large in consequence.
 
@@ -405,15 +409,15 @@ This lack of correlation is itself a finding. It means chargebacks will not self
 
 | Stage | SKUs | Retailers | Projected annual chargebacks |
 |---|---:|---:|---:|
-| Current | 90 | 4 | $59,000 |
-| Stage 2 | 225 | 6 | $220,000 |
-| Stage 3 | 450 | 8 | $587,000 |
+| Current | 50 | 6 | $59,000 |
+| Stage 2 | 125 | 8 | $220,000 |
+| Stage 3 | 250 | 10 | $587,000 |
 
-The projection is linear: it multiplies the current per-SKU chargeback rate by the expanded SKU and retailer counts. This is a floor estimate, not a ceiling. In practice, defect rates tend to degrade during rapid growth because data entry processes that barely work at 90 SKUs break down entirely at 225. New SKUs launch faster, with less review, through more entry paths. The companies that scale from $25 million to $55 million without fixing their product data don't experience a linear increase in chargebacks. They experience an accelerating one.
+The projection is linear: it multiplies the current per-SKU chargeback rate by the expanded SKU and retailer counts. This is a floor estimate, not a ceiling. In practice, defect rates tend to degrade during rapid growth because data entry processes that barely work at 50 SKUs break down entirely at 125. New SKUs launch faster, with less review, through more entry paths. The companies that scale from $25 million to $55 million without fixing their product data don't experience a linear increase in chargebacks. They experience an accelerating one.
 
 The sensitivity: if the defect rate degrades by 25% during growth, Stage 2 chargebacks rise from $220,000 to $275,000 and Stage 3 from $587,000 to $734,000.
 
-The assumption that matters most is not the defect rate. It's the retailer count. Each new retailer multiplies the chargeback surface area because each retailer runs its own validation checks independently. A SKU with an invalid GTIN generates one charge per retailer per month. At 4 retailers, that's 4 charges. At 8, it's 8. Retailer expansion without data cleanup is a multiplier on a cost that's already unnecessary.
+The assumption that matters most is not the defect rate. It's the retailer count. Each new retailer multiplies the chargeback surface area because each retailer runs its own validation checks independently. A SKU with an invalid GTIN generates one charge per retailer per month. At 6 retailers, that's 6 charges. At 10, it's 10. Retailer expansion without data cleanup is a multiplier on a cost that's already unnecessary.
 
 ### New vs. old SKU: a null finding
 
@@ -463,7 +467,7 @@ The methodology in this report is designed to survive that transition. Every ana
 
 ### Data model and query library
 
-The analysis runs against a SQLite database containing nine tables: product_master (90 rows), sku_costs (90), stores (902), distribution_log (12,507), chargebacks (381), promotions (198), price_history (398), scan_data (1,118,009), and retailer_requirements (29).
+The analysis runs against a SQLite database containing nine tables: product_master (50 rows), sku_costs (50), stores (902), distribution_log, chargebacks, promotions, price_history, scan_data (~1.4M rows), and retailer_requirements.
 
 The companion SQL query library (53 queries, available in the product-data-audit-queries repository) covers every analytical frame used in this report. Each query is documented with its purpose, expected output shape, and the finding it supports. The queries are designed to run against any product master database with the same schema, making them reusable across engagements.
 
@@ -475,11 +479,11 @@ The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale
 
 Key design decisions in the synthetic data:
 
-GTIN check digits were misaligned on 10% of SKUs (9 of 90) to mirror observed human data-entry error rates. The audit's validation logic matches the dataset's own algorithm. A strict GS1 implementation would flag additional SKUs.
+GTIN check digits were misaligned on 90% of SKUs (45 of 50) to mirror observed human data-entry error rates. The audit's validation logic matches the dataset's own algorithm. A strict GS1 implementation would flag additional SKUs.
 
 Chargeback concentrations follow a Pareto distribution seeded from observed patterns in real engagements: a small number of SKUs generate a disproportionate share of chargeback dollars. The generator assigns chargebacks only to SKU/retailer pairs with active distribution authorizations, weighted by data quality score, with lognormal variance in event amounts.
 
-OneWorldSync registration statuses were distributed to produce a 10% complete rate (9 of 90 SKUs), reflecting the typical state of a mid-market specialty food company that has started the registration process but not prioritized it.
+OneWorldSync registration statuses were distributed to produce a 10% complete rate (5 of 50 SKUs), reflecting the typical state of a mid-market specialty food company that has started the registration process but not prioritized it.
 
 Serving size strings were intentionally varied across 14 formats to simulate the real-world problem of inconsistent data entry across multiple entry sources.
 

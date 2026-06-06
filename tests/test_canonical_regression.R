@@ -66,16 +66,11 @@ assert("sku_master_full has product_line column",
 
 n_product_lines <- length(unique(sku_master$product_line))
 
-# TODO: The upstream DB currently has 3 product lines (Artisan Sauces,
-#       Specialty Condiments, Pantry Staples). After re-export it will have 5
-#       (adding Dried Goods and Snack Bites). The R pipeline already produces
-#       5 because it enriches beyond the upstream DB. When the upstream DB is
-#       re-exported, the test_canonical_regression.py in trade-spend-leakage
-#       should be updated from 3 to 5 as well.
 assert("sku_master_full has 5 distinct product lines",
        n_product_lines == 5L)
 
-known_lines <- c("Artisan Sauces", "Specialty Condiments", "Pantry Staples")
+known_lines <- c("Artisan Sauces", "Pantry Staples", "Specialty Condiments",
+                 "Dried Goods", "Snack Bites")
 assert("known product lines present in sku_master_full",
        all(known_lines %in% unique(sku_master$product_line)))
 

@@ -6,35 +6,33 @@ This document records how the synthetic dataset was constructed and, more import
 
 ## Database overview
 
-The Cinderhaven product master database contains 9 tables: product_master (50 rows), sku_costs (50), stores, distribution_log, chargebacks, promotions, price_history, scan_data (~1.4M rows), and retailer_requirements. The database represents a fictional specialty food company at approximately $33 million in trailing twelve-month revenue with 50 SKUs across 3 product lines (Artisan Sauces, Specialty Condiments, Pantry Staples), selling through 6 contracted retailers (Walmart, Costco, Whole Foods, Kroger, Sprouts, Regional Group).
-
-> **Dataset version note:** The defect counts below (e.g. "9 of 90 SKUs") describe the original 90-SKU generation. The current 50-SKU dataset was regenerated with similar defect profiles but different absolute counts. Run `Rscript R/03_verify.R` for current numbers.
+The Cinderhaven product master database contains 9 tables: product_master (50 rows), sku_costs (50), stores, distribution_log, chargebacks, promotions, price_history, scan_data (~1.4M rows), and retailer_requirements. The database represents a fictional specialty food company at approximately $33 million in trailing twelve-month revenue with 50 SKUs across 5 product lines (Artisan Sauces, Pantry Staples, Specialty Condiments, Dried Goods, Snack Bites), selling through 6 contracted retailers (Walmart, Costco, Whole Foods, Kroger, Sprouts, Regional Group).
 
 ## Intentional defects and their real-world basis
 
 ### GTIN-14 check digit errors
 
-**What was done:** Misaligned the mod-10 check digit on 9 of 90 SKUs (10%).
+**What was done:** Misaligned the mod-10 check digit on 45 of 50 SKUs (90%).
 
 **Real-world basis:** Human data-entry error rates on numeric fields in product masters typically run 5% to 15%, depending on the entry process and whether any validation exists at point of entry. The most common GTIN error is a transposed or miscalculated check digit, because the check digit is the last field entered and is often typed from memory or from a label that has been photocopied, faxed, or re-keyed from a broker spreadsheet. Most product masters have no check digit validation at entry. The error persists indefinitely because nobody re-validates GTIN fields after initial entry.
 
-**What this enables in the analysis:** The chargeback-to-defect linkage that is the centerpiece of the report. Nine wrong digits generating $54,000 in chargebacks over 18 months, traceable to a specific field in a specific record.
+**What this enables in the analysis:** The chargeback-to-defect linkage that is the centerpiece of the report. Forty-five wrong check digits generating chargebacks traceable to a specific field in a specific record.
 
 ### UPC-12 check digit errors
 
-**What was done:** Misaligned the mod-10 check digit on 3 of 90 SKUs.
+**What was done:** Misaligned the mod-10 check digit on 45 of 50 SKUs (90%).
 
 **Real-world basis:** Same mechanism as GTIN-14 errors but less common because UPC-12 is the consumer-facing barcode that gets scanned at retail POS. Errors in the UPC are more likely to be caught by in-store scanning during the first week of sales. GTIN-14 errors persist longer because the case-level barcode is scanned at distribution centers where the feedback loop to the vendor is slower.
 
 ### Brand owner field: placeholder values
 
-**What was done:** Populated the brand_owner field with the string "NA" on 17 of 90 SKUs.
+**What was done:** The brand_owner field is fully populated on all 50 SKUs. No placeholder values exist in the current dataset.
 
 **Real-world basis:** "NA," "N/A," "TBD," and blank values in text fields are the most common data defect in product masters that accept free-text input without validation. The person entering the SKU didn't know the answer, typed a placeholder, and moved on. Nobody reviewed it. The retailer's system accepted it because the field was not empty. It fails validation when a retailer tightens their required-field rules or when a compliance audit runs against the product master.
 
 ### Missing case dimensions
 
-**What was done:** Left case weight, length, width, or height blank on 29 of 90 SKUs (32%).
+**What was done:** Case dimensions are fully populated on all 50 SKUs. No blank values exist in the current dataset.
 
 **Real-world basis:** Case dimensions require physical measurement of the actual product. Unlike text fields that can be typed from a specification sheet, dimensions require someone to pull a case from inventory, put it on a scale, and measure it with a tape. This step is skipped more often than any other because it requires physical access to inventory and because the person entering the data may not have access to a warehouse. The 32% rate mirrors the typical state of a mid-market company that has populated dimensions for products that have gone through a full retailer onboarding process but not for products that were added to the master through informal channels.
 
@@ -46,7 +44,7 @@ The Cinderhaven product master database contains 9 tables: product_master (50 ro
 
 ### OneWorldSync registration status
 
-**What was done:** Set 81 of 90 SKUs (90%) to "Not Registered" or "Registered - Incomplete." Only 9 SKUs are "Registered - Complete."
+**What was done:** OneWorldSync statuses distributed across 50 SKUs. Exact breakdown requires `Rscript R/03_verify.R`.
 
 **Real-world basis:** OneWorldSync (1WorldSync) registration is the mechanism for synchronizing product data with retailers via the Global Data Synchronization Network (GDSN). Mid-market specialty food companies typically begin the registration process when a major retailer requires it but do not prioritize completing it across the full catalog. A 10% completion rate is typical for a company at Cinderhaven's scale that has registered its top sellers for one retailer but has not extended the process catalog-wide.
 
@@ -58,7 +56,7 @@ The Cinderhaven product master database contains 9 tables: product_master (50 ro
 
 ### Chargeback concentration (Pareto distribution)
 
-**What was done:** Seeded chargeback event counts and dollar amounts to follow a Pareto distribution: 9 SKUs generate 54% of chargeback dollars, 18 generate 80%, and 27 of 90 SKUs have zero chargebacks.
+**What was done:** Seeded chargeback event counts and dollar amounts across all 50 SKUs. In the current dataset, chargebacks are evenly distributed rather than Pareto-concentrated.
 
 **Real-world basis:** Chargeback distributions in real retail are consistently Pareto-shaped. A small number of SKUs, typically those with multiple overlapping data defects, generate a disproportionate share of chargeback dollars. The 80/20 pattern (or steeper) is the most commonly observed distribution in chargeback analysis across CPG categories.
 

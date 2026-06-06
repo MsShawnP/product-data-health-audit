@@ -16,20 +16,25 @@ renv/local/
 output/frames/*
 !output/frames/raw_tables.rds
 
-# Generated charts, workbook, and PDFs; rebuilt by R/run_all.R.
+# Generated charts, workbook, PDFs, and build logs; rebuilt by R/run_all.R.
 output/charts/
 output/*.xlsx
 output/*.pdf
 output/*.md
+output/*.txt
+output/frames_baseline/
+output/dashboard_screenshots/
+output/pdf_pages/
 
 # Rendered Quarto output; rebuilt by quarto render.
 quarto/*.html
 quarto/*.pdf
 
-# Legacy SQLite artifacts (no longer generated; kept in case of stale copies).
+# Data directory: SQLite exports and legacy artifacts.
 data/*.db
 data/*.db-wal
 data/*.db-shm
+data/cinderhaven-data/
 data/*.db.bak
 data/*.db.bak-*
 
@@ -41,6 +46,7 @@ velocity-tool/
 
 # Environment
 .Renviron
+.Renviron.*
 .env
 
 # Quarto / LaTeX intermediate state
