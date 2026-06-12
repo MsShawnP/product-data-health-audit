@@ -403,14 +403,14 @@ triage <- sku_master_full |>
     Product               = product_name,
     `TTM revenue`         = ttm_revenue,
     `Quality score`       = round(data_quality_score, 1),
-    `Chargebacks 18mo`    = chargeback_total,
+    `Chargebacks 36mo`    = chargeback_total,
     `Composite priority`  = fix_priority_score,
     `Est. fix hours`      = round(est_fix_hours, 2),
     `$ saved / hour`      = savings_per_hour,
     `Still broken`        = still_broken
   )
 
-max_cb     <- max(triage$`Chargebacks 18mo`, na.rm = TRUE)
+max_cb     <- max(triage$`Chargebacks 36mo`, na.rm = TRUE)
 max_priori <- 100
 max_sph    <- max(triage$`$ saved / hour`,    na.rm = TRUE)
 
@@ -445,7 +445,7 @@ reactable(
       align = "right",
       style = function(v) list(background = ramp_red(1 - v / 100))
     ),
-    `Chargebacks 18mo` = colDef(
+    `Chargebacks 36mo` = colDef(
       align = "right",
       cell  = function(v) dollar_cell(v),
       style = function(v) list(background = ramp_red(v / max_cb))

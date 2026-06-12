@@ -48,7 +48,7 @@ sku_pareto <- sku_chargebacks |>
          cum_pct = cum / cb_total,
          pct_of_skus = rank / n_skus_all)
 
-cat(sprintf("Total chargeback dollars (18mo): $%s across %d SKUs (of %d in catalog)\n",
+cat(sprintf("Total chargeback dollars (36mo): $%s across %d SKUs (of %d in catalog)\n",
             format(round(cb_total), big.mark = ","), n_skus_cb, n_skus_all))
 
 for (k in c(0.10, 0.20, 0.30, 0.50)) {

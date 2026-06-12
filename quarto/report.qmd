@@ -106,8 +106,8 @@ rpnl <- readRDS("../output/frames/retailer_pnl.rds")
 
 n_skus        <- nrow(smf)
 n_gtin_fail   <- sum(!smf$gtin_valid, na.rm = TRUE)
-total_cb_18mo <- sum(smf$chargeback_total, na.rm = TRUE)
-annual_cb     <- round(total_cb_18mo * 12 / 18)
+total_cb_36mo <- sum(smf$chargeback_total, na.rm = TRUE)
+annual_cb     <- round(total_cb_36mo * 12 / 36)
 n_cb_events   <- nrow(cbe)
 n_zero_cb     <- sum(smf$chargeback_total == 0 | is.na(smf$chargeback_total))
 total_ttm_rev <- sum(smf$ttm_revenue, na.rm = TRUE)
@@ -155,10 +155,10 @@ stage3_cb   <- round(annual_cb * (stage3_skus / n_skus) * (8 / 3))
 top_rev <- smf |> arrange(desc(ttm_revenue)) |> slice(1)
 top_cb  <- smf |> arrange(desc(chargeback_total)) |> slice(1)
 top_rev_events  <- cbe |> filter(sku == top_rev$sku) |> nrow()
-top_rev_annual  <- round(top_rev$chargeback_total * 12 / 18)
-top_rev_monthly <- round(top_rev$chargeback_total / 18)
+top_rev_annual  <- round(top_rev$chargeback_total * 12 / 36)
+top_rev_monthly <- round(top_rev$chargeback_total / 36)
 top_cb_events   <- cbe |> filter(sku == top_cb$sku) |> nrow()
-top_cb_annual   <- round(top_cb$chargeback_total * 12 / 18)
+top_cb_annual   <- round(top_cb$chargeback_total * 12 / 36)
 
 n_upc_fail <- sum(!smf$upc_valid, na.rm = TRUE)
 
@@ -168,10 +168,10 @@ data_defect_pct <- cbe |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
 non_data_annual <- round(annual_cb * (100 - data_defect_pct) / 100)
 
-barcode_cb_18mo <- cbe |>
+barcode_cb_36mo <- cbe |>
   filter(grepl("Label.*barcode", reason, ignore.case = TRUE)) |>
   summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
-barcode_annual <- round(barcode_cb_18mo * 12 / 18)
+barcode_annual <- round(barcode_cb_36mo * 12 / 36)
 
 smf_ranked <- smf |> arrange(desc(chargeback_total)) |>
   mutate(cum_cb = cumsum(chargeback_total), cum_pct = cum_cb / sum(chargeback_total))
@@ -224,7 +224,7 @@ The `r ds(annual_cb)` in annual chargebacks is what dirty data costs when nobody
 
 ## The `r ds(annual_cb)` you already pay
 
-Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_18mo)` in chargebacks from settlement payments over the past 18 months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
+Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_36mo)` in chargebacks from settlement payments over the past 36 months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
 
 The chargebacks arrive under five headings: label and barcode fines, pricing errors, damaged goods, late deliveries, and short shipments. Late deliveries, short shipments, and damaged goods are logistics problems. Label and barcode fines and pricing errors are data problems: charges that trace to wrong or incomplete product records. Those data-related categories account for `r data_defect_pct`% of the chargeback bill.
 
@@ -258,7 +258,7 @@ top_cb_6mo <- cbe |> filter(sku == top_cb$sku,
 top_cb_monthly <- round(top_cb_6mo / 6)
 ```
 
-`r top_cb$sku`, `r top_cb$product_name`, leads the chargeback ranking at `r ds(top_cb$chargeback_total)` over 18 months. It carries `r ds(top_cb$ttm_revenue)` in trailing twelve-month revenue across `r top_cb$auth_count` stores. `r top_cb_events` chargeback events spread across 18 months, arriving at roughly `r ds(top_cb_monthly)` a month on settlement statements from multiple retailers. Nobody at Cinderhaven has connected these monthly line items to each other, because nobody has a process for tracing chargebacks back to specific fields in the product master. The charges look like separate problems at separate retailers. They are the same underlying barcode defect, repeated.
+`r top_cb$sku`, `r top_cb$product_name`, leads the chargeback ranking at `r ds(top_cb$chargeback_total)` over 36 months. It carries `r ds(top_cb$ttm_revenue)` in trailing twelve-month revenue across `r top_cb$auth_count` stores. `r top_cb_events` chargeback events spread across 36 months, arriving at roughly `r ds(top_cb_monthly)` a month on settlement statements from multiple retailers. Nobody at Cinderhaven has connected these monthly line items to each other, because nobody has a process for tracing chargebacks back to specific fields in the product master. The charges look like separate problems at separate retailers. They are the same underlying barcode defect, repeated.
 
 Fixing a check digit takes ten minutes. Open the product master. Recalculate the check digit using the standard GS1 algorithm. Type the correct number. Save. Ten minutes against `r ds(top_cb_annual)` a year. That ratio does not require a business case. It requires someone to know the connection exists.
 
@@ -287,7 +287,7 @@ deauth_ex_cb_total <- deauth_ex$chargeback_total
 
 `r deauth_ex$sku`, `r deauth_ex$product_name`, was authorized across `r deauth_ex$auth_count` stores. It carries `r deauth_ex_defects` data defects and has been deauthorized at `r deauth_ex$deauth_count` locations. Those slots are gone. Winning them back requires a new category review, which happens once a year at Walmart, and a pitch that explains why the product that was pulled for data defects won't be pulled again.
 
-`r deauth_ex$deauth_count` stores out of `r deauth_ex$auth_count` sounds minor. It isn't. It's the signal that the retailer's system has flagged this SKU. The barcode defects that triggered the deauthorizations are identical to the defects still present at the other `r deauth_ex_remaining` stores. `r ds(deauth_ex_cb_total)` in chargebacks over 18 months with no sign of stopping. The deauthorized stores were not the punishment. They were the warning shot. The unfixed barcodes are the loaded gun still pointed at the other `r deauth_ex_remaining`.
+`r deauth_ex$deauth_count` stores out of `r deauth_ex$auth_count` sounds minor. It isn't. It's the signal that the retailer's system has flagged this SKU. The barcode defects that triggered the deauthorizations are identical to the defects still present at the other `r deauth_ex_remaining` stores. `r ds(deauth_ex_cb_total)` in chargebacks over 36 months with no sign of stopping. The deauthorized stores were not the punishment. They were the warning shot. The unfixed barcodes are the loaded gun still pointed at the other `r deauth_ex_remaining`.
 
 ![Deauthorization rate by data quality tier.](`r chart("11_deauth_rate_by_quality_tier")`){fig-alt="Bar chart showing deauthorization rates across the catalog."}
 
@@ -355,7 +355,7 @@ top_rev_retailers_pass <- rrs |> filter(sku == top_rev$sku, overall_pass) |> nro
 
 `r top_rev$sku`, `r top_rev$product_name`, is the best-selling product in the Cinderhaven catalog. `r ds(top_rev$ttm_revenue)` in trailing twelve-month revenue. `r top_rev_stores` stores across every channel. Velocity of `r top_rev_vel` units per store per week. It represents `r top_rev_pct`% of company revenue and `r ds(top_rev_gm)` in annual gross margin. If Cinderhaven has a flagship, this is it.
 
-It is also among the largest sources of chargeback cost. `r top_rev_events` chargeback events over 18 months. `r ds(top_rev$chargeback_total)` in penalties deducted from settlement payments across multiple retailers. Not clustered in one bad quarter. Not triggered by one bad shipment. `r top_rev_events` events spread across 18 months, because the same barcode defects trigger the same automated validation failures at the same retailers, month after month.
+It is also among the largest sources of chargeback cost. `r top_rev_events` chargeback events over 36 months. `r ds(top_rev$chargeback_total)` in penalties deducted from settlement payments across multiple retailers. Not clustered in one bad quarter. Not triggered by one bad shipment. `r top_rev_events` events spread across 36 months, because the same barcode defects trigger the same automated validation failures at the same retailers, month after month.
 
 ```{r top-rev-barcode-share}
 #| include: false
@@ -519,7 +519,7 @@ The takeaway for triage: when the ops team starts fixing barcodes, prioritize th
 barcode_fix_minutes <- n_skus * 10
 upc_fix_minutes <- n_upc_fail * 10
 gtin_fix_minutes <- n_gtin_fail * 10
-data_defect_annual <- round((total_cb_18mo * data_defect_pct / 100) * 12 / 18)
+data_defect_annual <- round((total_cb_36mo * data_defect_pct / 100) * 12 / 36)
 barcode_savings_per_min <- round(barcode_annual / barcode_fix_minutes)
 barcode_pct_of_annual <- round(100 * barcode_annual / annual_cb)
 ```
@@ -530,7 +530,7 @@ barcode_pct_of_annual <- round(100 * barcode_annual / annual_cb)
 
 Each SKU takes about ten minutes to fix. The algorithm is deterministic. The input is already in the record. The fix is arithmetic, not judgment.
 
-"Label / barcode fine" chargebacks totaled `r ds(barcode_cb_18mo)` over 18 months, annualized to `r ds(barcode_annual)` a year. Combined with pricing errors (which also trace to data fields), data-related chargebacks account for `r data_defect_pct`% of the total bill. The remaining `r ds(non_data_annual)` a year comes from late deliveries, short shipments, and damaged goods — logistics issues outside the scope of a data audit.
+"Label / barcode fine" chargebacks totaled `r ds(barcode_cb_36mo)` over 36 months, annualized to `r ds(barcode_annual)` a year. Combined with pricing errors (which also trace to data fields), data-related chargebacks account for `r data_defect_pct`% of the total bill. The remaining `r ds(non_data_annual)` a year comes from late deliveries, short shipments, and damaged goods — logistics issues outside the scope of a data audit.
 
 ```{r fix-action-table}
 #| results: asis
@@ -623,7 +623,7 @@ triage <- smf |>
     Product          = product_name,
     `TTM revenue`    = ttm_revenue,
     `Quality score`  = round(data_quality_score, 1),
-    `Chargebacks 18mo` = chargeback_total,
+    `Chargebacks 36mo` = chargeback_total,
     `Composite priority` = fix_priority_score,
     `Est. fix hours` = round(est_fix_hours, 2),
     `$ saved / hour` = savings_per_hour
@@ -656,7 +656,7 @@ dollar_cell <- function(value) {
   else paste0("$", formatC(round(value), big.mark = ",", format = "d"))
 }
 
-max_cb     <- max(triage$`Chargebacks 18mo`, na.rm = TRUE)
+max_cb     <- max(triage$`Chargebacks 36mo`, na.rm = TRUE)
 max_priori <- 100
 max_sph    <- max(triage$`$ saved / hour`,    na.rm = TRUE)
 
@@ -690,7 +690,7 @@ reactable(
         list(background = ramp_red(1 - value / 100))
       }
     ),
-    `Chargebacks 18mo` = colDef(
+    `Chargebacks 36mo` = colDef(
       align = "right",
       cell  = function(value) dollar_cell(value),
       style = function(value) {
@@ -824,9 +824,9 @@ The "mean fields short" column matters for planning. Fixing barcode check digits
 ::: {.callout-note collapse="true" appearance="simple"}
 ## Chargeback trend analysis
 
-Monthly chargeback dollars have held roughly flat at about $5,000 per month over the 18-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
+Monthly chargeback dollars have held roughly flat at about $19,000 per month over the 36-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
 
-![Monthly chargeback dollars over the 18-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $5,000 per month."}
+![Monthly chargeback dollars over the 36-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $19,000 per month."}
 
 Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is stable at $1.8 to $2.5 million per month. Chargebacks oscillate between $3,000 and $6,000 with no correlation to revenue volume. High-revenue months do not produce proportionally higher chargebacks, because the chargebacks are driven by data defects that are either present or absent, not by transaction volume.
 
@@ -956,7 +956,7 @@ Serving size data is not present in the product master. Retailer readiness check
 
 All dollar estimates in this report state their assumptions at point of claim. The key methodological choices:
 
-Chargeback annualization: 18-month totals are multiplied by 12/18 to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
+Chargeback annualization: 36-month totals are multiplied by 12/36 to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
 
 Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. Because all SKUs share the same data quality score (`r mean_dq_all`), a quality-tier comparison is not possible with this dataset. In a real engagement with variance in data quality, a differential analysis would isolate the data-quality contribution to deauthorization.
 

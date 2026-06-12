@@ -321,10 +321,10 @@ cat("\n[4/4] Fix ROI\n")
 
 reason_amts <- chargebacks_enriched |>
   group_by(reason) |>
-  summarise(amt_18mo = sum(amount), .groups = "drop")
+  summarise(amt_36mo = sum(amount), .groups = "drop")
 
-amt_18 <- function(r) {
-  v <- reason_amts$amt_18mo[reason_amts$reason == r]
+amt_36 <- function(r) {
+  v <- reason_amts$amt_36mo[reason_amts$reason == r]
   if (length(v) == 0) 0 else v
 }
 
@@ -353,12 +353,12 @@ fix_roi <- tibble(
   hours  = c(round(barcode_hours, 1),
              round(proddata_hours, 1),
              round(dim_hours, 1)),
-  amt_18mo = c(amt_18("Label / barcode fine"),
-               amt_18("Pricing error"),
-               amt_18("Damaged goods"))
+  amt_36mo = c(amt_36("Label / barcode fine"),
+               amt_36("Pricing error"),
+               amt_36("Damaged goods"))
 ) |>
   filter(hours > 0) |>
-  mutate(annual_saved = amt_18mo * 12 / 18,
+  mutate(annual_saved = amt_36mo * 12 / 36,
          per_hour     = ifelse(hours > 0, annual_saved / hours, 0),
          is_top       = per_hour == max(per_hour),
          label        = sprintf(
