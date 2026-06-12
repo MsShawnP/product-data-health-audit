@@ -96,8 +96,8 @@ rrs <- readRDS("../output/frames/retailer_readiness_summary.rds")
 cbe <- readRDS("../output/frames/chargebacks_enriched.rds")
 
 n_skus <- nrow(smf)
-total_cb_18mo <- sum(smf$chargeback_total, na.rm = TRUE)
-annual_cb <- round(total_cb_18mo * 12 / 18)
+total_cb_36mo <- sum(smf$chargeback_total, na.rm = TRUE)
+annual_cb <- round(total_cb_36mo * 12 / 36)
 total_ttm_rev <- sum(smf$ttm_revenue, na.rm = TRUE)
 
 wm_readiness <- rrs |> filter(retailer == "Walmart") |>
@@ -183,7 +183,7 @@ triage <- smf |>
   transmute(
     SKU = sku,
     Product = latex_escape(product_name),
-    `Annual cb savings` = fmt_dollar(chargeback_total * 12 / 18),
+    `Annual cb savings` = fmt_dollar(chargeback_total * 12 / 36),
     `Fix time` = fmt_minutes(est_fix_hours),
     `Savings per hour` = fmt_per_hr(savings_per_hour))
 
@@ -212,7 +212,7 @@ top_rev <- smf |> dplyr::arrange(dplyr::desc(ttm_revenue)) |> dplyr::slice(1)
 top_rev_events <- nrow(cbe[cbe$sku == top_rev$sku, ])
 ```
 
-`r top_rev$sku`, `r top_rev$product_name`, is the highest-revenue SKU in the catalog (\$`r formatC(round(top_rev$ttm_revenue), big.mark = ",", format = "d")`) and among the largest sources of chargeback cost (\$`r formatC(round(top_rev$chargeback_total), big.mark = ",", format = "d")` over 18 months). `r top_rev_events` chargeback events across multiple retailers, driven by invalid barcode check digits. It fails most retailers' readiness checks. Fixing the barcodes takes `r round(top_rev$est_fix_hours * 60)` minutes.
+`r top_rev$sku`, `r top_rev$product_name`, is the highest-revenue SKU in the catalog (\$`r formatC(round(top_rev$ttm_revenue), big.mark = ",", format = "d")`) and among the largest sources of chargeback cost (\$`r formatC(round(top_rev$chargeback_total), big.mark = ",", format = "d")` over 36 months). `r top_rev_events` chargeback events across multiple retailers, driven by invalid barcode check digits. It fails most retailers' readiness checks. Fixing the barcodes takes `r round(top_rev$est_fix_hours * 60)` minutes.
 
 ## A one-week turnaround
 

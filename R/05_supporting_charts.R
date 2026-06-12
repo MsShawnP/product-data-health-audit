@@ -469,8 +469,8 @@ save_pair(p11_base(FALSE), to_girafe(p11_base(TRUE)),
 cat("\n[12] Growth projection — chargebacks at 1x / 2.5x / 5x SKU count\n")
 
 current_skus <- nrow(sku_master_full)
-current_cb_18mo <- sum(sku_master_full$chargeback_total)
-current_cb_per_year <- current_cb_18mo * 12 / 18
+current_cb_36mo <- sum(sku_master_full$chargeback_total)
+current_cb_per_year <- current_cb_36mo * 12 / 36
 current_revenue <- sum(sku_master_full$ttm_revenue)
 
 stage2_skus <- as.integer(ceiling(current_skus * 2.5))
@@ -517,7 +517,7 @@ p12_base <- function(use_interactive) {
          x = NULL, y = "Projected annual chargebacks",
          caption = paste0(
            "Baseline: $", formatC(round(current_cb_per_year), big.mark = ",", format = "d"),
-           "/yr at ", current_skus, " SKUs × 3 retailers (annualized from 18mo).",
+           "/yr at ", current_skus, " SKUs × 3 retailers (annualized from 36mo).",
            " Real growth typically degrades defect rate — this is the floor.")) +
     theme_cinderhaven()
 }
