@@ -225,7 +225,7 @@ The `r ds(annual_cb)` in annual chargebacks is what dirty data costs when nobody
 
 Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_36mo)` in chargebacks from settlement payments over the past 36 months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
 
-The chargebacks arrive under five headings: label and barcode fines, pricing errors, damaged goods, late deliveries, and short shipments. Late deliveries, short shipments, and damaged goods are logistics problems. Label and barcode fines and pricing errors are data problems: charges that trace to wrong or incomplete product records. Those data-related categories account for `r data_defect_pct`% of the chargeback bill.
+The chargebacks arrive under five headings: label and barcode fines, pricing errors, damaged goods, late deliveries, and short shipments. Chargebacks split into two buckets. Data defects — invalid barcodes, pricing errors — account for 41% of the bill. Fulfillment operations — short shipments, late deliveries, receiving discrepancies, damaged goods — account for the other 59%. This audit scopes to the data side. Not because the logistics side is smaller. Because the data side is bounded, clerical work — check digit corrections measured in hours per SKU, with a quantifiable effort and a predictable outcome. Fixing a short-ship rate is an operational overhaul with neither. Both matter. This report addresses the one where the scope, effort, and return are known before the work starts.
 
 ![Chargeback dollars by reason.](`r chart("14_chargeback_by_reason")`){fig-alt="Horizontal bar chart breaking down chargeback dollars by reason, with data-defect reasons accounting for the majority of dollars."}
 
@@ -245,7 +245,7 @@ cat(kable(top5, format = if (knitr::is_html_output()) "pipe" else "pipe",
 
 ![Chargeback Pareto: a small number of SKUs drive most of the cost.](`r chart("01_chargeback_pareto")`){fig-alt="Pareto curve showing a small number of SKUs account for the majority of chargeback dollars."}
 
-Every one of these carries an invalid UPC check digit. Most also carry an invalid GTIN-14. These are the same barcode defects present across the entire catalog, but concentrated at the top of the chargeback ranking because these SKUs ship to more retailers at higher volume. The defects are present in the product master right now. Not last year. Not at the time of the last audit. Right now.
+Every one of these carries an invalid UPC check digit. That is not the only reason they generate chargebacks — fulfillment-driven penalties also contribute — but it is the reason with a known fix and a fixed effort. The barcode defect is the portion of each SKU's chargeback cost that disappears with a data correction rather than an operational change.
 
 ## What a wrong barcode costs when nobody is counting
 
@@ -265,9 +265,9 @@ Fixing a check digit takes ten minutes. Open the product master. Recalculate the
 
 The barcode defect is not concentrated in a few problem SKUs. It is the catalog's default state. `r n_upc_fail` of `r n_skus` SKUs carry invalid UPC check digits. `r n_gtin_fail` carry invalid GTIN-14s. No SKU in the catalog has both a valid GTIN and a valid UPC. Every SKU that ships to a retailer with an invalid barcode is a candidate for a compliance penalty every time the barcode is scanned, validated, or reconciled against a data feed.
 
-The chargebacks are spread across `r n_retailers` retailers and five reason categories. "Label / barcode fine" is the largest single category, but "Pricing error," "Damaged goods," "Late delivery," and "Short shipment" also contribute. The data-related reasons (label/barcode and pricing) account for `r data_defect_pct`% of the total bill. The remainder is logistics.
+The chargebacks are spread across `r n_retailers` retailers and five reason categories. "Label / barcode fine" is the largest single category, but "Pricing error," "Damaged goods," "Late delivery," and "Short shipment" also contribute. The data-related reasons (label/barcode and pricing) account for `r data_defect_pct`% of the total bill. The remaining chargebacks trace to fulfillment operations and are outside the scope of this data audit.
 
-The uniformity of the defect explains two things. First, why the chargeback spread across SKUs is relatively narrow: the top chargeback SKU (`r ds(top_cb$chargeback_total)`) is only about three times the bottom. Every SKU has the same type of defect, so the variation comes from shipping volume and retailer mix, not from defect severity. Second, why the fix is so concentrated: correct the barcodes and the entire data-defect chargeback bill disappears. There is no long tail of miscellaneous problems to chase.
+The uniformity of the defect explains two things. First, why the chargeback spread across SKUs is relatively narrow: the top chargeback SKU (`r ds(top_cb$chargeback_total)`) is only about three times the bottom. Every SKU has the same type of defect, so the variation comes from shipping volume and retailer mix, not from defect severity. Second, why the fix is so concentrated: Correct the barcodes and the data-defect chargebacks stop. No long tail of miscellaneous data problems to chase — the defect is narrow and near-universal, so the fix is one category of work applied across the catalog. The logistics chargebacks continue until the fulfillment operations that cause them change. This audit does not pretend to address both. It addresses the portion where the effort is quantifiable, the timeline is bounded, and the return is measurable before the work begins.
 
 ## The slots you don't get back
 
@@ -286,7 +286,7 @@ deauth_ex_cb_total <- deauth_ex$chargeback_total
 
 `r deauth_ex$sku`, `r deauth_ex$product_name`, was authorized across `r deauth_ex$auth_count` stores. It carries `r deauth_ex_defects` data defects and has been deauthorized at `r deauth_ex$deauth_count` locations. Those slots are gone. Winning them back requires a new category review, which happens once a year at Walmart, and a pitch that explains why the product that was pulled for data defects won't be pulled again.
 
-`r deauth_ex$deauth_count` stores out of `r deauth_ex$auth_count` sounds minor. It isn't. It's the signal that the retailer's system has flagged this SKU. The barcode defects that triggered the deauthorizations are identical to the defects still present at the other `r deauth_ex_remaining` stores. `r ds(deauth_ex_cb_total)` in chargebacks over 36 months with no sign of stopping. The deauthorized stores were not the punishment. They were the warning shot. The unfixed barcodes are the loaded gun still pointed at the other `r deauth_ex_remaining`.
+Deauthorizations trace to multiple causes. Some are data-driven — a retailer's automated system flagging an invalid barcode. Others are fulfillment-driven — repeated short shipments or late deliveries crossing a compliance threshold. This audit identifies the data-driven deauthorization risk. A SKU carrying invalid barcodes at a retailer that runs automated validation is a deauthorization candidate every time the system checks. Fixing the barcode removes that specific trigger. It does not remove fulfillment-driven risk, which requires operational changes.
 
 ![Deauthorization rate by data quality tier.](`r chart("11_deauth_rate_by_quality_tier")`){fig-alt="Bar chart showing deauthorization rates across the catalog."}
 
@@ -470,7 +470,7 @@ cat(kable(margin_tbl, format = "pipe", align = c("l", "r", "r", "r", "r")), sep 
 
 This table reorders the CEO's priorities. Not away from Walmart. Walmart generates `r ds(wm_pnl$net_contribution)` in net contribution. You don't walk away from that. But you stop assuming that Walmart volume equals Walmart profitability when deciding where to invest ops resources, which retailer gets the first call when there's a data issue, and which expansion opportunity gets prioritized.
 
-The chargeback column reveals something else. The rates are small at every retailer. But chargebacks are the only margin lever entirely within Cinderhaven's control. Trade spend is negotiated once a year. Chargebacks are generated by data defects that Cinderhaven can fix any Tuesday afternoon. Every dollar recovered drops straight to net contribution with no negotiation, no pitch deck, no relationship risk. A cleanup that focuses exclusively on Walmart because Walmart is the biggest name leaves meaningful chargebacks untouched at the other retailers.
+The chargeback column reveals something else. The rates are small at every retailer. Data-linked chargebacks are the margin lever with the lowest cost to act on. Trade spend is negotiated once a year. Logistics chargebacks require operational changes. Barcode corrections require a product master update.
 
 ## One product line already has better outcomes. The reason isn't what you'd guess.
 
@@ -529,7 +529,7 @@ barcode_pct_of_annual <- round(100 * barcode_annual / annual_cb)
 
 Each SKU takes about ten minutes to fix. The algorithm is deterministic. The input is already in the record. The fix is arithmetic, not judgment.
 
-"Label / barcode fine" chargebacks totaled `r ds(barcode_cb_36mo)` over 36 months, annualized to `r ds(barcode_annual)` a year. Combined with pricing errors (which also trace to data fields), data-related chargebacks account for `r data_defect_pct`% of the total bill. The remaining `r ds(non_data_annual)` a year comes from late deliveries, short shipments, and damaged goods — logistics issues outside the scope of a data audit.
+"Label / barcode fine" chargebacks totaled `r ds(barcode_cb_36mo)` over 36 months, annualized to `r ds(barcode_annual)` a year. Combined with pricing errors (which also trace to data fields), data-related chargebacks account for `r data_defect_pct`% of the total bill. The remaining chargebacks trace to fulfillment operations and are outside the scope of this data audit.
 
 ```{r fix-action-table}
 #| results: asis
@@ -763,6 +763,8 @@ Phase three takes two days. Deploy the Monday Morning Dashboard. Configure the a
 
 The three phases build on each other. Phase one produces immediate financial return and unlocks expansion. Phase two prevents recurrence. Phase three makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the barcodes but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected.
 
+These three phases address the data-attributable chargebacks — $93,000 a year. The remaining $138,000 traces to fulfillment operations: short shipments, late deliveries, and receiving discrepancies. Those require different interventions — carrier management, demand planning, warehouse process changes — and are outside the scope of a data audit. The companion fulfillment analysis sizes that exposure separately.
+
 The total: `r round(total_fix_hours)` hours of data entry addresses the entire barcode cleanup. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is `r ds(annual_cb)` a year in chargebacks. At the growth target, it exceeds `r ds(stage3_cb)`. The cost of fixing it is one week.
 
 ::: {.callout-tip appearance="minimal" icon=false}
@@ -824,6 +826,8 @@ The "mean fields short" column matters for planning. Fixing barcode check digits
 ## Chargeback trend analysis
 
 Monthly chargeback dollars have held roughly flat at about $19,000 per month over the 36-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
+
+The flat trend applies to data-driven chargebacks specifically — static defects produce static costs. Fulfillment-driven chargebacks show seasonal variation, particularly in Q4 when fill rates dip across all retailers.
 
 ![Monthly chargeback dollars over the 36-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $19,000 per month."}
 
@@ -890,7 +894,7 @@ Promotional effectiveness. The promotions data is reported as context. A full pr
 
 Demand forecasting. Scan data is used to calculate velocity and identify trends. It is not used to project demand. Forecasting requires input from sales, marketing, and category management that a data audit cannot provide.
 
-Supply chain operations. Short shipments, late deliveries, and damaged goods account for `r 100 - data_defect_pct`% of chargebacks. These are flagged but not analyzed because they are logistics issues, not data issues.
+Supply chain operations. The remaining chargebacks trace to fulfillment operations and are outside the scope of this data audit.
 
 Competitor analysis. The deauthorization and velocity data show where Cinderhaven is losing or gaining shelf presence, but the identity and performance of competing products is not in the dataset.
 :::
