@@ -220,3 +220,13 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 **State:** Pipeline reads marts exclusively. dim_products is the sole product-master definition. Commits: 238aaa0 (refactor), a04ab67 (cache), e79e6e5 (log). Not pushed.
 
 **Next:** Retailer Deduction Recovery refactor — repoint from int_all_*/stg_retailer_* to fct_*/dim_* marts. Some staging-only tables need new mart models first. Same baseline-diff verification pattern.
+
+## 2026-06-13
+
+**Started from:** Phase 5 sweep deferred fixes — stale SQLite + Chart 12 caption.
+
+**Did:** Refreshed SQLite from relocked platform Postgres (verified row counts). Fixed Chart 12 caption "3 retailers" → "6 retailers" (caption text only). Re-ran full R pipeline — new figures: $693,209 (36mo) / $231,070 (annual). Investigated Path A chargebacks: 281 records, $93,110/yr is the true data-attributable figure. PDHA classifier uses reason-string matching, not triggered_by_field.
+
+**State:** Pipeline output current with relocked platform data. Committed and pushed (523cd4e). Report's $231K headline is all chargebacks, not the data-attributable subset.
+
+**Next:** To lead with data-attributable cost ($93K/yr), pipeline needs `triggered_by_field` from `raw.retailer_chargebacks`. Either add to `fct_chargebacks` mart or have PDHA export pull from raw. Update 8 website surfaces that reference $458K.
