@@ -28,7 +28,7 @@ PGPORT = os.environ.get("PGPORT", "5434")
 PGPASS = os.environ.get("POSTGRES_PASSWORD", "")
 DB_URL = os.environ.get(
     "DATABASE_URL",
-    f"postgresql://postgres:REDACTED@localhost:{PGPORT}/cinderhaven",
+    f"postgresql://postgres:REDACTED@127.0.0.1:{PGPORT}/cinderhaven",
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -86,7 +86,8 @@ EXPORTS = {
             rc.chargeback_id, rc.sku,
             r.name AS retailer,
             rc.amount, rc.reason,
-            TO_CHAR(rc.month, 'YYYY-MM') AS month
+            TO_CHAR(rc.month, 'YYYY-MM') AS month,
+            rc.triggered_by_field
         FROM raw.retailer_chargebacks rc
         JOIN raw.retailers r ON rc.retailer_id = r.retailer_id
     """,

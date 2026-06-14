@@ -609,12 +609,13 @@ cat("\n[14] Chargeback dollars by reason\n")
 
 c14 <- chargebacks_enriched |>
   group_by(reason) |>
-  summarise(amt = sum(amount), n = n(), .groups = "drop") |>
+  summarise(amt = sum(amount), n = n(),
+            data_amt = sum(amount[!is.na(triggered_by_field)]),
+            .groups = "drop") |>
   arrange(desc(amt)) |>
   mutate(pct = amt / sum(amt),
          reason = factor(reason, levels = rev(reason)),
-         is_data_defect = reason %in% c("Label / barcode fine", "Pricing error",
-                                         "Damaged goods"),
+         is_data_defect = data_amt > 0,
          tooltip = paste0(
            "<b>", reason, "</b><br>",
            dollar_short(amt), " (", percent(pct, accuracy = 0.1), ")<br>",
