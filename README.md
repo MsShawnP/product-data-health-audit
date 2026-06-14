@@ -16,7 +16,7 @@ GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D ba
 
 One pipeline generates five artifacts:
 
-1. **Audit report** (Quarto HTML + PDF) — 8-page case study finding ~$461,000/year in chargeback cost linked to product data defects, with a triage list that ranks every SKU by fix priority
+1. **Audit report** (Quarto HTML + PDF) — 8-page case study finding $93,000 a year in retailer chargebacks traced directly to product data defects, with a triage list that ranks every SKU by fix priority
 2. **Executive tearsheet** (2-page PDF) — board-level summary with three headline numbers and a 14-day turnaround plan
 3. **Monday Morning Dashboard** (standalone HTML) — the velocity report, retailer P&L, and triage tracker a CEO currently builds by hand in Excel, rebuilt as an interactive tool
 4. **Excel workbook** (8 tabs, .xlsx) — the CEO's working copy with data dictionary and broker intake checklist
