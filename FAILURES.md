@@ -81,6 +81,13 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix:** Changed to `SET search_path TO public_marts, public`. When connecting to a dbt-managed database, always check the actual schema names in Postgres (or look at the dbt run output which prints them).
 - **Tags:** dbt, postgres, search_path, schema, naming
 
+### 2026-06-13 — Stale raw_tables.rds caused two pipeline runs with wrong data
+
+- **What happened:** Refreshed SQLite from platform Postgres, then ran `run_all.R`. Pipeline skipped `01_load_raw.R` because `raw_tables.rds` already existed (from a prior session). Two full pipeline runs produced stale output before the issue was identified.
+- **Why it failed:** `run_all.R` skip logic (lines 44-49) checks for `raw_tables.rds` and skips the Postgres/RDS load step when `DATABASE_URL` is unset. The cached file from May 22 was still present, so the freshly-exported SQLite was never read. This was already documented in HANDOFF.md but not checked before running.
+- **Fix:** Deleted `output/frames/raw_tables.rds` manually, then re-ran. Third run produced correct figures ($693,209 vs stale $686,534). When refreshing upstream data, always delete `raw_tables.rds` before running the pipeline.
+- **Tags:** pipeline, caching, raw_tables.rds, run_all, stale-data, skip-logic
+
 ### 2026-05-22 — Edit tool string-not-found after sequential edits to large file
 
 - **What happened:** After several large edits to report.qmd in sequence, an Edit call failed because the target `old_string` no longer matched the file content. Prior edits had changed surrounding lines, shifting the context.
