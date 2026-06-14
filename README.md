@@ -56,7 +56,7 @@ The collaboration pattern: Claude Chat drafted prose in conversation, the user r
 
 - **R** — data prep, analytical frames, charts, workbook generation
 - **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts
-- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 690 chargebacks; optional for reproduction — SQLite snapshot included)
+- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 5,885 chargebacks; optional for reproduction — SQLite snapshot included)
 - **ggplot2** — all charts, custom theme with project color palette
 - **plotly** — interactive chart versions in HTML report
 - **reactable** — interactive tables in report and dashboard
