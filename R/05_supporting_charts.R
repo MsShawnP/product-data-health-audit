@@ -517,7 +517,7 @@ p12_base <- function(use_interactive) {
          x = NULL, y = "Projected annual chargebacks",
          caption = paste0(
            "Baseline: $", formatC(round(current_cb_per_year), big.mark = ",", format = "d"),
-           "/yr at ", current_skus, " SKUs × 3 retailers (annualized from 36mo).",
+           "/yr at ", current_skus, " SKUs × 6 retailers (annualized from 36mo).",
            " Real growth typically degrades defect rate — this is the floor.")) +
     theme_cinderhaven()
 }
