@@ -108,7 +108,7 @@ p1 <- ggplot(cb_p, aes(rank, cum_pct)) +
   scale_x_continuous(breaks = pretty_breaks(),
                      expand = expansion(mult = c(0.01, 0.02))) +
 
-  labs(title    = sprintf("%d SKUs drive half your chargeback bill", n50),
+  labs(title    = sprintf("%d SKUs drive half the total chargeback bill", n50),
        subtitle = "Cumulative share of chargeback dollars by SKU rank, 18 months",
        x        = "SKUs ranked from highest chargeback total to lowest",
        y        = NULL,
@@ -383,7 +383,7 @@ p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   scale_x_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                      expand = expansion(mult = c(0, 0.65))) +
 
-  labs(title    = wrap_title(sprintf("%.0f hours of barcode fixes eliminate half your chargeback bill",
+  labs(title    = wrap_title(sprintf("%.0f hours of barcode fixes address the data-attributable chargebacks",
                           barcode_hours)),
        subtitle = "Annualized chargeback dollars saved per hour of effort, by fix action",
        x        = "Saved per hour of effort",

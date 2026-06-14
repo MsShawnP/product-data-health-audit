@@ -661,33 +661,35 @@ save_pair(p14_base(FALSE), to_girafe(p14_base(TRUE), w_in = 9, h_in = 4.5),
 cat("\n[15] Monthly chargeback trend\n")
 
 c15 <- chargebacks_enriched |>
-  mutate(month = floor_date(month_date, "month")) |>
-  group_by(month) |>
+  mutate(month    = floor_date(month_date, "month"),
+         category = ifelse(!is.na(triggered_by_field),
+                           "Data defects", "Fulfillment")) |>
+  group_by(month, category) |>
   summarise(amt = sum(amount), n = n(), .groups = "drop") |>
   mutate(tooltip = paste0(
-    "<b>", format(month, "%b %Y"), "</b><br>",
+    "<b>", format(month, "%b %Y"), " — ", category, "</b><br>",
     "Chargebacks: ", dollar_short(amt), "<br>",
     "Events: ", n))
 
+c15_colors <- c("Data defects" = LL_RED, "Fulfillment" = LL_CHICAGO_LIGHT)
+
 p15_base <- function(use_interactive) {
-  p <- ggplot(c15, aes(x = month, y = amt))
-  # Direct red line — no area fill. Trend line in grey, secondary.
-  p <- p + geom_line(color = cinderhaven_palette$red, linewidth = 1.0)
+  p <- ggplot(c15, aes(x = month, y = amt, color = category))
+  p <- p + geom_line(linewidth = 1.0)
   if (use_interactive) {
     p <- p + geom_point_interactive(aes(tooltip = tooltip,
-                                        data_id = format(month, "%Y-%m")),
-                                    color = cinderhaven_palette$red, size = 2.4)
+                                        data_id = paste(format(month, "%Y-%m"), category)),
+                                    size = 2.4)
   } else {
-    p <- p + geom_point(color = cinderhaven_palette$red, size = 1.8)
+    p <- p + geom_point(size = 1.8)
   }
   p +
-    geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
-                color = cinderhaven_palette$text_muted, linetype = "dashed", linewidth = 0.6) +
+    scale_color_manual(values = c15_colors) +
     scale_x_date(date_breaks = "3 months", date_labels = "%b\n%Y") +
     scale_y_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                        limits = c(0, NA), expand = expansion(mult = c(0, 0.05))) +
-    labs(title    = wrap_title("Monthly chargebacks have held flat at about $5k/month"),
-         subtitle = "Eighteen months of chargeback dollars; trend line is essentially flat",
+    labs(title    = wrap_title("Data-defect chargebacks hold flat; fulfillment chargebacks vary with seasonal fill rates"),
+         subtitle = "Monthly chargeback dollars split by data defects vs. fulfillment operations",
          x = NULL, y = "Chargeback $",
          caption = "Source: chargebacks_enriched") +
     theme_cinderhaven()
@@ -708,37 +710,41 @@ scan_monthly <- raw$scan_data |>
 c16 <- c15 |>
   rename(cb_dollars = amt) |>
   inner_join(scan_monthly, by = "month") |>
-  arrange(month) |>
-  # exclude any partial last/first month with <4 weeks for fairness
-  filter(scan_dollars > 1e6) |>
-  mutate(cb_pct_of_scan = cb_dollars / scan_dollars)
+  arrange(month, category) |>
+  filter(scan_dollars > 1e6)
 
-# Two-axis trick — rescale chargebacks to share scan dollars' axis range.
-scale_factor <- max(c16$scan_dollars) / max(c16$cb_dollars)
+c16_total <- c16 |>
+  group_by(month) |>
+  summarise(cb_total = sum(cb_dollars), scan_dollars = first(scan_dollars),
+            .groups = "drop")
+
+scale_factor <- max(c16_total$scan_dollars) / max(c16_total$cb_total)
 
 c16$tooltip <- paste0(
-  "<b>", format(c16$month, "%b %Y"), "</b><br>",
+  "<b>", format(c16$month, "%b %Y"), " — ", c16$category, "</b><br>",
   "Scan revenue: ", dollar_short(c16$scan_dollars), "<br>",
-  "Chargebacks: ", dollar_short(c16$cb_dollars), "<br>",
-  "Cb as % of scan: ", percent(c16$cb_pct_of_scan, accuracy = 0.01))
+  "Chargebacks: ", dollar_short(c16$cb_dollars))
+
+c16_scan <- c16 |> distinct(month, scan_dollars)
 
 p16_base <- function(use_interactive) {
   p <- ggplot(c16, aes(x = month))
-  # Scan revenue is the comparison baseline — light grey bars. Red line
-  # carries the message.
-  p <- p + geom_col(aes(y = scan_dollars), fill = cinderhaven_palette$recede, width = 28)
-  p <- p + geom_line(aes(y = cb_dollars * scale_factor),
-                     color = cinderhaven_palette$red, linewidth = 1)
+  p <- p + geom_col(data = c16_scan, aes(y = scan_dollars),
+                    fill = cinderhaven_palette$recede, width = 28)
+  p <- p + geom_line(aes(y = cb_dollars * scale_factor, color = category),
+                     linewidth = 1)
   if (use_interactive) {
     p <- p + geom_point_interactive(
-      aes(y = cb_dollars * scale_factor, tooltip = tooltip,
-          data_id = format(month, "%Y-%m")),
-      color = cinderhaven_palette$red, size = 2.6)
+      aes(y = cb_dollars * scale_factor, color = category,
+          tooltip = tooltip,
+          data_id = paste(format(month, "%Y-%m"), category)),
+      size = 2.6)
   } else {
-    p <- p + geom_point(aes(y = cb_dollars * scale_factor),
-                        color = cinderhaven_palette$red, size = 1.8)
+    p <- p + geom_point(aes(y = cb_dollars * scale_factor, color = category),
+                        size = 1.8)
   }
   p +
+    scale_color_manual(values = c15_colors) +
     scale_x_date(date_breaks = "3 months", date_labels = "%b\n%Y") +
     scale_y_continuous(
       name = "Monthly scan revenue",
@@ -747,12 +753,12 @@ p16_base <- function(use_interactive) {
                           name = "Monthly chargebacks",
                           labels = label_dollar(scale = 1e-3, suffix = "k"))) +
     labs(title    = wrap_title("Chargebacks falling while scan revenue holds"),
-         subtitle = "Grey bars = monthly scan revenue. Red line = monthly chargebacks (right axis).",
+         subtitle = "Grey bars = monthly scan revenue. Lines = data-defect vs. fulfillment chargebacks (right axis).",
          x = NULL,
          caption = "Source: scan_data + chargebacks_enriched. Months with <$1M in scans excluded.") +
     theme_cinderhaven() +
-    theme(axis.text.y.right  = element_text(color = cinderhaven_palette$red),
-          axis.title.y.right = element_text(color = cinderhaven_palette$red),
+    theme(axis.text.y.right  = element_text(color = LL_TEXT_SEC),
+          axis.title.y.right = element_text(color = LL_TEXT_SEC),
           axis.text.y.left   = element_text(color = cinderhaven_palette$text_muted),
           axis.title.y.left  = element_text(color = cinderhaven_palette$text_muted))
 }
