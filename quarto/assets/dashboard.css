@@ -23,8 +23,12 @@ html, body {
 
 /* ── Title block: canvas background, editorial ───────────────────── */
 
-#title-block-header {
+#title-block-header,
+.quarto-title-block,
+.quarto-title-block.default,
+header#title-block-header {
   background: #f5f3ee !important;
+  background-color: #f5f3ee !important;
   color: #0d0d0d !important;
   margin: 0 -2rem 1.5rem -2rem !important;
   padding: 1.8rem 2.5rem 1.4rem !important;
@@ -112,7 +116,8 @@ blockquote strong {
 
 /* ── Reactable tables: card wrapper + dark header ─────────────────── */
 
-.reactable {
+.reactable,
+.Reactable {
   width: fit-content !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -122,9 +127,13 @@ blockquote strong {
   overflow: hidden !important;
 }
 
-/* Header row */
+/* Header row — target both .reactable and .Reactable wrappers */
 .reactable .rt-thead .rt-th,
-.reactable .rt-thead .rt-td {
+.reactable .rt-thead .rt-td,
+.Reactable .rt-thead .rt-th,
+.Reactable .rt-thead .rt-td,
+.rt-thead .rt-th,
+.rt-thead .rt-td {
   background: #1f2e7a !important;
   color: #fff !important;
   font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
@@ -138,17 +147,18 @@ blockquote strong {
 }
 
 /* Header sort arrows */
-.reactable .rt-thead .rt-th .rt-sort-header {
+.rt-thead .rt-th .rt-sort-header,
+.rt-sort-header {
   color: #fff !important;
 }
 
-.reactable .rt-thead .rt-th[aria-sort] .rt-sort-header::after {
+.rt-thead .rt-th[aria-sort] .rt-sort-header::after {
   color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* Filter inputs in header */
-.reactable .rt-thead .rt-th input,
-.reactable .rt-thead .rt-th select {
+.rt-thead .rt-th input,
+.rt-thead .rt-th select {
   background: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
@@ -157,17 +167,19 @@ blockquote strong {
   padding: 2px 4px !important;
 }
 
-.reactable .rt-thead .rt-th input::placeholder {
+.rt-thead .rt-th input::placeholder {
   color: rgba(255, 255, 255, 0.4) !important;
 }
 
-.reactable .rt-thead .rt-th select option {
+.rt-thead .rt-th select option {
   background: #fff !important;
   color: #333333 !important;
 }
 
 /* Body rows */
-.reactable .rt-tbody .rt-td {
+.reactable .rt-tbody .rt-td,
+.Reactable .rt-tbody .rt-td,
+.rt-tbody .rt-td {
   padding: 5px 10px !important;
   font-size: 0.85rem !important;
   border-bottom: 1px solid #e0e0e0 !important;
@@ -180,24 +192,24 @@ blockquote strong {
 }
 
 /* Striped rows */
-.reactable .rt-tr-striped {
+.rt-tr-striped {
   background: #f5f3ee !important;
 }
 
 /* Hover */
-.reactable .rt-tbody .rt-tr:hover {
+.rt-tbody .rt-tr:hover {
   background: #e8eaf4 !important;
 }
 
 /* Pagination */
-.reactable .rt-pagination {
+.rt-pagination {
   padding: 6px 10px !important;
   font-size: 0.8rem !important;
   border-top: 1px solid #e0e0e0 !important;
 }
 
 /* Search box */
-.reactable .rt-search {
+.rt-search {
   border: 1px solid #d9d9d9 !important;
   border-radius: 2px !important;
   padding: 4px 8px !important;

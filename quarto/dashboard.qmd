@@ -47,16 +47,6 @@ dollar_cell <- function(value) {
   else paste0("$", formatC(round(value), big.mark = ",", format = "d"))
 }
 
-ramp_red <- function(x) {
-  if (is.na(x)) return(LL_CANVAS)
-  grDevices::colorRampPalette(c(LL_CANVAS, cinderhaven_palette$red))(101)[
-    pmin(101, pmax(1, round(x * 100) + 1))]
-}
-ramp_teal <- function(x) {
-  if (is.na(x)) return(LL_CANVAS)
-  grDevices::colorRampPalette(c(LL_CANVAS, cinderhaven_palette$teal))(101)[
-    pmin(101, pmax(1, round(x * 100) + 1))]
-}
 
 # ---- velocity (canonical frame from R/02_build_frames.R) ----------------
 
@@ -170,16 +160,6 @@ reactable(
           lapply(levels(values), tags$option),
           style = "width:100%; height:24px"
         )
-      },
-      style = function(value) {
-        v <- as.character(value)
-        col <- switch(v,
-          "Worst 25%"     = cinderhaven_palette$red,
-          "Below average" = cinderhaven_palette$coral,
-          "Above average" = cinderhaven_palette$blue_muted,
-          "Best 25%"      = cinderhaven_palette$teal,
-          NULL)
-        if (is.null(col)) NULL else list(color = col, fontWeight = "600")
       }
     ),
     Stores   = colDef(width = 80, align = "right"),
@@ -243,6 +223,7 @@ reactable(
 ```{r retailer-waterfall}
 #| fig-width: 12
 #| fig-height: 7
+#| fig-format: svg
 
 contracted <- c("Walmart", "Whole Foods", "Costco")
 
@@ -362,8 +343,8 @@ reactable(
 >
 > **What to do with it:** Use the composite column to set the quarterly
 > cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
-> with any SKU where savings per hour exceeds $100. There are nine of them.
-> They take 90 minutes combined.
+> with the six quick-win SKUs (20 minutes each). They take two hours
+> combined and each recovers over $20,000 per fix-hour.
 
 ```{r triage-tracker}
 # Triage columns (composite priority, fix hours, savings/hour, still-broken)
