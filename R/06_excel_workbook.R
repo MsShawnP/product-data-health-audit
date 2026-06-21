@@ -141,7 +141,7 @@ rev_by_sku_ret <- sku_retailer_rev |>
 cat("[6/8] Triage List\n")
 
 triage <- sku_master_full |>
-  arrange(desc(fix_priority_score)) |>
+  arrange(desc(chargeback_total > 0), desc(fix_priority_score)) |>
   transmute(
     rank = row_number(),
     sku, product_name, product_line,

@@ -230,3 +230,41 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 **State:** Pipeline output current with relocked platform data. Committed and pushed (523cd4e). Report's $231K headline is all chargebacks, not the data-attributable subset.
 
 **Next:** To lead with data-attributable cost ($93K/yr), pipeline needs `triggered_by_field` from `raw.retailer_chargebacks`. Either add to `fct_chargebacks` mart or have PDHA export pull from raw. Update 8 website surfaces that reference $458K.
+
+## 2026-06-21 — 16-issue audit remediation (session 1)
+
+**Started from:** Full audit of 9 artifacts found 16 issues. Decision locked: Option B for CHP-AS-009 (rewrite narrative, do NOT change Postgres SSOT).
+
+**Did (code fixes):**
+1. **Revenue-at-risk table (Issue 2):** `rev_at_risk(retailer)` was called vectorized inside `transmute` — received all 6 retailer names, recycled `==` produced same $18.9M for every row. Fix: wrapped in `sapply()` in `report.qmd:211`.
+2. **Chart 06 NA bar (Issue 3):** Factor levels restricted to `c("Walmart","Costco","Whole Foods")` — Kroger, Sprouts, Regional Group became NA. Fix: removed `intersect()` restriction, added all 6 retailers to `scale_fill_manual` in `R/05_supporting_charts.R:170`.
+3. **Triage sort (Issue 12):** `fix_priority_score` put $0-chargeback SKUs (CHP-PS-006, CHP-DG-004) at #1-#2. Fix: sort by `desc(chargeback_total > 0), desc(fix_priority_score)` in 4 files (report, tearsheet, dashboard, Excel workbook).
+4. **Tearsheet cross-refs (Issue 12):** `::: {layout-ncol=3}` caused "(a)" sub-figure labels. Fix: replaced with LaTeX `\begin{minipage}` layout in `tearsheet.qmd`.
+5. **Dead calculator link (Issue 10):** Updated `shinyapps.io` → `calculator.lailarallc.com` in `index.html` and `report.qmd:771`.
+6. **Landing page figures (Issue 11):** "$25M" → "$34M", "52hrs" → "40hrs". Added Excel workbook download card (Issue 15).
+7. **README:** "$25M" → "$34M".
+8. **Hardcoded barcode claim (Issue 8):** "Not a single SKU has both a valid GTIN and a valid UPC" was hardcoded and false (38/50 have both valid). Replaced with dynamic inline R using `n_both_barcode_valid`.
+9. **SVGs confirmed true vector (Issue 5):** False alarm — svglite output, no embedded PNGs.
+
+**Key findings during diagnosis:**
+- **Current data post-reseed:** 12/50 GTIN failures, 12/50 UPC failures (same 12 SKUs, always both invalid). 38/50 pass both. Retailer pass rates: Costco 76%, Kroger/WF 50%, others 46%. No retailer at 0%.
+- **40-hour fix discrepancy:** `ows_complete` is NA for all 50 SKUs → formula adds 30 min/SKU = 25 phantom hours. Plus 19 SKUs with `missing_case_dims = TRUE` (30 min each). Barcode-only fix is ~4 hours. Report narrative claims "Case dimensions, brand owner, country of origin, and OneWorldSync registrations are all already complete" — contradicted by both the formula and the data.
+- **Top revenue SKU:** CHP-AS-009 has perfect data (DQ 100, both barcodes valid, $0 chargebacks) but `est_fix_hours = 0.5` due to OWS NA padding.
+- **Top chargeback candidates for showcase rewrite:** CHP-SC-006 ($80K cb, $607K rev), CHP-SC-004 ($74K cb, $641K rev), CHP-DG-007 ($56K cb, $896K rev) — all have invalid GTIN+UPC.
+
+**Decisions needed:**
+1. **OWS formula:** Should `is.na(ows_complete)` count as 30 min of fix work? If no → total_fix_hours drops from ~40 to ~15. If yes → the narrative and fix table need to show OWS as a defect type.
+2. **Case dimensions:** 19/50 SKUs have `missing_case_dims = TRUE`. Is this real or a reseed artifact? If real → narrative needs to stop claiming "case dimensions are complete."
+3. **Showcase SKU for Claude Chat:** Which SKU replaces CHP-AS-009? Best candidates are CHP-SC-006 (top cb), CHP-DG-007 (high rev + high cb), or CHP-SC-004.
+
+**State:** Changes in working tree, not committed. Pipeline has NOT been re-run — all code fixes need `Rscript R/run_all.R` to take effect.
+
+**Next:**
+1. Decide on OWS/case-dims questions above
+2. Re-run R pipeline to regenerate all outputs
+3. Provide Claude Chat with updated figures + chosen showcase SKU
+4. Claude Chat rewrites narrative sections
+5. Integrate new prose, re-render, deploy
+6. Apply Lailara design system to HTML report/dashboard (Issue 9)
+7. Verify companion PDFs (Issue 16)
+8. Confirm `calculator.lailarallc.com` is live

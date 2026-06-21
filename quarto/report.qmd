@@ -196,7 +196,7 @@ n_both_barcode_valid <- sum(smf$gtin_valid & smf$upc_valid, na.rm = TRUE)
 
 # Part 1: The Money
 
-By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of Cinderhaven's `r n_skus` SKUs carry GTIN-14s that do not pass. `r n_upc_fail` carry invalid UPC check digits. Not a single SKU has both a valid GTIN and a valid UPC. Those SKUs cannot participate in the transition until someone corrects the digits.
+By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of Cinderhaven's `r n_skus` SKUs carry GTIN-14s that do not pass. `r n_upc_fail` carry invalid UPC check digits. `r if (n_both_barcode_valid == 0) "Not a single SKU has both a valid GTIN and a valid UPC." else paste0(n_skus - n_both_barcode_valid, " SKUs carry at least one invalid barcode check digit.")` Those SKUs cannot participate in the transition until someone corrects the digits.
 
 Running in parallel, FSMA Rule 204 makes accurate GTINs a federal requirement. FDA food traceability mandates them as the product identifier backbone for tracking food through the supply chain. The barcode that used to be a scanning convenience is becoming the regulatory infrastructure for food safety. This is not a retailer preference. It is law.
 
@@ -208,7 +208,7 @@ rr_tbl <- rr_stats |>
   arrange(desc(n_required)) |>
   transmute(Retailer = retailer,
             `SKUs failing` = paste(n_fail, "of", n_fail + n_pass),
-            `Revenue at risk` = ds_short(rev_at_risk(retailer)),
+            `Revenue at risk` = sapply(retailer, function(r) ds_short(rev_at_risk(r))),
             `Pass rate` = paste0(pass_rate, "%"))
 cat(kable(rr_tbl, format = "pipe", align = c("l", "r", "r", "r")), sep = "\n")
 ```
@@ -616,7 +616,7 @@ smf <- readRDS("../output/frames/sku_master_full.rds")
 # sku_master_full (built in R/02_build_frames.R per the rebuild plan:
 # composite is 40% revenue rank + 30% quality rank + 30% chargeback rank).
 triage <- smf |>
-  arrange(desc(fix_priority_score)) |>
+  arrange(desc(chargeback_total > 0), desc(fix_priority_score)) |>
   transmute(
     SKU              = sku,
     Product          = product_name,
@@ -768,7 +768,7 @@ These three phases address the data-attributable chargebacks — $93,000 a year.
 The total: `r round(total_fix_hours)` hours of data entry addresses the entire barcode cleanup. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is `r ds(annual_cb)` a year in chargebacks. At the growth target, it exceeds `r ds(stage3_cb)`. The cost of fixing it is one week.
 
 ::: {.callout-tip appearance="minimal" icon=false}
-*The same five inputs that produced the `r ds(annual_cb)` figure for Cinderhaven — SKU count, retailer count, annual chargebacks, data quality pass rate, and revenue per SKU — work for any specialty food brand. Plug in your own numbers and see your own annual cost, scale projection, and data-debt density score:* [**Estimate your own data debt →**](https://lailarallc.shinyapps.io/data-debt-calculator/)
+*The same five inputs that produced the `r ds(annual_cb)` figure for Cinderhaven — SKU count, retailer count, annual chargebacks, data quality pass rate, and revenue per SKU — work for any specialty food brand. Plug in your own numbers and see your own annual cost, scale projection, and data-debt density score:* [**Estimate your own data debt →**](https://calculator.lailarallc.com/)
 :::
 
 ::: {.content-visible when-format="pdf"}

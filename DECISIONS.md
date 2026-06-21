@@ -77,3 +77,22 @@ Durable choices with rationale. These should hold across future sessions.
 - **Why:** With only barcode defects to fix (no case dimensions, no missing product data fields), the action plan shrinks from 4 phases / 14 days to 3 phases / 5 days. The fix scope is: correct UPC-12 and GTIN-14 check digits, add a validation gate, deploy monitoring.
 - **Scope:** `quarto/report.qmd` Part 3 action plan, `quarto/tearsheet.qmd` "A one-week turnaround" section.
 - **Do not:** Expand the timeline without adding corresponding fix actions backed by actual defects in the data.
+
+### 2026-06-21 — Option B for CHP-AS-009: rewrite narrative, do NOT change Postgres SSOT
+
+- **Why:** After the Cinderhaven data reseed, CHP-AS-009 (Truffle Mushroom Sauce) now has DQ score 100.0, $0 chargebacks, and 6/6 retailer pass rate. The narrative sections that use it as the "your best-seller is your biggest hidden risk" showcase contradict the data. The decision is to rewrite the narrative around a different showcase SKU that actually has defects, rather than corrupting the database to match old prose.
+- **Scope:** `quarto/report.qmd` sections "The $X-a-month problem nobody sees" and "The SKU you can't afford to ignore"; `quarto/tearsheet.qmd` "The crown jewel" section. All use `top_rev` (dynamically computed #1 revenue SKU).
+- **Division of labor:** Claude Chat rewrites all narrative prose (Economist style). Claude Code provides the updated figures and candidate showcase SKU after pipeline re-run, then integrates the new prose into the Quarto source and re-renders.
+- **Do not:** Modify `raw_tables.rds`, the Postgres SSOT, or any dbt models to re-introduce defects into CHP-AS-009.
+
+### 2026-06-21 — Triage sort: chargeback-bearing SKUs first
+
+- **Why:** `fix_priority_score` weights revenue 40%, putting high-revenue/$0-chargeback SKUs (CHP-PS-006, CHP-DG-004) at positions #1-#2 in triage tables. The tearsheet, report, dashboard, and Excel workbook all show $0 savings and $0/hr for the top-ranked items, undermining the ROI argument.
+- **Scope:** All four triage table sorts: `report.qmd`, `tearsheet.qmd`, `dashboard.qmd`, `R/06_excel_workbook.R`. Sort is now `desc(chargeback_total > 0), desc(fix_priority_score)` — chargeback-bearing SKUs first, then by composite priority within each tier.
+- **Do not:** Change `fix_priority_score` formula itself — it's still valid as a general-purpose composite. The sort change is display-level only.
+
+### 2026-06-21 — Revenue-at-risk table: fix vectorization bug
+
+- **Why:** `rev_at_risk(retailer)` in the report's rr-summary-table chunk was called vectorized inside `transmute`, receiving all 6 retailer names at once instead of one at a time. The recycled `==` comparison produced a near-total join, returning ~$18.9M for every retailer regardless of their actual failure count.
+- **Scope:** `quarto/report.qmd` line 211. Fix: wrap in `sapply()`.
+- **Do not:** Remove the `rev_at_risk()` function — it's correct when called with a single retailer name.

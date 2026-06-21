@@ -140,13 +140,18 @@ GS1 Sunrise 2027 transitions American retail barcodes to 2D codes built on valid
 
 The defining feature of this problem is the asymmetry between cost and fix. Correcting every data defect that generates chargebacks takes `r round(total_fix_hours)` hours of data entry. The defects have been present for months. The connection between the defects and the charges has never been visible until this audit.
 
-::: {layout-ncol=3}
-![Chargeback Pareto](../output/charts/01_chargeback_pareto.png){fig-alt="Pareto curve: 5 SKUs drive 50% of chargeback dollars; 15 drive 80%."}
-
-![Revenue at risk by retailer](../output/charts/06_retailer_readiness_revenue_at_risk.png){fig-alt="Horizontal bar chart of TTM revenue at risk per retailer."}
-
-![Growth projection of chargebacks](../output/charts/12_growth_projection_chargebacks.png){fig-alt="Projected annual chargebacks at current scale, Stage 2, and Stage 3."}
-:::
+\begin{minipage}[t]{0.32\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../output/charts/01_chargeback_pareto.png}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../output/charts/06_retailer_readiness_revenue_at_risk.png}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../output/charts/12_growth_projection_chargebacks.png}
+\end{minipage}
 
 \newpage
 
@@ -178,7 +183,7 @@ latex_escape <- function(x) {
 }
 
 triage <- smf |>
-  arrange(desc(fix_priority_score)) |>
+  arrange(desc(chargeback_total > 0), desc(fix_priority_score)) |>
   slice(1:10) |>
   transmute(
     SKU = sku,
