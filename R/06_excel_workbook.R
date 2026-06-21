@@ -294,10 +294,10 @@ cat("\nWriting: ", OUT_FILE, "\n", sep = "")
 wb <- wb_workbook(creator = paste(cfg$company$short_name, "Audit Pipeline"))
 
 # Cinderhaven palette (must match R/00_theme.R).
-PAL_NAVY     <- "1B2A4A"
-PAL_BG_PALE  <- "E8ECF0"
-PAL_BG_PALER <- "F4F6F8"
-PAL_TEXT     <- "2D3436"
+PAL_NAVY     <- "1f2e7a"
+PAL_BG_PALE  <- "d9d9d9"
+PAL_BG_PALER <- "f2f2f2"
+PAL_TEXT     <- "333333"
 
 # Tabs 1–6 use the standard `finish_sheet` formatting.
 data_sheets <- list(

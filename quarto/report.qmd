@@ -34,7 +34,7 @@ format:
     include-in-header:
       text: |
         \usepackage{xcolor}
-        \definecolor{cinderhaven}{HTML}{1F4E79}
+        \definecolor{cinderhaven}{HTML}{1f2e7a}
         \usepackage{longtable}
         \usepackage{float}
         \usepackage{tcolorbox}
@@ -677,9 +677,9 @@ reactable(
     )
   ),
   theme = reactableTheme(
-    borderColor       = "#d8d8d8",
-    stripedColor      = "#fafafa",
-    highlightColor    = "#f3eaea",
+    borderColor       = "#d9d9d9",
+    stripedColor      = "#f2f2f2",
+    highlightColor    = "#e8eaf4",
     cellPadding       = "6px 10px",
     style             = list(fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
                              fontSize   = "0.88rem")

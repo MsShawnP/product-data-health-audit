@@ -67,10 +67,10 @@ save_pair <- function(p_static, p_interactive, name,
 to_girafe <- function(p, w_in = 10, h_in = 6) {
   girafe(ggobj = p, width_svg = w_in, height_svg = h_in,
          options = list(
-           opts_tooltip(css = "background:#222; color:#fff; padding:6px 8px;
+           opts_tooltip(css = "background:#1a1a1a; color:#fff; padding:6px 8px;
                               border-radius:4px; font-family:sans-serif;
                               font-size:11px;"),
-           opts_hover(css = "stroke:#222; stroke-width:1.5px;"),
+           opts_hover(css = "stroke:#1a1a1a; stroke-width:1.5px;"),
            opts_zoom(min = 1, max = 4),
            opts_toolbar(saveaspng = TRUE)))
 }
@@ -434,7 +434,7 @@ p11_base <- function(use_interactive) {
     # red — both bad, with the worst visually heaviest. The two passing
     # tiers recede to grey.
     scale_fill_manual(values = c(
-      "Worst 25%"     = cinderhaven_palette$red,   # #C0221F
+      "Worst 25%"     = cinderhaven_palette$red,   # #cc100a
       "Below average" = cinderhaven_palette$coral,                  # lighter red
       "Above average" = cinderhaven_palette$recede,
       "Best 25%"      = cinderhaven_palette$recede),
