@@ -310,3 +310,30 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 3. **Phase 5:** Integrate rewritten prose into `report.qmd`, re-run pipeline, re-render
 4. **Phase 6:** Full verification pass, commit all changes, deploy to https://audit.lailarallc.com/
 5. Confirm `calculator.lailarallc.com` is live
+
+## 2026-06-21 — Phase 5: Narrative integration (session 3)
+
+**Started from:** Phase 4 data extraction complete. Claude Chat had rewritten 6 sections, 4 surgical edits, tearsheet crown jewel, and landing page text. Ready to integrate prose into Quarto source.
+
+**Did:**
+- Replaced 6 full narrative sections in report.qmd with Chat-authored prose (CHP-DG-007 showcase, $111-a-month, pattern beneath the numbers, concentrated defect, 15 hours against $228,845, top-10 table)
+- Applied 3 surgical edits in Part 4 collapsible panels (lines 787, 814, 950) correcting false "case dimensions complete" claims
+- Rewrote tearsheet.qmd crown jewel: CHP-AS-009 → CHP-DG-007
+- Updated index.html landing page with Option A ($51K data + $177K fulfillment)
+- Fixed "The sequence" section: added case dimensions to phase one, updated $93K/$138K → $51K/$178K
+- Searched for stale references ($93,826, 41%, $93,000) — found and fixed the only remaining instance
+- Verified growth projections are dynamic (auto-update on render)
+
+**State:**
+- All Chat prose integrated into source files. Not committed.
+- Pipeline NOT re-run — outputs are stale.
+- 4 stale prose passages remain in report.qmd (lines 230, 324, 343) and 1 in tearsheet.qmd (line 208) — still imply universal barcode failure. Need follow-up Chat edit.
+
+**Next:**
+1. Fix 4 flagged stale passages (report.qmd lines 230, 324, 343; tearsheet.qmd line 208)
+2. Re-run R pipeline (`Rscript R/run_all.R`)
+3. Verify rendered report matches new prose
+4. Apply Lailara design system to HTML report/dashboard (Issue 9)
+5. Verify companion PDFs (Issue 16)
+6. Confirm calculator.lailarallc.com is live
+7. Commit and deploy
