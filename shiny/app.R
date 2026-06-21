@@ -140,7 +140,7 @@ cost_of_delay <- function(N, R, C, P, A) {
 
 # URL for the case-study link in the top-right of the navbar. Points at the
 # rendered HTML report on the project's GitHub Pages site.
-CASE_STUDY_URL <- "https://audit.lailarallc.com/quarto/report.html"
+CASE_STUDY_URL <- "https://audit.lailarallc.com/"
 
 dollar_short <- function(x) {
   vapply(x, function(v) {
@@ -553,17 +553,29 @@ server <- function(input, output, session) {
     )
     df$label <- dollar_short(df$value)
 
+    # Compute stacking positions for conditional label placement
+    df <- df[order(df$component), ]
+    total <- sum(df$value)
+    df$ymax <- cumsum(df$value)
+    df$ymin <- c(0, head(df$ymax, -1))
+    df$ymid <- (df$ymin + df$ymax) / 2
+    df$pct  <- if (total > 0) df$value / total else 0
+
+    wide   <- df[df$pct >= 0.10, ]
+    narrow <- df[df$pct <  0.10, ]
+
     ggplot(df, aes(x = "", y = value, fill = component)) +
       geom_col(width = 0.55) +
-      geom_text(aes(label = label),
-                position = position_stack(vjust = 0.5),
-                color = "white", fontface = "bold", size = 4) +
+      { if (nrow(wide))   geom_text(data = wide, aes(x = "", y = ymid, label = label),
+                                    color = "white", fontface = "bold", size = 4) } +
+      { if (nrow(narrow)) geom_text(data = narrow, aes(x = "", y = ymax, label = label),
+                                    hjust = -0.15, color = PAL$text, fontface = "bold", size = 3.6) } +
       scale_fill_manual(values = c(
         "Chargebacks"      = PAL$red,
         "Stalled launches" = PAL$coral,
         "Shelf loss"       = PAL$blue_muted)) +
       scale_y_continuous(labels = dollar_short,
-                         expand = expansion(mult = c(0, 0.02))) +
+                         expand = expansion(mult = c(0, 0.08))) +
       coord_flip() +
       labs(x = NULL, y = NULL,
            caption = paste0(
