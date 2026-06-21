@@ -161,7 +161,7 @@ top_cb_annual   <- round(top_cb$chargeback_total * 12 / 36)
 n_upc_fail <- sum(!smf$upc_valid, na.rm = TRUE)
 
 data_defect_pct <- cbe |>
-  mutate(is_data = !is.na(triggered_by_field)) |>
+  mutate(is_data = reason %in% c("Label / barcode fine", "Pricing error")) |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
 non_data_annual <- round(annual_cb * (100 - data_defect_pct) / 100)
 

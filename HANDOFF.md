@@ -346,8 +346,35 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 
 **State:** Pipeline renders cleanly. 9 edits applied, not committed. 3 remaining contradictions in report.qmd methodology section (lines 218, 918, 920) — "near-universal" and "uniform/shared DQ score" claims that contradict data and our own edit to line 922.
 
+## 2026-06-21 — Design system full sweep + dashboard fix (sessions 5–7)
+
+**Started from:** Lailara Design System v2 never consistently applied. Calculator had blue header, stacked bars in portfolio, dashboard had dark navy header and teal table headers.
+
+**Did:**
+- **Color inventory** across all R chart files, CSS/SCSS, HTML, QMD — mapped every hex to design system tokens
+- **Token mapping applied** to PDFs (tearsheet, compliance_timeline, scorecard), Excel workbook, reactable tables, tooltips, report link color
+- **Calculator fixes**: navbar `background-color: #f5f3ee !important` (Bootstrap primary was bleeding through), verified composition chart was already separate bars, deployed to Fly.io
+- **Dashboard full fix (all 3 tabs)**:
+  - Header bar: dark navy `#1a1a1a` → Canvas `#f5f3ee` with London-85 border
+  - Table headers: Chicago-20 `#1f2e7a` bg, white text (all 3 tabs)
+  - Removed heat-map cell fills from data columns; color only on status/judgment badges
+  - P&L chart: stacked waterfall → separate horizontal bars per retailer (facet_wrap)
+  - Chart 3 (hero): stacked composition → faceted grouped bars
+  - Chart 20: stacked → grouped (position_dodge) bars
+  - Tab 3 triage: sort by savings_per_hour desc, $0 pushed to bottom
+  - CSS: white-space nowrap on all table cells, overflow-x auto on wrapper
+- **Standing rule enforced: NO STACKED BARS anywhere in portfolio** — grep confirms zero `position_stack` calls remain
+
+**State:**
+- Git: clean, pushed to main. Commits: `ee97804` (design system sweep), `bec15e1` (calculator), `d6f08d4` (dashboard + charts), `97bc49f` (CI fix)
+- Pipeline renders cleanly (226s)
+- All outputs current: report HTML, dashboard HTML, 3 PDFs, Excel workbook, all charts
+- Calculator live at calculator.lailarallc.com
+
+**Verified live:**
+- audit.lailarallc.com — CI run 27909582736 passed (4m8s), all changes deployed including chart rewrites, dashboard design pass, CSS sizing fix
+- calculator.lailarallc.com — Fly.io deploy succeeded, full design system redo live
+
 **Next:**
-1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920)
-2. Re-render pipeline one final time
-3. Phase 6: full verification, commit all Phase 5 changes, deploy to https://audit.lailarallc.com/
-4. Confirm calculator.lailarallc.com is live
+1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
+2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
