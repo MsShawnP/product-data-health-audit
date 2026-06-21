@@ -610,12 +610,11 @@ cat("\n[14] Chargeback dollars by reason\n")
 c14 <- chargebacks_enriched |>
   group_by(reason) |>
   summarise(amt = sum(amount), n = n(),
-            data_amt = sum(amount[!is.na(triggered_by_field)]),
             .groups = "drop") |>
   arrange(desc(amt)) |>
   mutate(pct = amt / sum(amt),
          reason = factor(reason, levels = rev(reason)),
-         is_data_defect = data_amt > 0,
+         is_data_defect = reason %in% c("Label / barcode fine", "Pricing error"),
          tooltip = paste0(
            "<b>", reason, "</b><br>",
            dollar_short(amt), " (", percent(pct, accuracy = 0.1), ")<br>",
@@ -640,12 +639,12 @@ p14_base <- function(use_interactive) {
                       guide = "none") +
     labs(title    = wrap_title({
            data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
-           sprintf("Three data-defect reasons account for %.0f%% of chargeback dollars",
+           sprintf("Two data-defect reasons account for %.0f%% of chargeback dollars",
                    data_defect_pct)
          }),
          subtitle = {
            data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
-           sprintf("Three data-defect reasons (red) account for %.1f%% of chargeback dollars.",
+           sprintf("Two data-defect reasons (red) account for %.1f%% of chargeback dollars.",
                    data_defect_pct)
          },
          x = NULL, y = NULL,
@@ -662,7 +661,7 @@ cat("\n[15] Monthly chargeback trend\n")
 
 c15 <- chargebacks_enriched |>
   mutate(month    = floor_date(month_date, "month"),
-         category = ifelse(!is.na(triggered_by_field),
+         category = ifelse(reason %in% c("Label / barcode fine", "Pricing error"),
                            "Data defects", "Fulfillment")) |>
   group_by(month, category) |>
   summarise(amt = sum(amount), n = n(), .groups = "drop") |>
