@@ -1,0 +1,35 @@
+/*-- scss:defaults --*/
+
+// Lailara Design System v2 — Quarto SCSS theme layer
+// Applied on top of cosmo; report.css handles layout-specific overrides.
+
+// Canvas & ink
+$body-bg: #f5f3ee;
+$body-color: #333333;
+
+// Typography
+$font-family-sans-serif: 'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$headings-font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+$font-size-root: 17px;
+$line-height-base: 1.6;
+$headings-font-weight: 700;
+$headings-color: #0d0d0d;
+
+// Links
+$link-color: #333333;
+$link-decoration: underline;
+$link-hover-color: #1f2e7a;
+
+// Borders & surfaces
+$border-color: #d9d9d9;
+$border-radius: 2px;
+$border-radius-sm: 2px;
+$border-radius-lg: 2px;
+
+// TOC
+$toc-font-size: 0.88rem;
+$toc-color: #595959;
+
+/*-- scss:rules --*/
+
+@import url('../../assets/fonts/fonts.css');

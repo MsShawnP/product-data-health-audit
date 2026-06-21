@@ -37,7 +37,7 @@ time_to_shelf_sku <- read_frame("time_to_shelf_sku")
 retailer_pnl      <- read_frame("retailer_pnl")
 chargebacks_enriched     <- read_frame("chargebacks_enriched")
 
-save_chart <- function(p, name, w = 9, h = 5.5, dpi = 300) {
+save_chart <- function(p, name, w = 10, h = 5.5, dpi = 300) {
   rds_path <- file.path(OUT_DIR, paste0(name, ".rds"))
   png_path <- file.path(OUT_DIR, paste0(name, ".png"))
   svg_path <- file.path(OUT_DIR, paste0(name, ".svg"))
@@ -115,7 +115,7 @@ p1 <- ggplot(cb_p, aes(rank, cum_pct)) +
        caption  = src_caption("Cinderhaven chargeback ledger, 18 months")) +
   theme_cinderhaven()
 
-save_chart(p1, "01_chargeback_pareto", w = 9, h = 5.5)
+save_chart(p1, "01_chargeback_pareto", h = 5.5)
 
 # ---- 2. Time-to-shelf by quality tier ------------------------------------
 
@@ -197,7 +197,7 @@ p2 <- ggplot(tier_summary, aes(mean_days, tier, fill = tier)) +
   theme_cinderhaven_horizontal() +
   theme(axis.text.y = element_text(size = 11, face = "bold"))
 
-save_chart(p2, "02_time_to_shelf", w = 9, h = 5.5)
+save_chart(p2, "02_time_to_shelf", h = 5.5)
 
 # ---- 3. True net margin by retailer (stacked composition) ----------------
 
@@ -309,7 +309,7 @@ p3 <- ggplot(c3_long,
   theme_cinderhaven_horizontal() +
   theme(axis.text.y = element_text(size = 11, face = "bold"))
 
-save_chart(p3, "03_retailer_net_margin", w = 10, h = 5)
+save_chart(p3, "03_retailer_net_margin", h = 5)
 
 # ---- 4. Fix ROI ----------------------------------------------------------
 
@@ -333,11 +333,9 @@ barcode_hours  <- sum((!sku_master_full$gtin_valid) * 10 +
                       (!sku_master_full$upc_valid)  * 10, na.rm = TRUE) / 60
 
 n_proddata_skus <- sum(sku_master_full$missing_brand_owner |
-                       sku_master_full$missing_country |
-                       !sku_master_full$ows_complete, na.rm = TRUE)
+                       sku_master_full$missing_country, na.rm = TRUE)
 proddata_hours  <- sum(sku_master_full$missing_brand_owner * 10 +
-                       sku_master_full$missing_country     * 30 +
-                       (!sku_master_full$ows_complete)     * 30, na.rm = TRUE) / 60
+                       sku_master_full$missing_country     * 30, na.rm = TRUE) / 60
 
 n_dim_skus <- sum(sku_master_full$missing_case_dims |
                   sku_master_full$missing_case_weight, na.rm = TRUE)
@@ -392,7 +390,7 @@ p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   theme_cinderhaven_horizontal() +
   theme(axis.text.y = element_text(size = 10))
 
-save_chart(p4, "04_fix_roi", w = 11, h = 4.5)
+save_chart(p4, "04_fix_roi", h = 4.5)
 
 cat("\nDone. ", length(list.files(OUT_DIR, pattern = "^0[1-4]_.*\\.rds$")),
     " ggplot objects + ", length(list.files(OUT_DIR, pattern = "^0[1-4]_.*\\.png$")),
