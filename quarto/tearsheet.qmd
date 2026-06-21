@@ -19,14 +19,14 @@ format:
     include-in-header:
       text: |
         \usepackage{xcolor}
-        % Cinderhaven palette (R/00_theme.R)
-        \definecolor{chnavy}{HTML}{1B2A4A}
-        \definecolor{chred}{HTML}{C0221F}
-        \definecolor{chteal}{HTML}{1E8C7E}
-        \definecolor{chcoral}{HTML}{D35830}
-        \definecolor{chbgpale}{HTML}{E8ECF0}
-        \definecolor{chtextmuted}{HTML}{636E72}
-        \definecolor{chtext}{HTML}{2D3436}
+        % Lailara Design System v2 palette
+        \definecolor{chnavy}{HTML}{1f2e7a}
+        \definecolor{chred}{HTML}{cc100a}
+        \definecolor{chteal}{HTML}{158f75}
+        \definecolor{chcoral}{HTML}{b82d4a}
+        \definecolor{chbgpale}{HTML}{d9d9d9}
+        \definecolor{chtextmuted}{HTML}{595959}
+        \definecolor{chtext}{HTML}{333333}
 
         % Tight typography for a dense 2-page tearsheet.
         \usepackage{parskip}

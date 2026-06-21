@@ -225,6 +225,7 @@ ui <- page_navbar(
   header = tags$header(
     tags$style(HTML("
       .navbar { padding-top: 0.4rem; padding-bottom: 0.4rem;
+                background-color: #f5f3ee !important;
                 border-bottom: 1px solid #d9d9d9 !important; }
       .navbar-brand { font-family: 'Playfair Display', Georgia, serif !important;
                       font-weight: 700; letter-spacing: -0.01em;
