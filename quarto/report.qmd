@@ -215,7 +215,7 @@ cat(kable(rr_tbl, format = "pipe", align = c("l", "r", "r", "r")), sep = "\n")
 
 These are not projections of what might happen if data quality degrades. They are measurements of the current product master against the current retailer requirements. The data fails now, at `r pct_fail_all`% of retailer-SKU combinations. The only reason the revenue still flows is that nobody has run the audit yet.
 
-The convergence of near-universal retailer readiness failure, GS1 Sunrise, and FSMA 204 is the wall. Each individually would justify fixing the product master. Together, they create a deadline. A company that reaches 2028 with `r n_gtin_fail` invalid GTINs and `r n_upc_fail` invalid UPCs will not have a data quality problem. It will have a market access problem.
+The convergence of majority retailer readiness failure, GS1 Sunrise, and FSMA 204 is the wall. Each individually would justify fixing the product master. Together, they create a deadline. A company that reaches 2028 with `r n_gtin_fail` invalid GTINs and `r n_upc_fail` invalid UPCs will not have a data quality problem. It will have a market access problem.
 
 The `r ds(annual_cb)` in annual chargebacks is what dirty data costs when nobody checks. The `r ds(total_ttm_rev)` in at-risk revenue is what it costs when someone does. The GS1 and FSMA transitions are the moment when everyone checks at once.
 
@@ -915,9 +915,9 @@ All dollar estimates in this report state their assumptions at point of claim. T
 
 Chargeback annualization: 36-month totals are multiplied by 12/36 to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
 
-Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. Because all SKUs share the same data quality score (`r mean_dq_all`), a quality-tier comparison is not possible with this dataset. In a real engagement with variance in data quality, a differential analysis would isolate the data-quality contribution to deauthorization.
+Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. Data quality scores fall into three tiers (66.7, 83.3, and 100), enabling a basic quality-tier comparison. In a real engagement with more varied defect types, a richer differential analysis would isolate the data-quality contribution to deauthorization with greater precision.
 
-Cost model: this report uses annualized chargebacks (`r ds(annual_cb)`) as the primary cost metric. Stalled-launch and shelf-loss costs are not quantified because the uniform data quality score across the catalog does not support the differential analysis those estimates require.
+Cost model: this report uses annualized chargebacks (`r ds(annual_cb)`) as the primary cost metric. Stalled-launch and shelf-loss costs are not quantified because the three-tier data quality distribution provides directional support for differential analysis, though the limited number of tiers constrains precision.
 
 Data quality scoring: each SKU is scored on 8 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present, OneWorldSync complete, serving size standardized). Score = (checks passed / 8) x 100. SKUs score between 66.7 and 100. Clean SKUs (23 of 50) score 100. Single-defect SKUs score 83.3. Multi-defect SKUs score 66.7. The failing checks are barcode-related (GTIN-14 and UPC) and case dimensions; all other checks pass universally. The three-tier score distribution supports quality-tier analysis — a limitation that would not exist in a real engagement where defect types are more varied.
 
