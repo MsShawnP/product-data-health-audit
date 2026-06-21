@@ -82,25 +82,25 @@ debt_density <- function(N, C, A) {
 }
 
 density_band <- function(d) {
-  if (is.na(d))         list(label = "—",         color = PAL$text_muted, body = "Set inputs to see your density score.")
-  else if (d <  1000)   list(label = "Healthy",   color = PAL$teal,      body = "Below $1,000 per $1M of revenue. The data is clean enough that defects don't show up in chargeback dollars.")
-  else if (d <  3000)   list(label = "Typical",   color = PAL$blue_muted,body = "$1,000–$3,000 per $1M is typical for specialty food and CPG without a managed product data process.")
-  else if (d <  5000)   list(label = "Elevated",  color = PAL$coral,     body = "$3,000–$5,000 per $1M means defects are concentrated in the SKUs that move volume.")
-  else                  list(label = "Serious",   color = PAL$red,       body = "Above $5,000 per $1M. The catalog is paying chargebacks at a rate that materially affects net margin.")
+  if (is.na(d))         list(label = "—",         color = PAL$text_sec,  bg = PAL$surface,  body = "Set inputs to see your density score.")
+  else if (d <  1000)   list(label = "Healthy",   color = "#0c6552",     bg = "#e4f5f0",    body = "Below $1,000 per $1M of revenue. The data is clean enough that defects don't show up in chargeback dollars.")
+  else if (d <  3000)   list(label = "Typical",   color = PAL$chicago,   bg = "#e8eaf4",    body = "$1,000–$3,000 per $1M is typical for specialty food and CPG without a managed product data process.")
+  else if (d <  5000)   list(label = "Elevated",  color = PAL$red,       bg = "#fce8e7",    body = "$3,000–$5,000 per $1M means defects are concentrated in the SKUs that move volume.")
+  else                  list(label = "Serious",   color = PAL$red,       bg = "#fce8e7",    body = "Above $5,000 per $1M. The catalog is paying chargebacks at a rate that materially affects net margin.")
 }
 
 readiness_band <- function(P) {
   if (P >= 0.9) list(label = "Likely ready",
-                     color = PAL$teal,
+                     color = "#0c6552",     bg = "#e4f5f0",
                      body  = "Your pass rate clears the bar. Maintain it through the GS1 transition window.")
   else if (P >= 0.7) list(label = "On track",
-                          color = PAL$blue_muted,
+                          color = PAL$chicago,  bg = "#e8eaf4",
                           body  = "Failing SKUs are a manageable workload. Address them before Q4 2027.")
   else if (P >= 0.4) list(label = "At risk",
-                          color = PAL$coral,
+                          color = "#7e1f34",    bg = "#fbe9ed",
                           body  = "Less than 50% passing. The failing SKUs are blockers for both compliance transitions.")
   else list(label = "Not ready",
-            color = PAL$red,
+            color = PAL$red,       bg = "#fce8e7",
             body  = "The catalog is not in a state to participate in either transition. Cleanup needs to start now.")
 }
 
@@ -191,7 +191,7 @@ theme_bs <- bs_theme(
   heading_font = font_google("Playfair Display", local = FALSE)
 ) |>
   bs_add_rules(sprintf("
-    .stat-card { background: %s; border-radius: 2px; padding: 14px 16px;
+    .stat-card { background: #ffffff; border-radius: 2px; padding: 14px 16px;
                  border-left: 4px solid %s; }
     .stat-card .stat-num { font-family: 'Playfair Display', Georgia, serif;
                            font-size: 1.8rem; font-weight: 700; color: %s;
@@ -202,7 +202,7 @@ theme_bs <- bs_theme(
                 font-size: 3rem; font-weight: 700; color: %s; line-height: 1; }
     .lead-lbl { color: %s; font-size: 0.95rem; margin-top: 4px; }
     .pill { display: inline-block; padding: 2px 10px; border-radius: 2px;
-            font-size: 0.78rem; font-weight: 600; color: white; }
+            font-size: 0.78rem; font-weight: 600; }
     .interp { background: %s; padding: 14px 18px; border-radius: 2px;
               border-left: 4px solid %s; line-height: 1.55; }
     .footer-link { color: %s; font-weight: 600; }
@@ -211,21 +211,28 @@ theme_bs <- bs_theme(
     label.control-label { font-weight: 600; color: %s; }
     .form-text { color: %s; font-size: 0.78rem; }
   ",
-  PAL$surface, PAL$chicago, PAL$red, PAL$text_sec, PAL$text_sec,
+  PAL$chicago, PAL$ink, PAL$text_sec, PAL$text_sec,
   PAL$red, PAL$text_sec,
   PAL$gridline, PAL$chicago,
-  PAL$chicago, PAL$red,
+  PAL$chicago, PAL$chicago,
   PAL$ink, PAL$text, PAL$text_sec))
 
 ui <- page_navbar(
   title = "Data Debt Calculator",
   theme = theme_bs,
   lang = "en",
-  navbar_options = navbar_options(bg = PAL$chicago, underline = TRUE),
+  navbar_options = navbar_options(bg = PAL$canvas, underline = TRUE),
   header = tags$header(
     tags$style(HTML("
-      .navbar-brand { font-weight: 700; letter-spacing: -0.01em; }
-      .navbar { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+      .navbar { padding-top: 0.4rem; padding-bottom: 0.4rem;
+                border-bottom: 1px solid #d9d9d9 !important; }
+      .navbar-brand { font-family: 'Playfair Display', Georgia, serif !important;
+                      font-weight: 700; letter-spacing: -0.01em;
+                      color: #0d0d0d !important; }
+      .navbar-nav .nav-link { color: #333333 !important; }
+      .navbar-nav .nav-link:hover { color: #0d0d0d !important; }
+      .navbar-nav .nav-link.active { color: #0d0d0d !important;
+                                     font-weight: 600; }
     ")),
     # Skip-link for keyboard users.
     tags$a(href = "#main-content", class = "sr-only-focusable",
@@ -364,7 +371,7 @@ ui <- page_navbar(
 
         div(role = "region", `aria-label` = "Cost of delay",
           tags$h2("Every month of delay costs more than the last",
-                  style = paste0("font-size:1.4rem; color:", PAL$chicago)),
+                  style = paste0("font-size:1.4rem; color:", PAL$ink)),
           tags$p(style = paste0("color:", PAL$text_muted, "; max-width:60ch;"),
                  "Three things compound while a data defect sits unfixed: ",
                  "chargebacks accrue every month, shelf is lost as retailers ",
@@ -411,7 +418,7 @@ ui <- page_navbar(
     tags$a(href = CASE_STUDY_URL,
            class = "footer-link",
            target = "_blank", rel = "noopener",
-           style = sprintf("color:%s; font-weight:600;", PAL$white),
+           style = sprintf("color:%s; font-weight:600;", PAL$chicago),
            "See what a complete product data audit looks like →")
   )
 )
@@ -539,11 +546,11 @@ server <- function(input, output, session) {
     d <- debt_density(inp()$N, inp()$C, inp()$A)
     band <- density_band(d)
     span(class = "pill",
-         style = sprintf("background:%s;", band$color),
+         style = sprintf("background:%s; color:%s;", band$bg, band$color),
          band$label)
   })
 
-  # ---- Composition stacked bar ----
+  # ---- Composition bar chart (three separate horizontal bars) ----
   output$composition_plot <- renderPlot({
     c <- cc()
     df <- data.frame(
@@ -553,43 +560,32 @@ server <- function(input, output, session) {
     )
     df$label <- dollar_short(df$value)
 
-    # Compute stacking positions for conditional label placement
-    df <- df[order(df$component), ]
-    total <- sum(df$value)
-    df$ymax <- cumsum(df$value)
-    df$ymin <- c(0, head(df$ymax, -1))
-    df$ymid <- (df$ymin + df$ymax) / 2
-    df$pct  <- if (total > 0) df$value / total else 0
+    max_val <- max(df$value, na.rm = TRUE)
+    df$narrow <- df$value < max_val * 0.15
 
-    wide   <- df[df$pct >= 0.10, ]
-    narrow <- df[df$pct <  0.10, ]
+    wide   <- df[!df$narrow, ]
+    narrow_df <- df[df$narrow, ]
 
-    ggplot(df, aes(x = "", y = value, fill = component)) +
-      geom_col(width = 0.55) +
-      { if (nrow(wide))   geom_text(data = wide, aes(x = "", y = ymid, label = label),
-                                    color = "white", fontface = "bold", size = 4) } +
-      { if (nrow(narrow)) geom_text(data = narrow, aes(x = "", y = ymax, label = label),
-                                    hjust = -0.15, color = PAL$text, fontface = "bold", size = 3.6) } +
-      scale_fill_manual(values = c(
-        "Chargebacks"      = PAL$red,
-        "Stalled launches" = PAL$coral,
-        "Shelf loss"       = PAL$blue_muted)) +
-      scale_y_continuous(labels = dollar_short,
+    ggplot(df, aes(x = value, y = component)) +
+      geom_col(fill = PAL$chicago, width = 0.6) +
+      { if (nrow(wide)) geom_text(data = wide,
+            aes(x = value, y = component, label = label),
+            hjust = 1.1, color = "white", fontface = "bold", size = 4) } +
+      { if (nrow(narrow_df)) geom_text(data = narrow_df,
+            aes(x = value, y = component, label = label),
+            hjust = -0.1, color = PAL$text, fontface = "bold", size = 3.6) } +
+      scale_x_continuous(labels = dollar_short,
                          expand = expansion(mult = c(0, 0.08))) +
-      coord_flip() +
       labs(x = NULL, y = NULL,
            caption = paste0(
              "Chargebacks: what retailers deduct now.  ",
              "Stalled launches: revenue lost while failing SKUs sit in queue.  ",
              "Shelf loss: deauthorizations driven by quality.")) +
       theme_calc() +
-      theme(legend.position = "top",
-            legend.title = element_blank(),
-            axis.text.x = element_text(),
-            axis.text.y = element_blank(),
+      theme(axis.text.y = element_text(color = PAL$text_sec, size = 11),
             axis.ticks = element_blank(),
             panel.grid.major.y = element_blank(),
-            panel.grid.major.x = element_line(color = PAL$bg_pale, linewidth = 0.4))
+            panel.grid.major.x = element_line(color = PAL$gridline, linewidth = 0.3))
   }, res = 90)
 
   # ---- Sensitivity bar ----
@@ -617,18 +613,19 @@ server <- function(input, output, session) {
     df$lever     <- factor(df$lever, levels = df$lever[order(df$delta_pct)])
     df$label     <- sprintf("%+0.1f%%", df$delta_pct * 100)
 
-    ggplot(df, aes(x = delta_pct, y = lever, fill = delta_pct)) +
+    df$direction <- ifelse(df$delta_pct >= 0, "increase", "decrease")
+
+    ggplot(df, aes(x = delta_pct, y = lever, fill = direction)) +
       geom_col(width = 0.65) +
       geom_text(aes(label = label),
                 hjust = ifelse(df$delta_pct >= 0, -0.05, 1.05),
                 size = 3.6, color = PAL$text) +
       scale_x_continuous(labels = percent_format(accuracy = 1),
                          expand = expansion(mult = c(0.15, 0.20))) +
-      scale_fill_gradient2(low = PAL$teal, mid = PAL$bg_pale,
-                            high = PAL$red, midpoint = 0) +
+      scale_fill_manual(values = c("increase" = PAL$tokyo, "decrease" = PAL$hk)) +
       labs(x = "Change in annual cost", y = NULL) +
       theme_calc() +
-      theme(panel.grid.major.x = element_line(color = PAL$bg_pale, linewidth = 0.4),
+      theme(panel.grid.major.x = element_line(color = PAL$gridline, linewidth = 0.3),
             panel.grid.major.y = element_blank())
   }, res = 90)
 
@@ -653,7 +650,7 @@ server <- function(input, output, session) {
         )
       ),
       div(span(class = "pill",
-               style = sprintf("background:%s; margin-right:8px;", rb$color),
+               style = sprintf("background:%s; color:%s; margin-right:8px;", rb$bg, rb$color),
                rb$label),
           span(style = sprintf("color:%s;", PAL$text), rb$body))
     )
