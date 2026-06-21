@@ -337,3 +337,17 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 5. Verify companion PDFs (Issue 16)
 6. Confirm calculator.lailarallc.com is live
 7. Commit and deploy
+
+## 2026-06-21 — Phase 5 continuation: contradiction sweep (session 4)
+
+**Started from:** Session 3 integrated Chat prose but left 4 stale "universal failure" passages. Pipeline not re-run.
+
+**Did:** Applied 9 surgical edits across report.qmd and tearsheet.qmd in two rounds, fixing claims of universal barcode failure, uniform DQ scores, and near-universal readiness failure. Re-rendered pipeline twice (both clean). Final grep sweep caught 3 more contradictions in methodology notes.
+
+**State:** Pipeline renders cleanly. 9 edits applied, not committed. 3 remaining contradictions in report.qmd methodology section (lines 218, 918, 920) — "near-universal" and "uniform/shared DQ score" claims that contradict data and our own edit to line 922.
+
+**Next:**
+1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920)
+2. Re-render pipeline one final time
+3. Phase 6: full verification, commit all Phase 5 changes, deploy to https://audit.lailarallc.com/
+4. Confirm calculator.lailarallc.com is live
