@@ -397,7 +397,7 @@ reactable(
 # Triage columns (composite priority, fix hours, savings/hour, still-broken)
 # come straight from sku_master_full — see R/02_build_frames.R.
 triage <- sku_master_full |>
-  arrange(desc(fix_priority_score)) |>
+  arrange(desc(chargeback_total > 0), desc(fix_priority_score)) |>
   transmute(
     SKU                   = sku,
     Product               = product_name,

@@ -167,9 +167,8 @@ c6 <- retailer_rs |>
             rev_total    = sum(ttm_revenue, na.rm = TRUE),
             rev_at_risk  = sum(ttm_revenue[!overall_pass], na.rm = TRUE),
             .groups = "drop") |>
-  mutate(retailer    = factor(retailer,
-            levels = retailer_rs |> distinct(retailer) |> pull(retailer) |>
-                     intersect(c("Walmart","Costco","Whole Foods"))),
+  filter(!is.na(retailer)) |>
+  mutate(retailer    = factor(retailer),
          rev_at_risk_pct = rev_at_risk / rev_total,
          tooltip = paste0(
            "<b>", retailer, "</b><br>",
@@ -199,9 +198,12 @@ p6_base <- function(use_interactive) {
                        expand = expansion(mult = c(0, 0.55))) +
     # One-accent encoding: Walmart (biggest exposure) red, others grey.
     scale_fill_manual(values = c(
-      "Walmart"     = cinderhaven_palette$red,
-      "Costco"      = cinderhaven_palette$recede,
-      "Whole Foods" = cinderhaven_palette$recede),
+      "Walmart"        = cinderhaven_palette$red,
+      "Costco"         = cinderhaven_palette$recede,
+      "Whole Foods"    = cinderhaven_palette$recede,
+      "Kroger"         = cinderhaven_palette$recede,
+      "Sprouts"        = cinderhaven_palette$recede,
+      "Regional Group" = cinderhaven_palette$recede),
       guide = "none") +
     labs(title    = wrap_title(sprintf("Revenue at risk: %s rides on data Walmart could reject today",
                            dollar_short(c6$rev_at_risk[which(c6$retailer == "Walmart")]))),
