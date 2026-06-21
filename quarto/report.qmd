@@ -338,9 +338,9 @@ cat(kable(top10_tbl_simple, format = "pipe", align = c("l", "l", "r", "r")), sep
 
 `r ds(top10_rev_total)` in revenue from the top 10 SKUs alone, all riding on data that most retailers' systems would reject. These products are already generating chargebacks. The risk and the cost are happening simultaneously.
 
-If Cinderhaven wants to pitch a line extension at any retailer, and at `r ds(total_ttm_rev)` in revenue and growing, that pitch is coming, every SKU needs its data fixed before the conversation starts. Not during the conversation. Before. A retailer's category team does not fix vendor data. They evaluate what's submitted. If the submission fails their automated checks, the conversation ends before a human being ever sees the product.
+If Cinderhaven wants to pitch a line extension at any retailer, and at `r ds(total_ttm_rev)` in revenue and growing, that pitch is coming, every SKU in the pitch needs clean data before the conversation starts — and 27 of 50 do not have it. Not during the conversation. Before. A retailer's category team does not fix vendor data. They evaluate what's submitted. If the submission fails their automated checks, the conversation ends before a human being ever sees the product.
 
-The gap between "blocked" and "ready" for every SKU in the catalog is the same: barcode check digits. The work is measured in hours, not weeks. 27 failing SKUs are not 27 product development problems. They are `r n_skus` data entry tasks. The difference between $0 in expansion-ready revenue and `r ds(total_ttm_rev)` in expansion-ready revenue is approximately `r round(total_fix_hours)` hours of clerical work. That is the most underspent `r round(total_fix_hours)` hours in the company.
+The gap between "blocked" and "ready" is barcode check digits and case dimensions. The work is measured in hours, not weeks. 27 failing SKUs are not 27 product development problems. They are 27 data entry tasks. The difference between $18.9 million in at-risk revenue and $18.9 million in expansion-ready revenue is 15 hours of clerical work.
 
 ## The SKU you can't afford to ignore
 
@@ -502,7 +502,7 @@ Each barcode SKU takes about ten minutes to fix. The algorithm is deterministic.
 
 15 hours of data entry. That is the entire scope. Brand owner, country of origin (with one exception), and weights are all already complete and correct. The product master's defects are barcode check digits and case dimensions.
 
-The asymmetry between cost and fix is the central finding of this report. Not the $228,845 total. Not the Pareto concentration. Not the near-universal retailer readiness failure at the strictest retailers. The asymmetry. The fact that a $34 million company is generating $51,147 a year in data-related penalties because nobody has spent 15 hours on data entry. The fact that the same defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop on their own.
+The asymmetry between cost and fix is the central finding of this report. Not the $228,845 total. Not the Pareto concentration. Not the majority retailer readiness failure — with pass rates between 46% and 50% at the four strictest retailers. The asymmetry. The fact that a $34 million company is generating $51,147 a year in data-related penalties because nobody has spent 15 hours on data entry. The fact that the same defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop on their own.
 
 ## What's still broken right now
 
@@ -919,7 +919,7 @@ Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_
 
 Cost model: this report uses annualized chargebacks (`r ds(annual_cb)`) as the primary cost metric. Stalled-launch and shelf-loss costs are not quantified because the uniform data quality score across the catalog does not support the differential analysis those estimates require.
 
-Data quality scoring: each SKU is scored on 8 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present, OneWorldSync complete, serving size standardized). Score = (checks passed / 8) x 100. In this dataset, all SKUs score `r mean_dq_all` because the only failing checks are barcode-related (GTIN-14 and UPC); all other checks pass universally. This zero-variance score makes quality-tier analysis impossible — a limitation the narrative addresses honestly.
+Data quality scoring: each SKU is scored on 8 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present, OneWorldSync complete, serving size standardized). Score = (checks passed / 8) x 100. SKUs score between 66.7 and 100. Clean SKUs (23 of 50) score 100. Single-defect SKUs score 83.3. Multi-defect SKUs score 66.7. The failing checks are barcode-related (GTIN-14 and UPC) and case dimensions; all other checks pass universally. The three-tier score distribution supports quality-tier analysis — a limitation that would not exist in a real engagement where defect types are more varied.
 
 Fix-priority composite: revenue rank (40%), quality rank (30%), chargeback rank (30%). Ranks are percentile-based (1 = best/highest). Effort is shown separately, not incorporated into the composite. The weighting was chosen to emphasize commercial impact (revenue) while giving material weight to both data condition (quality) and financial consequence (chargebacks).
 :::
