@@ -4,7 +4,7 @@ subtitle: "Velocity · Retailer P&L · Triage Tracker"
 format:
   html:
     toc: false
-    theme: cosmo
+    theme: [cosmo, assets/lailara.scss]
     embed-resources: false
     css:
       - assets/report.css

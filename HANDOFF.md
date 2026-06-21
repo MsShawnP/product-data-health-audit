@@ -268,3 +268,45 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 6. Apply Lailara design system to HTML report/dashboard (Issue 9)
 7. Verify companion PDFs (Issue 16)
 8. Confirm `calculator.lailarallc.com` is live
+
+## 2026-06-21 — Phases 2A–4 (session 2)
+
+**Started from:** Session 1 diagnosed 16 issues, locked 3 decisions (OWS NA ≠ defect, 19 missing case dims = real, CHP-DG-007 is showcase SKU). No code committed yet, pipeline not re-run.
+
+**Did:**
+
+**Phase 2A — OWS formula fix + pipeline re-run:**
+- Removed `ows_complete` from `issue_count`, `reason_defect_map`, `sku_defect_flags`, and `fix_minutes_est` in `R/02_build_frames.R`. Kept `ows_complete` column definition (data property, not defect).
+- Removed OWS from hero chart calculations in `R/04_hero_charts.R` and chart 05 in `R/05_supporting_charts.R`.
+- Removed `n_ows_incomplete`/`pct_ows_incomplete` from `report.qmd` setup chunk.
+- Updated `index.html`: "40 hours" → "15 hours".
+- Re-ran full pipeline (177.8s). New figures: total_fix_hours = 15, 36mo CB = $686,534, TTM rev = $33,712,481.
+
+**Phase 3 — Technical fixes:**
+- Standardized all 19 chart widths to 10 inches (was 8/9/10/11 mix). Changed `save_chart`/`save_pair`/`to_girafe` defaults to `w=10`/`w_in=10`.
+- Created `quarto/assets/lailara.scss` — Quarto SCSS theme layer (body-bg, typography, borders, TOC).
+- Applied SCSS theme to `report.qmd` and `dashboard.qmd` via `theme: [cosmo, assets/lailara.scss]`.
+- Updated `quarto/assets/report.css` max-width from 1080px to 1200px.
+- Verified all checklist items: chart 06 clean, no text overlap, dashboard waterfall inline SVG, tearsheet 2pp, companion PDFs clean.
+
+**Phase 4 — Data extraction for Claude Chat:**
+- Extracted all 10 tables + additional data points from pipeline frames.
+- Key corrected findings vs session 1 assumptions:
+  - Retailer pass rates (SKU-level, not field-level): Costco 76%, Kroger/WF 50%, Regional/Sprouts/Walmart 46%.
+  - 12 SKUs fail ALL 6 retailers (not 0 as field-level sum suggested).
+  - CHP-DG-007: revenue rank 9, 0/6 retailers passing, $18,834/yr annualized CB, 50 min fix time.
+  - CHP-AS-009 confirmed clean: DQ 100, $0 CB, 6/6 retailers, both barcodes valid.
+  - "$0-a-month" candidates: CHP-AS-005 ($111/retailer/month), CHP-PS-003 ($110), CHP-DG-001 ($94).
+- Identified 4 lines in `report.qmd` (547, 787, 814, 950) that falsely claim case dimensions/OWS are "all complete" — Claude Chat must rewrite.
+
+**State:**
+- All changes in working tree, **not committed**.
+- Pipeline output is current with all Phase 2A/3 changes.
+- Phase 4 data delivered in conversation — ready for Claude Chat.
+
+**Next (Phase 5+):**
+1. Give Phase 4 data to Claude Chat for narrative rewrite of `report.qmd`
+2. Claude Chat rewrites: CHP-DG-007 showcase, 4 "all complete" claims (lines 547/787/814/950), narrative logic around retailer pass rates
+3. **Phase 5:** Integrate rewritten prose into `report.qmd`, re-run pipeline, re-render
+4. **Phase 6:** Full verification pass, commit all changes, deploy to https://audit.lailarallc.com/
+5. Confirm `calculator.lailarallc.com` is live

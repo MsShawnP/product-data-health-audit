@@ -9,7 +9,7 @@ format:
     toc-depth: 2
     toc-location: left
     toc-title: "On this page"
-    theme: cosmo
+    theme: [cosmo, assets/lailara.scss]
     fig-align: center
     embed-resources: false
     css: assets/report.css
@@ -114,8 +114,6 @@ total_ttm_rev <- sum(smf$ttm_revenue, na.rm = TRUE)
 total_fix_hours <- sum(smf$est_fix_hours, na.rm = TRUE)
 n_brand_owner_fail <- sum(smf$missing_brand_owner, na.rm = TRUE)
 n_missing_dims     <- sum(smf$missing_case_dims | smf$missing_case_weight, na.rm = TRUE)
-n_ows_incomplete   <- sum(!smf$ows_complete, na.rm = TRUE)
-pct_ows_incomplete <- round(100 * n_ows_incomplete / n_skus)
 mean_dq_all   <- round(mean(smf$data_quality_score, na.rm = TRUE), 1)
 mean_dq_top15 <- smf |> arrange(desc(ttm_revenue)) |> slice(1:15) |>
   summarise(m = round(mean(data_quality_score, na.rm = TRUE), 1)) |> pull(m)

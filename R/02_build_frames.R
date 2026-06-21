@@ -117,7 +117,6 @@ sku_dim <- product_master |>
       as.integer(missing_case_dims) +
       as.integer(missing_country) +
       as.integer(missing_brand_owner) +
-      as.integer(is.na(ows_complete) | !ows_complete) +
       as.integer(!is.na(weight_plausible) & !weight_plausible),
     chk_gtin_len = !is.na(gtin14) & nchar(as.character(gtin14)) == 14,
     chk_upc_len  = !is.na(upc) & nchar(as.character(upc)) %in% c(12L, 13L),
@@ -361,8 +360,7 @@ reason_defect_map <- tibble::tribble(
   "Damaged goods",          "missing_case_weight",  "Case weight blank",
   "Damaged goods",          "weight_implausible",   "Implausible case weight",
   "Pricing error",          "missing_brand_owner",  "Brand owner blank",
-  "Pricing error",          "missing_country",      "Country of origin blank",
-  "Pricing error",          "ows_incomplete",       "OneWorldSync incomplete"
+  "Pricing error",          "missing_country",      "Country of origin blank"
 )
 
 sku_defect_flags <- sku_master_full |>
@@ -373,8 +371,7 @@ sku_defect_flags <- sku_master_full |>
     missing_case_weight = missing_case_weight,
     weight_implausible  = !is.na(weight_plausible) & !weight_plausible,
     missing_brand_owner = missing_brand_owner,
-    missing_country     = missing_country,
-    ows_incomplete      = is.na(ows_complete) | !ows_complete
+    missing_country     = missing_country
   ) |>
   pivot_longer(-sku, names_to = "defect_field", values_to = "has_defect") |>
   filter(has_defect) |>
@@ -395,7 +392,6 @@ sku_master_full <- sku_master_full |>
       as.integer(missing_case_weight | missing_case_dims)     * 30 +
       as.integer(missing_brand_owner)                         * 10 +
       as.integer(missing_country)                             * 30 +
-      as.integer(is.na(ows_complete) | !ows_complete)         * 30 +
       as.integer(!is.na(weight_plausible) & !weight_plausible)* 15,
     est_fix_hours    = fix_minutes_est / 60,
     savings_per_hour = ifelse(

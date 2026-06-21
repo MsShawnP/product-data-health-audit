@@ -48,7 +48,7 @@ raw             <- read_frame("raw_tables")
 dollar_short <- fmt_dollar_short
 
 save_pair <- function(p_static, p_interactive, name,
-                      w_in = 9, h_in = 6, dpi = 300) {
+                      w_in = 10, h_in = 6, dpi = 300) {
   png_path  <- file.path(OUT_DIR, paste0(name, ".png"))
   svg_path  <- file.path(OUT_DIR, paste0(name, ".svg"))
   html_path <- file.path(OUT_DIR, paste0(name, ".html"))
@@ -64,7 +64,7 @@ save_pair <- function(p_static, p_interactive, name,
               file.info(html_path)$size / 1024))
 }
 
-to_girafe <- function(p, w_in = 9, h_in = 6) {
+to_girafe <- function(p, w_in = 10, h_in = 6) {
   girafe(ggobj = p, width_svg = w_in, height_svg = h_in,
          options = list(
            opts_tooltip(css = "background:#222; color:#fff; padding:6px 8px;
@@ -81,7 +81,7 @@ cat("\n[5] Revenue-weighted field completeness\n")
 
 c5_src <- sku_dim |>
   select(sku, gtin_valid, upc_valid, missing_case_weight, missing_case_dims,
-         missing_country, missing_brand_owner, ows_complete, weight_plausible) |>
+         missing_country, missing_brand_owner, weight_plausible) |>
   left_join(sku_master_full |> select(sku, ttm_revenue), by = "sku") |>
   mutate(`Invalid GTIN-14`     = !gtin_valid,
          `Invalid UPC-12`      = !upc_valid,
@@ -89,13 +89,11 @@ c5_src <- sku_dim |>
          `Missing case weight` = missing_case_weight,
          `Missing brand owner` = missing_brand_owner,
          `Missing country`     = missing_country,
-         `OneWorldSync incomplete` = !ows_complete,
          `Implausible case weight` = !is.na(weight_plausible) & !weight_plausible)
 
 defect_cols <- c("Invalid GTIN-14", "Invalid UPC-12", "Missing case dims",
                  "Missing case weight", "Missing brand owner",
-                 "Missing country", "OneWorldSync incomplete",
-                 "Implausible case weight")
+                 "Missing country", "Implausible case weight")
 
 c5 <- defect_cols |>
   lapply(\(col) {
@@ -213,8 +211,8 @@ p6_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p6_base(FALSE), to_girafe(p6_base(TRUE), w_in = 10, h_in = 5),
-          "06_retailer_readiness_revenue_at_risk", w_in = 10, h_in = 5)
+save_pair(p6_base(FALSE), to_girafe(p6_base(TRUE), h_in = 5),
+          "06_retailer_readiness_revenue_at_risk", h_in = 5)
 
 # ---- chart 7: Data debt by product line -----------------------------------
 
@@ -274,8 +272,8 @@ p7_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p7_base(FALSE), to_girafe(p7_base(TRUE), w_in = 8, h_in = 5),
-          "07_data_debt_by_product_line", w_in = 8, h_in = 5)
+save_pair(p7_base(FALSE), to_girafe(p7_base(TRUE), h_in = 5),
+          "07_data_debt_by_product_line", h_in = 5)
 
 # ---- chart 8: Chargeback as % of gross margin (top 15) --------------------
 
@@ -321,8 +319,8 @@ p8_base <- function(use_interactive) {
     theme(axis.text.y = element_text(size = 9))
 }
 
-save_pair(p8_base(FALSE), to_girafe(p8_base(TRUE), w_in = 10, h_in = 7),
-          "08_chargeback_pct_of_gross_margin_top15", w_in = 10, h_in = 7)
+save_pair(p8_base(FALSE), to_girafe(p8_base(TRUE), h_in = 7),
+          "08_chargeback_pct_of_gross_margin_top15", h_in = 7)
 
 # ---- chart 9: Time-to-shelf by data completeness --------------------------
 
@@ -524,8 +522,8 @@ p12_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p12_base(FALSE), to_girafe(p12_base(TRUE), w_in = 9, h_in = 5.5),
-          "12_growth_projection_chargebacks", w_in = 9, h_in = 5.5)
+save_pair(p12_base(FALSE), to_girafe(p12_base(TRUE), h_in = 5.5),
+          "12_growth_projection_chargebacks", h_in = 5.5)
 
 # ---- chart 13: GTIN/UPC validation pass/fail by product line --------------
 # Each SKU is a dot in a 6-wide × 5-tall grid. Red = invalid check digit.
@@ -602,8 +600,8 @@ p13_base <- function(use_interactive) {
                                            hjust = 0))
 }
 
-save_pair(p13_base(FALSE), to_girafe(p13_base(TRUE), w_in = 10, h_in = 5),
-          "13_gtin_upc_pass_fail_by_line", w_in = 10, h_in = 5)
+save_pair(p13_base(FALSE), to_girafe(p13_base(TRUE), h_in = 5),
+          "13_gtin_upc_pass_fail_by_line", h_in = 5)
 
 # ---- chart 14: Chargeback by reason ---------------------------------------
 
@@ -655,8 +653,8 @@ p14_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p14_base(FALSE), to_girafe(p14_base(TRUE), w_in = 9, h_in = 4.5),
-          "14_chargeback_by_reason", w_in = 9, h_in = 4.5)
+save_pair(p14_base(FALSE), to_girafe(p14_base(TRUE), h_in = 4.5),
+          "14_chargeback_by_reason", h_in = 4.5)
 
 # ---- chart 15: Monthly chargeback trend -----------------------------------
 
@@ -697,8 +695,8 @@ p15_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p15_base(FALSE), to_girafe(p15_base(TRUE), w_in = 10, h_in = 5),
-          "15_monthly_chargeback_trend", w_in = 10, h_in = 5)
+save_pair(p15_base(FALSE), to_girafe(p15_base(TRUE), h_in = 5),
+          "15_monthly_chargeback_trend", h_in = 5)
 
 # ---- chart 16: Monthly chargebacks vs scan dollars (overlay) --------------
 
@@ -765,8 +763,8 @@ p16_base <- function(use_interactive) {
           axis.title.y.left  = element_text(color = cinderhaven_palette$text_muted))
 }
 
-save_pair(p16_base(FALSE), to_girafe(p16_base(TRUE), w_in = 10, h_in = 5),
-          "16_monthly_chargebacks_vs_scan", w_in = 10, h_in = 5)
+save_pair(p16_base(FALSE), to_girafe(p16_base(TRUE), h_in = 5),
+          "16_monthly_chargebacks_vs_scan", h_in = 5)
 
 # ---- chart 17: Quality and chargebacks by updated_by source ---------------
 
@@ -832,8 +830,8 @@ p17_base <- function(use_interactive) {
           plot.margin = margin(8, 8, 16, 8))
 }
 
-save_pair(p17_base(FALSE), to_girafe(p17_base(TRUE), w_in = 11, h_in = 6),
-          "17_process_debt_by_updated_by", w_in = 11, h_in = 6)
+save_pair(p17_base(FALSE), to_girafe(p17_base(TRUE)),
+          "17_process_debt_by_updated_by")
 
 # ---- chart 19: 1WorldSync status distribution -----------------------------
 
@@ -879,8 +877,8 @@ p19_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p19_base(FALSE), to_girafe(p19_base(TRUE), w_in = 9, h_in = 4),
-          "19_oneworldsync_status", w_in = 9, h_in = 4)
+save_pair(p19_base(FALSE), to_girafe(p19_base(TRUE), h_in = 4),
+          "19_oneworldsync_status", h_in = 4)
 }
 
 # ---- chart 20: Retailer item-setup readiness (stacked bar) ----------------
@@ -940,8 +938,8 @@ p20_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p20_base(FALSE), to_girafe(p20_base(TRUE), w_in = 9, h_in = 5),
-          "20_retailer_setup_readiness_stacked", w_in = 9, h_in = 5)
+save_pair(p20_base(FALSE), to_girafe(p20_base(TRUE), h_in = 5),
+          "20_retailer_setup_readiness_stacked", h_in = 5)
 
 # ---- chart 21: Data staleness distribution --------------------------------
 
@@ -992,8 +990,8 @@ p21_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p21_base(FALSE), to_girafe(p21_base(TRUE), w_in = 9, h_in = 4.5),
-          "21_data_staleness_distribution", w_in = 9, h_in = 4.5)
+save_pair(p21_base(FALSE), to_girafe(p21_base(TRUE), h_in = 4.5),
+          "21_data_staleness_distribution", h_in = 4.5)
 
 # ---- chart 22: Serving size variants --------------------------------------
 
@@ -1053,8 +1051,8 @@ p22_base <- function(use_interactive) {
     theme_cinderhaven()
 }
 
-save_pair(p22_base(FALSE), to_girafe(p22_base(TRUE), w_in = 10, h_in = 6),
-          "22_serving_size_variants", w_in = 10, h_in = 6)
+save_pair(p22_base(FALSE), to_girafe(p22_base(TRUE)),
+          "22_serving_size_variants")
 }
 
 # ---- chart 23: SKU risk (fix-priority) distribution -----------------------
@@ -1123,8 +1121,8 @@ p23_base <- function(use_interactive) {
           legend.position = "top")
 }
 
-save_pair(p23_base(FALSE), to_girafe(p23_base(TRUE), w_in = 9, h_in = 13),
-          "23_sku_risk_distribution", w_in = 9, h_in = 13)
+save_pair(p23_base(FALSE), to_girafe(p23_base(TRUE), h_in = 13),
+          "23_sku_risk_distribution", h_in = 13)
 
 # ---- skip notes -----------------------------------------------------------
 
