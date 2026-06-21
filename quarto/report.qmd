@@ -765,7 +765,7 @@ cat(kable(rr_detail, format = "pipe",
           align = c("l", "r", "r", "r", "r")), sep = "\n")
 ```
 
-![Retailer item-setup readiness, pass/fail counts.](`r chart("20_retailer_setup_readiness_stacked")`){fig-alt="Stacked bar chart of pass/fail SKU counts per retailer."}
+![Retailer item-setup readiness, pass/fail counts.](`r chart("20_retailer_setup_readiness_grouped")`){fig-alt="Grouped bar chart of pass/fail SKU counts per retailer."}
 
 The result is near-uniform: `r pct_fail_all`% of SKUs fail every retailer. The failure is driven by barcode validation (GTIN-14 and UPC check digits). Brand owner and country of origin are complete and correct. Case dimensions are missing for 19 of 50 SKUs, contributing to readiness failures at retailers that require them. The few SKUs that pass at individual retailers do so because those retailers require fewer barcode fields, not because the data is clean.
 

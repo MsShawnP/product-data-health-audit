@@ -881,9 +881,9 @@ save_pair(p19_base(FALSE), to_girafe(p19_base(TRUE), h_in = 4),
           "19_oneworldsync_status", h_in = 4)
 }
 
-# ---- chart 20: Retailer item-setup readiness (stacked bar) ----------------
+# ---- chart 20: Retailer item-setup readiness (grouped bar) ----------------
 
-cat("\n[20] Retailer item-setup readiness — stacked bar\n")
+cat("\n[20] Retailer item-setup readiness — grouped bar\n")
 
 c20 <- retailer_rs |>
   group_by(retailer) |>
@@ -901,7 +901,7 @@ c20 <- retailer_rs |>
            percent(n / n_total, accuracy = 0.1), ")"))
 
 c20_lab <- c20 |> filter(outcome == "Pass") |>
-  transmute(retailer, label = paste0(round(100 * n / n_total), "% pass"))
+  transmute(retailer, n_total, label = paste0(round(100 * n / n_total), "% pass"))
 
 p20_base <- function(use_interactive) {
   p <- ggplot(c20, aes(x = safe_fct_reorder(retailer, ifelse(outcome == "Pass", n, 0),
@@ -910,27 +910,30 @@ p20_base <- function(use_interactive) {
   if (use_interactive) {
     p <- p + geom_col_interactive(aes(tooltip = tooltip,
                                       data_id = paste(retailer, outcome)),
-                                  width = 0.7)
+                                  width = 0.7,
+                                  position = position_dodge(width = 0.75))
   } else {
-    p <- p + geom_col(width = 0.7)
+    p <- p + geom_col(width = 0.7,
+                      position = position_dodge(width = 0.75))
   }
   p +
     geom_text(data = c20 |> filter(n > 0),
               aes(label = n,
                   color = outcome),
-              position = position_stack(vjust = 0.5),
+              position = position_dodge(width = 0.75),
+              vjust = -0.4,
               size = 3.6, fontface = "bold", show.legend = FALSE) +
-    scale_color_manual(values = c("Fail" = "white",
-                                  "Pass" = cinderhaven_palette$text),
+    scale_color_manual(values = c("Fail" = LL_TOKYO,
+                                  "Pass" = LL_HK_DARK),
                        guide = "none") +
     geom_text(data = c20_lab,
-              aes(x = retailer, y = nrow(raw$product_master) * 1.05, label = label),
-              inherit.aes = FALSE, vjust = -0.6, size = 3.4,
+              aes(x = retailer, y = n_total * 1.08, label = label),
+              inherit.aes = FALSE, size = 3.4,
               color = cinderhaven_palette$text, fontface = "bold") +
-    scale_fill_manual(values = c("Fail" = cinderhaven_palette$red,
-                                 "Pass" = cinderhaven_palette$recede),
+    scale_fill_manual(values = c("Fail" = LL_TOKYO,
+                                 "Pass" = LL_HK),
                       name = NULL) +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.10))) +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
     labs(title    = "Retailer item-setup readiness",
          subtitle = paste0("Of ", nrow(raw$product_master), " SKUs, how many would pass each retailer's required fields today."),
          x = NULL, y = "SKU count",
@@ -939,7 +942,7 @@ p20_base <- function(use_interactive) {
 }
 
 save_pair(p20_base(FALSE), to_girafe(p20_base(TRUE), h_in = 5),
-          "20_retailer_setup_readiness_stacked", h_in = 5)
+          "20_retailer_setup_readiness_grouped", h_in = 5)
 
 # ---- chart 21: Data staleness distribution --------------------------------
 

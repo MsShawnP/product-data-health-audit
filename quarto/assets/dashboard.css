@@ -21,19 +21,20 @@ html, body {
   overflow-x: hidden !important;
 }
 
-/* ── Title block: dark bar, full width ────────────────────────────── */
+/* ── Title block: canvas background, editorial ───────────────────── */
 
 #title-block-header {
-  background: #1a1a1a !important;
-  color: #fff !important;
+  background: #f5f3ee !important;
+  color: #0d0d0d !important;
   margin: 0 -2rem 1.5rem -2rem !important;
   padding: 1.8rem 2.5rem 1.4rem !important;
   border: none !important;
+  border-bottom: 1px solid #d9d9d9 !important;
 }
 
 #title-block-header h1.title,
 #title-block-header .title {
-  color: #fff !important;
+  color: #0d0d0d !important;
   font-family: 'Playfair Display', Georgia, serif !important;
   border-bottom: none !important;
   padding-bottom: 0 !important;
@@ -44,7 +45,7 @@ html, body {
 
 #title-block-header .subtitle,
 #title-block-header p.subtitle {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: #595959 !important;
   font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
   font-size: 1rem !important;
   margin: 0 !important;
@@ -133,6 +134,7 @@ blockquote strong {
   letter-spacing: 0.03em !important;
   padding: 8px 10px !important;
   border-bottom: none !important;
+  white-space: nowrap !important;
 }
 
 /* Header sort arrows */
@@ -169,6 +171,12 @@ blockquote strong {
   padding: 5px 10px !important;
   font-size: 0.85rem !important;
   border-bottom: 1px solid #e0e0e0 !important;
+  white-space: nowrap !important;
+}
+
+/* Overflow wrapper for wide tables */
+.reactable-container {
+  overflow-x: auto !important;
 }
 
 /* Striped rows */

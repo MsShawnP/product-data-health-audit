@@ -199,117 +199,56 @@ p2 <- ggplot(tier_summary, aes(mean_days, tier, fill = tier)) +
 
 save_chart(p2, "02_time_to_shelf", h = 5.5)
 
-# ---- 3. True net margin by retailer (stacked composition) ----------------
+# ---- 3. True net margin by retailer (grouped bars) -----------------------
 
-cat("\n[3/4] True net margin by retailer (stacked composition)\n")
+cat("\n[3/4] True net margin by retailer (grouped bars)\n")
 
 contracted <- c("Walmart", "Whole Foods", "Costco")
-
-# One row per retailer, ordered by gross revenue desc so Walmart sits at
-# the top of the chart. Both trade and chargeback shares get tiny on
-# the smaller retailers — Costco's chargeback is <$30k against $2.25M
-# gross. Inflate both to absolute minimum visual widths chosen to fit
-# their dollar labels inside the colored segment. Labels still show the
-# real dollar amount.
-MIN_TRADE_VISUAL <- 0.7e6   # ~ "$646k" + padding fits at size 3.0
-MIN_CB_VISUAL    <- 0.5e6   # ~ "$26k" / "$46k" + padding fits at size 3.0
 
 c3_pnl <- retailer_pnl |>
   filter(retailer %in% contracted) |>
   arrange(desc(gross_revenue)) |>
-  mutate(retailer     = factor(retailer, levels = retailer),
-         trade_visual = pmax(trade_spend_total, MIN_TRADE_VISUAL),
-         cb_visual    = pmax(chargeback_total,  MIN_CB_VISUAL),
-         bar_end      = net_contribution + trade_visual + cb_visual)
+  mutate(retailer = factor(retailer, levels = retailer))
 
-# Long form for the three stack segments. Trade + chargebacks use the
-# visual (floored) widths; net contribution is unchanged.
 c3_long <- c3_pnl |>
   transmute(retailer,
-            "Net contribution" = net_contribution,
-            "Trade spend"      = trade_visual,
-            "Chargebacks"      = cb_visual) |>
+            "Gross revenue"    = gross_revenue,
+            "Trade spend"      = trade_spend_total,
+            "Chargebacks"      = chargeback_total,
+            "Net contribution" = net_contribution) |>
   pivot_longer(-retailer, names_to = "component", values_to = "value") |>
   mutate(component = factor(component,
-                            levels = c("Net contribution",
-                                       "Trade spend",
-                                       "Chargebacks")))
+    levels = c("Gross revenue", "Trade spend",
+               "Chargebacks", "Net contribution")))
 
-stack_palette <- c(
-  "Net contribution" = cinderhaven_palette$recede,   # light grey — the calm part
-  "Trade spend"      = cinderhaven_palette$recede_dark,   # medium grey — context, not focus
-  "Chargebacks"      = cinderhaven_palette$red)  # the controllable lever
+bar_palette <- c(
+  "Gross revenue"    = LL_CHICAGO,
+  "Trade spend"      = LL_REFERENCE,
+  "Chargebacks"      = LL_TOKYO,
+  "Net contribution" = LL_CHICAGO)
 
-# All three labels go inside their segments at the visual segment
-# centers; label text is always the real (un-inflated) dollar amount.
-c3_net_lab <- c3_pnl |>
-  transmute(retailer,
-            x_pos = net_contribution / 2,
-            label = fmt_dollar_short(net_contribution))
+c3_long$label <- fmt_dollar_short(c3_long$value)
 
-c3_trade_lab <- c3_pnl |>
-  transmute(retailer,
-            x_pos = net_contribution + trade_visual / 2,
-            label = fmt_dollar_short(trade_spend_total))
-
-c3_cb_lab <- c3_pnl |>
-  transmute(retailer,
-            x_pos = net_contribution + trade_visual + cb_visual / 2,
-            label = fmt_dollar_short(chargeback_total))
-
-# Net margin % annotation, placed just past the right end of each
-# (visible) bar. bar_end exceeds gross revenue by the floor adjustments.
-c3_margin <- c3_pnl |>
-  mutate(margin_label = sprintf("%.0f%% net margin",
-                                100 * net_margin_pct_of_gross_revenue))
-
-p3 <- ggplot(c3_long,
-             aes(x = value, y = fct_rev(retailer), fill = component)) +
-  # Stacked horizontal bar. Total length = gross revenue. reverse=TRUE so
-  # the visual order matches the factor levels (Net, Trade, Chargebacks
-  # left-to-right) and the legend.
-  geom_col(width = 0.65, color = "white", linewidth = 0.5,
-           position = position_stack(reverse = TRUE)) +
-
-  # In-segment dollar labels: dark text on the light-grey net segment,
-  # white on the medium-grey + red segments where contrast holds.
-  geom_text(data = c3_net_lab,
-            aes(x = x_pos, y = fct_rev(retailer), label = label),
-            inherit.aes = FALSE,
-            size = 3.0, color = cinderhaven_palette$text, fontface = "bold") +
-  geom_text(data = c3_trade_lab,
-            aes(x = x_pos, y = fct_rev(retailer), label = label),
-            inherit.aes = FALSE,
-            size = 3.0, color = "white", fontface = "bold") +
-  geom_text(data = c3_cb_lab,
-            aes(x = x_pos, y = fct_rev(retailer), label = label),
-            inherit.aes = FALSE,
-            size = 3.0, color = "white", fontface = "bold") +
-
-  # Net margin % at the right end of each bar — neutral text now that
-  # red is reserved for the chargeback segment.
-  geom_text(data = c3_margin,
-            aes(x = bar_end, y = fct_rev(retailer),
-                label = margin_label),
-            inherit.aes = FALSE,
-            hjust = -0.06, size = 3.4, fontface = "bold",
-            color = cinderhaven_palette$text) +
-
-  scale_fill_manual(values = stack_palette, name = NULL,
-                    breaks = c("Net contribution", "Trade spend",
-                               "Chargebacks")) +
+p3 <- ggplot(c3_long, aes(x = value, y = fct_rev(component), fill = component)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = label),
+            hjust = 1.1, color = "white", fontface = "bold", size = 3.6) +
+  scale_fill_manual(values = bar_palette, guide = "none") +
   scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
-                     expand = expansion(mult = c(0, 0.20))) +
-
+                     expand = expansion(mult = c(0, 0.08))) +
+  facet_wrap(~ retailer, ncol = 1, scales = "free_x") +
   labs(title    = wrap_title("Walmart wins on dollars; Whole Foods wins on margin"),
-       subtitle = "Annual gross revenue → trade spend → chargebacks → net contribution, by retailer",
+       subtitle = "Gross revenue, trade spend, chargebacks, and net contribution by retailer",
        x        = NULL,
        y        = NULL,
        caption  = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
   theme_cinderhaven_horizontal() +
-  theme(axis.text.y = element_text(size = 11, face = "bold"))
+  theme(axis.text.y = element_text(size = 11),
+        strip.text  = element_text(size = 12, face = "bold",
+                                   color = LL_INK,
+                                   family = "Playfair Display"))
 
-save_chart(p3, "03_retailer_net_margin", h = 5)
+save_chart(p3, "03_retailer_net_margin", h = 7)
 
 # ---- 4. Fix ROI ----------------------------------------------------------
 
