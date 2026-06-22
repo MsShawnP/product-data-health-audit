@@ -115,7 +115,7 @@ reactable(
   filterable      = TRUE,
   highlight       = TRUE,
   striped         = TRUE,
-  fullWidth       = FALSE,
+  fullWidth       = TRUE,
   bordered        = TRUE,
   defaultPageSize = 20,
   showPageSizeOptions = TRUE,
@@ -128,8 +128,8 @@ reactable(
   ),
   columns = list(
     SKU      = colDef(minWidth = 100, class = "col-sku", headerClass = "col-sku"),
-    Product  = colDef(width = 220),
-    Retailer = colDef(width = 110, filterInput = function(values, name) {
+    Product  = colDef(minWidth = 220),
+    Retailer = colDef(minWidth = 110, filterInput = function(values, name) {
       tags$select(
         onchange = sprintf(
           "Reactable.setFilter('velocity-table', '%s', event.target.value || undefined)",
@@ -139,7 +139,7 @@ reactable(
         style = "width:100%; height:24px"
       )
     }),
-    Line     = colDef(width = 150, filterInput = function(values, name) {
+    Line     = colDef(minWidth = 150, filterInput = function(values, name) {
       tags$select(
         onchange = sprintf(
           "Reactable.setFilter('velocity-table', '%s', event.target.value || undefined)",
@@ -150,7 +150,7 @@ reactable(
       )
     }),
     `Quality tier` = colDef(
-      width = 130,
+      minWidth = 130,
       filterInput = function(values, name) {
         tags$select(
           onchange = sprintf(
@@ -162,13 +162,13 @@ reactable(
         )
       }
     ),
-    Stores   = colDef(width = 80, align = "right"),
-    `4w u/store/wk`  = colDef(width = 120, align = "right",
+    Stores   = colDef(minWidth = 80, align = "right"),
+    `4w u/store/wk`  = colDef(minWidth = 150, align = "right",
                               format = colFormat(digits = 2)),
-    `12w u/store/wk` = colDef(width = 120, align = "right",
+    `12w u/store/wk` = colDef(minWidth = 155, align = "right",
                               format = colFormat(digits = 2)),
     `% change` = colDef(
-      width = 100, align = "right",
+      minWidth = 110, align = "right",
       cell = function(value) {
         if (is.na(value)) return("—")
         sprintf("%+.0f%%", value * 100)
@@ -180,7 +180,7 @@ reactable(
       }
     ),
     `DQ flag` = colDef(
-      width = 90, align = "center",
+      minWidth = 95, align = "center",
       style = function(value) {
         if (is.na(value)) return(NULL)
         if (value == "REVIEW")
@@ -361,7 +361,7 @@ reactable(
   filterable      = TRUE,
   highlight       = TRUE,
   striped         = TRUE,
-  fullWidth       = FALSE,
+  fullWidth       = TRUE,
   bordered        = TRUE,
   defaultPageSize = 18,
   showPageSizeOptions = TRUE,
@@ -374,28 +374,28 @@ reactable(
   ),
   columns = list(
     SKU     = colDef(minWidth = 100, class = "col-sku", headerClass = "col-sku"),
-    Product = colDef(width = 280),
+    Product = colDef(minWidth = 250),
     `TTM revenue` = colDef(
-      align = "right",
+      minWidth = 130, align = "right",
       cell  = function(v) dollar_cell(v)
     ),
-    `Quality score` = colDef(align = "right"),
+    `Quality score` = colDef(minWidth = 130, align = "right"),
     `Chargebacks 36mo` = colDef(
-      align = "right",
+      minWidth = 160, align = "right",
       cell  = function(v) dollar_cell(v)
     ),
     `Composite priority` = colDef(
-      align = "right",
+      minWidth = 165, align = "right",
       style = function(v) list(fontWeight = "600")
     ),
     `Est. fix hours` = colDef(
-      align = "right",
+      minWidth = 130, align = "right",
       cell  = function(v) {
         if (is.na(v) || v == 0) "—" else sprintf("%.2f", v)
       }
     ),
     `$ saved / hour` = colDef(
-      align = "right",
+      minWidth = 155, align = "right",
       cell  = function(v) {
         if (is.na(v)) return("—")
         if (v >= 1e3) sprintf("$%.1fk/hr", v / 1e3)
