@@ -469,14 +469,15 @@ current_revenue <- sum(sku_master_full$ttm_revenue)
 stage2_skus <- as.integer(ceiling(current_skus * 2.5))
 stage3_skus <- as.integer(current_skus * 5L)
 
+current_retailers <- n_distinct(retailer_rs$retailer)
 c12 <- tribble(
   ~scenario,        ~sku_count, ~retailer_count,
-  paste0("Current (", current_skus, " SKUs, 3 retailers)"),   current_skus,         3L,
-  sprintf("Stage 2 (%d SKUs, 5 retailers)", stage2_skus),     stage2_skus,          5L,
-  sprintf("Stage 3 (%d SKUs, 8 retailers)", stage3_skus),     stage3_skus,          8L
+  sprintf("Current (%d SKUs, %d retailers)", current_skus, current_retailers),  current_skus,  current_retailers,
+  sprintf("Stage 2 (%d SKUs, 8 retailers)", stage2_skus),                      stage2_skus,   8L,
+  sprintf("Stage 3 (%d SKUs, 12 retailers)", stage3_skus),                     stage3_skus,   12L
 ) |>
   mutate(scale_factor    = (sku_count / current_skus) *
-                           (retailer_count / 3),
+                           (retailer_count / current_retailers),
          proj_chargebacks = current_cb_per_year * scale_factor,
          proj_revenue     = current_revenue * (sku_count / current_skus),
          scenario = factor(scenario, levels = scenario),

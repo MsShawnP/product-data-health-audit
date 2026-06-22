@@ -145,10 +145,12 @@ rev_at_risk <- function(ret) {
 wm_rev_risk <- rev_at_risk("Walmart")
 wm_rev_pct  <- round(100 * wm_rev_risk / total_ttm_rev)
 
+n_retailers <- n_distinct(rrs$retailer)
+
 stage2_skus <- as.integer(ceiling(n_skus * 2.5))
 stage3_skus <- as.integer(n_skus * 5L)
-stage2_cb   <- round(annual_cb * (stage2_skus / n_skus) * (5 / 3))
-stage3_cb   <- round(annual_cb * (stage3_skus / n_skus) * (8 / 3))
+stage2_cb   <- round(annual_cb * (stage2_skus / n_skus) * (8 / n_retailers))
+stage3_cb   <- round(annual_cb * (stage3_skus / n_skus) * (12 / n_retailers))
 
 top_rev <- smf |> arrange(desc(ttm_revenue)) |> slice(1)
 top_cb  <- smf |> arrange(desc(chargeback_total)) |> slice(1)
@@ -184,7 +186,6 @@ deauth_stats <- smf |>
             mean_rev = mean(ttm_revenue, na.rm = TRUE))
 mean_deauth_pct <- round(100 * deauth_stats$mean_rate, 1)
 
-n_retailers <- n_distinct(rrs$retailer)
 n_sku_pass_any <- rrs |> filter(overall_pass) |> distinct(sku) |> nrow()
 n_sku_fail_all <- n_skus - n_sku_pass_any
 n_retailer_zero_pass <- rr_stats |> filter(pass_rate == 0) |> nrow()
@@ -726,23 +727,21 @@ The total: `r round(total_fix_hours)` hours of data entry addresses the entire b
 
 # Part 4: The Evidence
 
-*These sections appear as collapsible panels in the HTML report and as separate pages in the PDF.*
+:::: {.callout-note collapse="true" appearance="simple"}
+## Part 4: The Evidence — methodology, data model, benchmarks, and limitations
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Revenue-weighted field completeness
 
-Chart 5 shows nine data defect categories ranked by the share of TTM revenue they affect. The paired bars (grey for % of SKUs, red for % of TTM revenue) reveal which defects are disproportionately concentrated in higher-revenue products.
+Chart 5 shows nine data defect categories ranked by the share of TTM revenue they affect. The paired bars (light for % of SKUs, dark for % of TTM revenue) reveal which defects are disproportionately concentrated in higher-revenue products.
 
 ![Revenue-weighted field completeness.](`r chart("05_revenue_weighted_completeness")`){fig-alt="Paired-bar chart of nine defect categories, comparing share of SKUs (grey) to share of TTM revenue (red)."}
 
-The chart reveals a concentrated defect pattern. Invalid UPC check digits affect `r round(100 * n_upc_fail / n_skus)`% of SKUs. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`%. No SKU has both valid. No other defect category registers: brand owner, country of origin (with one exception), and case weight are complete across the catalog. Case dimensions are missing for 19 of 50 SKUs — part of the fix scope.
-:::
+The chart reveals a concentrated defect pattern. Invalid UPC check digits affect `r round(100 * n_upc_fail / n_skus)`% of SKUs. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`% — and they are the same 12 SKUs. The remaining 38 have both valid. No other barcode defect category registers: brand owner, country of origin (with one exception), and case weight are complete across the catalog. Case dimensions are missing for 19 of 50 SKUs — part of the fix scope.
 
 ::: {.content-visible when-format="pdf"}
 \newpage
 :::
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Retailer readiness: per-retailer breakdown
 
 The retailer readiness analysis tests every SKU against each retailer's published required-field set. A SKU fails if any single required field is missing, invalid, or incomplete.
@@ -762,16 +761,14 @@ cat(kable(rr_detail, format = "pipe",
 
 ![Retailer item-setup readiness, pass/fail counts.](`r chart("20_retailer_setup_readiness_grouped")`){fig-alt="Grouped bar chart of pass/fail SKU counts per retailer."}
 
-The result is near-uniform: `r pct_fail_all`% of SKUs fail every retailer. The failure is driven by barcode validation (GTIN-14 and UPC check digits). Brand owner and country of origin are complete and correct. Case dimensions are missing for 19 of 50 SKUs, contributing to readiness failures at retailers that require them. The few SKUs that pass at individual retailers do so because those retailers require fewer barcode fields, not because the data is clean.
+The failure concentrates in a specific subset: 12 SKUs fail every retailer, and another 15 fail at least one. The primary driver is barcode validation (GTIN-14 and UPC check digits), with missing case dimensions contributing at retailers that require them. Brand owner and country of origin are complete and correct. The few SKUs that pass at the strictest retailers do so because their barcodes happened to be entered correctly on day one and their case dimensions are present — not because anyone cleaned them.
 
-The "mean fields short" column matters for planning. Fixing barcode check digits across the catalog closes the gap between current readiness and full compliance at every retailer. The fix is a single category of work.
-:::
+The "mean fields short" column matters for planning. Fixing barcode check digits and entering missing case dimensions closes the gap between current readiness and full compliance at every retailer. The fix is two categories of bounded clerical work: arithmetic and a tape measure.
 
 ::: {.content-visible when-format="pdf"}
 \newpage
 :::
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Chargeback trend analysis
 
 Monthly chargeback dollars have held roughly flat at about $19,000 per month over the 36-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
@@ -780,25 +777,23 @@ The flat trend applies to data-driven chargebacks specifically — static defect
 
 ![Monthly chargeback dollars over the 36-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $19,000 per month."}
 
-Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is stable at $1.8 to $2.5 million per month. Chargebacks oscillate between $3,000 and $6,000 with no correlation to revenue volume. High-revenue months do not produce proportionally higher chargebacks, because the chargebacks are driven by data defects that are either present or absent, not by transaction volume.
+Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is stable at $1.8 to $2.5 million per month. Chargebacks oscillate between $8,000 and $28,000 with no correlation to revenue volume. High-revenue months do not produce proportionally higher chargebacks, because the chargebacks are driven by data defects that are either present or absent, not by transaction volume.
 
 ![Monthly chargebacks overlaid on monthly scan revenue.](`r chart("16_monthly_chargebacks_vs_scan")`){fig-alt="Dual-axis line chart of monthly chargebacks and monthly scan revenue showing no correlation."}
 
 This lack of correlation is itself a finding. It means chargebacks will not self-correct with growth. Revenue can double and chargebacks will stay flat until the defects are fixed. It also means chargebacks will not decline with a sales downturn. They are a fixed cost disguised as a variable one.
-:::
 
 ::: {.content-visible when-format="pdf"}
 \newpage
 :::
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Growth projection with assumptions and sensitivity
 
 | Stage | SKUs | Retailers | Projected annual chargebacks |
 |---|---:|---:|---:|
 | Current | `r n_skus` | `r n_retailers` | `r ds(annual_cb)` |
-| Stage 2 | `r stage2_skus` | 5 | `r ds(stage2_cb)` |
-| Stage 3 | `r stage3_skus` | 8 | `r ds(stage3_cb)` |
+| Stage 2 | `r stage2_skus` | 8 | `r ds(stage2_cb)` |
+| Stage 3 | `r stage3_skus` | 12 | `r ds(stage3_cb)` |
 
 ![Growth projection of annual chargebacks at three SKU/retailer stages.](`r chart("12_growth_projection_chargebacks")`){fig-alt="Bar chart of projected annual chargebacks at current scale, Stage 2, and Stage 3."}
 
@@ -806,18 +801,14 @@ The projection is linear: it multiplies the current per-SKU chargeback rate by t
 
 The sensitivity: if the defect rate degrades by 25% during growth, Stage 2 chargebacks rise from `r ds(stage2_cb)` to `r ds(round(stage2_cb * 1.25))` and Stage 3 from `r ds(stage3_cb)` to `r ds(round(stage3_cb * 1.25))`.
 
-The assumption that matters most is not the defect rate. It's the retailer count. Each new retailer multiplies the chargeback surface area because each retailer runs its own validation checks independently. A SKU with an invalid GTIN generates one charge per retailer per month. At `r n_retailers` retailers, that's `r n_retailers` charges. At 8, it's 8. Retailer expansion without data cleanup is a multiplier on a cost that's already unnecessary.
-:::
+The assumption that matters most is not the defect rate. It's the retailer count. Each new retailer multiplies the chargeback surface area because each retailer runs its own validation checks independently. A SKU with an invalid GTIN generates one charge per retailer per month. At `r n_retailers` retailers, that's `r n_retailers` charges. At 12, it's 12. Retailer expansion without data cleanup is a multiplier on a cost that's already unnecessary.
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## New vs. old SKU: a null finding
 
 We tested whether SKU age predicts data quality. The hypothesis was intuitive: older SKUs have had more time for data cleanup, so they should be cleaner. Newer SKUs were entered more recently, possibly more carelessly.
 
 The data shows no relationship. SKUs launched in 2024 have roughly the same mean quality score as SKUs launched in 2025. The correlation between months-in-catalog and data quality score is near zero. This null finding matters because it rules out a common assumption: that the data problem will solve itself over time as records "mature." It won't. Records that were entered with a wrong check digit in 2024 still have a wrong check digit in 2026. Age does not fix data. People fix data. Without an active process, the defects persist indefinitely.
-:::
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Benchmarking context
 
 Direct benchmarks for specialty food chargeback rates are not publicly available at sufficient granularity to make precise comparisons. The following are directional reference points drawn from industry reports and trade publications:
@@ -830,9 +821,7 @@ cb_rate_pct <- round(100 * annual_cb / total_ttm_rev, 2)
 ```
 
 Cinderhaven's overall chargeback rate is `r cb_rate_pct`% of gross revenue (`r ds(annual_cb)` against `r ds(total_ttm_rev)`). This is low by industry standards. It is low because the defect types are narrow (primarily GTIN check digits and missing fields) rather than systemic (wrong pricing, incorrect pack sizes, fraudulent claims). The low rate does not mean the problem is small. It means the problem is concentrated and fixable. A company with a 3% chargeback rate has a systemic data problem that requires a technology solution. Cinderhaven has a clerical problem that requires `r round(total_fix_hours)` hours of data entry.
-:::
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## What this report does not cover
 
 This audit examines product master data quality and its financial impact through chargebacks, stalled launches, retailer readiness, and shelf loss. It does not cover:
@@ -846,29 +835,21 @@ Demand forecasting. Scan data is used to calculate velocity and identify trends.
 Supply chain operations. The remaining chargebacks trace to fulfillment operations and are outside the scope of this data audit.
 
 Competitor analysis. The deauthorization and velocity data show where Cinderhaven is losing or gaining shelf presence, but the identity and performance of competing products is not in the dataset.
-:::
 
-::: {.callout-note collapse="true" appearance="simple"}
-## How I'd do this differently with real data
+## What changes with real data
 
-This section is for the portfolio audience: data professionals, hiring managers, and technical evaluators assessing the methodology.
+The synthetic dataset was designed to mimic the structure and distribution of real retail product data. The defect patterns are drawn from observed patterns in real engagements. But synthetic data constrains what the analysis can show. Four things change when the same methodology runs against a real product master.
 
-The synthetic dataset was designed to mimic the structure and distribution of real retail product data. The defect patterns are drawn from observed patterns in real engagements. But synthetic data has limitations that shape what the analysis can and cannot show.
+First, the chargeback-to-defect linkage becomes mechanical rather than inferred. In this audit, the linkage is directional: a SKU has an invalid GTIN and generates GTIN-related chargebacks, so the two are connected. In a real engagement, the retailer's chargeback detail report names the specific field that failed. The inference becomes a join. The confidence interval disappears.
 
-With real data, four things would change.
+Second, the stalled-launch model tightens. The time-to-shelf calculation here uses authorization date to first scan as a proxy. Real data includes item setup submission dates, retailer acknowledgment dates, and distribution center receipt dates, allowing a granular analysis of where the delay actually occurs. The proxy identifies the gap. The real data identifies the intervention point.
 
-First, the chargeback-to-defect linkage would be richer. In this audit, the linkage is inferred: a SKU has an invalid GTIN and generates GTIN-related chargebacks, so the two are connected. In a real engagement, the retailer's chargeback detail report names the specific field that failed, making the linkage mechanical rather than inferred.
+Third, the promotional lift analysis becomes meaningful. With real scan data and a proper control-store methodology, every promotion can be evaluated, and the relationship between data quality and promotional ROI can be tested directly. A clean-data SKU and a dirty-data SKU running the same promotion at the same retailer should produce the same lift. If they do not, the data defect is costing more than chargebacks.
 
-Second, the stalled-launch model would be tighter. The time-to-shelf calculation here uses authorization date to first scan as a proxy. Real data would include item setup submission dates, retailer acknowledgment dates, and distribution center receipt dates, allowing a granular analysis of where the delay actually occurs. The proxy tells you there is a gap. The real data tells you where to intervene.
+Fourth, competitive context exists. Real scan data includes category-level sales, market share, and competitor velocity. A deauthorization can be traced to a specific competitor who took the slot. The shelf loss analysis moves from "slots were lost at a higher rate" to "these specific slots went to these specific competitors, and here is what winning them back requires."
 
-Third, the promotional lift analysis would be meaningful. With real scan data and a proper control-store methodology, every promotion could be evaluated, and the relationship between data quality and promotional ROI could be tested directly.
+The methodology in this report is designed to survive that transition. Every analytical frame works the same way with real data. The numbers change. The structure does not.
 
-Fourth, the competitive context would exist. Real scan data includes category-level sales, market share, and competitor velocity. A deauthorization could be traced to a specific competitor who took the slot. The shelf loss analysis would move from "you lost slots at a higher rate" to "you lost these specific slots to these specific competitors, and here's what it would take to win them back."
-
-The methodology in this report is designed to survive that transition. Every analytical frame works the same way with real data. The numbers change. The structure does not. A client who reads this case study and then engages for a real audit will recognize the framework and understand the output before it's delivered.
-:::
-
-::: {.callout-note collapse="true" appearance="simple"}
 ## Data model and query library
 
 ```{r db-stats}
@@ -882,28 +863,24 @@ db_desc <- paste(
 
 The analysis runs against the Cinderhaven Data Platform's dbt mart layer (Postgres) containing `r length(raw)` tables: `r db_desc`.
 
-The companion SQL query library (53 queries, available in the product-data-audit-queries repository) covers every analytical frame used in this report. Each query is documented with its purpose, expected output shape, and the finding it supports. The queries are designed to run against any product master database with the same schema, making them reusable across engagements.
+The companion SQL query library (8 queries, available in the product-data-audit-queries repository) covers every analytical frame used in this report. Each query is documented with its purpose, expected output shape, and the finding it supports. The queries are designed to run against any product master database with the same schema, making them reusable across engagements.
 
-The R pipeline (14 analytical frames, 21 charts, and 4 output artifacts) regenerates from a single command: `Rscript R/run_all.R`. The pipeline reads from the dbt mart layer, builds canonical data frames, generates all charts and the Excel workbook, and renders the Quarto report and dashboard. Total execution time: under two minutes.
-:::
+The R pipeline (15 analytical frames, 19 charts, and 7 output deliverables) regenerates from a single command: `Rscript R/run_all.R`. The pipeline reads from the dbt mart layer, builds canonical data frames, generates all charts and the Excel workbook, and renders the Quarto report and dashboard. Total execution time: under two minutes.
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Note on dataset construction
 
 The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data ecosystem. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
 
 Key design decisions in the synthetic data:
 
-GTIN-14 check digits fail validation on `r n_gtin_fail` of `r n_skus` SKUs. UPC check digits fail on `r n_upc_fail`. No SKU has both a valid GTIN and a valid UPC. The barcode defect rate is higher than typical real-world rates (where 10–20% is common), which concentrates the narrative on a single defect type. In a real engagement, defect patterns would be more varied.
+GTIN-14 check digits fail validation on `r n_gtin_fail` of `r n_skus` SKUs. UPC check digits fail on the same `r n_upc_fail`. The remaining `r n_skus - n_gtin_fail` have both valid barcodes. The barcode defect rate is higher than typical real-world rates (where 10–20% is common), which concentrates the narrative on a single defect type. In a real engagement, defect patterns would be more varied.
 
 Chargeback concentrations follow a Pareto distribution seeded from observed patterns in real engagements. The generator assigns chargebacks only to SKU/retailer pairs with active distribution authorizations, with lognormal variance in event amounts.
 
-Non-barcode data fields are mostly complete: brand owner, country of origin, and case weight are correct across the catalog. Case dimensions are missing for 19 of 50 SKUs — the only non-barcode defect category with measurable scope. This means the dataset does not support analysis of missing-field defects or quality-tier variation — limitations the narrative acknowledges directly.
+Non-barcode data fields are mostly complete: brand owner, country of origin, and case weight are correct across the catalog. Case dimensions are missing for 19 of 50 SKUs, providing a non-barcode defect category for analysis. Data quality scores fall into three tiers (66.7, 83.3, and 100), enabling basic quality-tier comparison — though a real engagement with more varied defect types would support richer differential analysis.
 
 Serving size data is not present in the product master. Retailer readiness checks that reference serving size are excluded from the evaluation. In a real engagement, this field would typically be populated and would add another dimension to the readiness analysis.
-:::
 
-::: {.callout-note collapse="true" appearance="simple"}
 ## Methodology notes
 
 All dollar estimates in this report state their assumptions at point of claim. The key methodological choices:
@@ -914,7 +891,7 @@ Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_
 
 Cost model: this report uses annualized chargebacks (`r ds(annual_cb)`) as the primary cost metric. Stalled-launch and shelf-loss costs are not quantified because the three-tier data quality distribution provides directional support for differential analysis, though the limited number of tiers constrains precision.
 
-Data quality scoring: each SKU is scored on 8 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present, OneWorldSync complete, serving size standardized). Score = (checks passed / 8) x 100. SKUs score between 66.7 and 100. Clean SKUs (23 of 50) score 100. Single-defect SKUs score 83.3. Multi-defect SKUs score 66.7. The failing checks are barcode-related (GTIN-14 and UPC) and case dimensions; all other checks pass universally. The three-tier score distribution supports quality-tier analysis — a limitation that would not exist in a real engagement where defect types are more varied.
+Data quality scoring: each SKU is scored on 6 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present). Score = (checks passed / 6) × 100. SKUs score between 66.7 and 100. Clean SKUs (23 of 50) score 100. Single-defect SKUs score 83.3. Multi-defect SKUs score 66.7. The failing checks are barcode-related (GTIN-14 and UPC) and case dimensions; all other checks pass universally. The three-tier score distribution supports quality-tier analysis — a limitation that would not exist in a real engagement where defect types are more varied.
 
 Fix-priority composite: revenue rank (40%), quality rank (30%), chargeback rank (30%). Ranks are percentile-based (1 = best/highest). Effort is shown separately, not incorporated into the composite. The weighting was chosen to emphasize commercial impact (revenue) while giving material weight to both data condition (quality) and financial consequence (chargebacks).
-:::
+::::
