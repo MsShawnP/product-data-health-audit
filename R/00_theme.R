@@ -56,11 +56,12 @@ LL_GRIDLINE   <- "#d9d9d9"
 LL_DISABLED   <- "#b3b3b3"
 LL_SURFACE    <- "#f2f2f2"
 
-# ---- Chart-role aliases (semantic names for one-accent pattern) -------------
-# Focal element gets LL_RED; everything else recedes to these.
-LL_RECEDE       <- LL_GRIDLINE   # non-focal bars, secondary series
-LL_RECEDE_MID   <- LL_DISABLED   # medium-emphasis (e.g. "High" tier)
-LL_RECEDE_DARK  <- LL_REFERENCE  # stronger receding (e.g. trade spend)
+# ---- Chart-role aliases (design system bar fills) -------------------------
+LL_BAR_DEFAULT   <- LL_CHICAGO        # single-series bar fill
+LL_BAR_HIGHLIGHT <- LL_TOKYO          # risk/attention highlight
+LL_BAR_POSITIVE  <- LL_HK             # positive trend
+LL_BAR_SECONDARY <- LL_CHICAGO_LIGHT  # secondary/comparison bars
+LL_BAR_RED       <- LL_RED_DARK       # red bar fill (NOT Red-42)
 
 # ---- Categorical chart palette (10 slots, paired) -------------------------
 LL_CAT_10 <- c(
@@ -114,11 +115,11 @@ retailer_colors <- c(
 # ---- pass / fail and risk-tier colors --------------------------------------
 passfail_colors <- c(
   "Pass" = LL_HK,
-  "Fail" = LL_RED
+  "Fail" = LL_RED_DARK
 )
 
 risk_band_colors <- c(
-  "Worst 25%"     = LL_RED,
+  "Worst 25%"     = LL_RED_DARK,
   "Below average" = LL_TOKYO,
   "Above average" = LL_CHICAGO_LIGHT,
   "Best 25%"      = LL_HK
@@ -174,20 +175,22 @@ theme_cinderhaven            <- theme_lailara
 theme_cinderhaven_horizontal <- theme_lailara_horizontal
 
 cinderhaven_palette <- list(
-  navy       = LL_CHICAGO,
-  red        = LL_RED,
-  coral      = LL_TOKYO,
-  teal       = LL_HK,
-  blue       = LL_CHICAGO,
-  blue_muted = LL_CHICAGO_LIGHT,
-  text       = LL_TEXT,
-  text_muted = LL_TEXT_SEC,
-  bg_pale    = LL_GRIDLINE,
-  bg_paler   = LL_SURFACE,
-  white      = LL_CANVAS,
-  recede     = LL_RECEDE,
-  recede_mid = LL_RECEDE_MID,
-  recede_dark = LL_RECEDE_DARK
+  navy        = LL_CHICAGO,
+  red         = LL_RED,
+  coral       = LL_TOKYO,
+  teal        = LL_HK,
+  blue        = LL_CHICAGO,
+  blue_muted  = LL_CHICAGO_LIGHT,
+  text        = LL_TEXT,
+  text_muted  = LL_TEXT_SEC,
+  bg_pale     = LL_GRIDLINE,
+  bg_paler    = LL_SURFACE,
+  white       = LL_CANVAS,
+  bar_default   = LL_BAR_DEFAULT,
+  bar_highlight = LL_BAR_HIGHLIGHT,
+  bar_positive  = LL_BAR_POSITIVE,
+  bar_secondary = LL_BAR_SECONDARY,
+  bar_red       = LL_BAR_RED
 )
 
 # ---- formatters ------------------------------------------------------------
