@@ -88,6 +88,13 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix:** Deleted `output/frames/raw_tables.rds` manually, then re-ran. Third run produced correct figures ($693,209 vs stale $686,534). When refreshing upstream data, always delete `raw_tables.rds` before running the pipeline.
 - **Tags:** pipeline, caching, raw_tables.rds, run_all, stale-data, skip-logic
 
+### 2026-06-21 — scale_fill_manual mapped only 3 of 5 product lines
+
+- **What happened:** Chart 7 (data debt by product line) had `scale_fill_manual` with only "Artisan Sauces", "Specialty Condiments", and "Pantry Staples" listed. The SVG rendered 5 bars with 2 in ggplot default grey (#7F7F7F).
+- **Why it failed:** The `product_line_colors` vector in `00_theme.R` and the original chart code both only listed 3 product lines. Two categories ("Dried Goods", "Snack Bites") exist in the data but were never mapped. The code had been carried forward from an earlier dataset version.
+- **Fix:** Queried actual data via `readRDS()` + `unique(d$product_line)` to discover all 5 values, then mapped all 5 in `scale_fill_manual`. Always verify categorical palette mappings against the actual data, not just the existing code.
+- **Tags:** ggplot, scale_fill_manual, unmapped-categories, data-code-mismatch
+
 ### 2026-05-22 — Edit tool string-not-found after sequential edits to large file
 
 - **What happened:** After several large edits to report.qmd in sequence, an Edit call failed because the target `old_string` no longer matched the file content. Prior edits had changed surrounding lines, shifting the context.

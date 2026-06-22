@@ -199,6 +199,27 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 
 ## Improvement History
 
+## 2026-06-21 — Chart fixes round 2 + table nowrap (session 9)
+
+**Started from:** Chart bar fills fixed (session 8). Round 2 focused on color semantics: ordinal gradients, removing decorative color, cutting unreadable charts, and table text wrapping.
+
+**Did:**
+- Chart 11 (deauth by quality tier): replaced multi-hue `risk_band_colors` with single-hue HK gradient (darkest=worst, lightest=best)
+- Chart 3 (retailer P&L): replaced unreadable single grouped-bar ($8M vs $112K) with 4 small-multiple horizontal bars faceted by metric, each with own scale, all Chicago-20
+- Chart 7 (data debt by product line): all 5 bars Chicago-20, highlighted highest (Specialty Condiments) in Tokyo-40, dynamic title referencing actual highest/lowest
+- Collapsible panels: all callout-note/callout-tip left borders → Chicago-20
+- Report tables: `white-space: nowrap` on all td, table `width: auto`, overflow-x scroll on wrapper
+- Dashboard tables: already had nowrap + overflow (verified, no changes)
+- Tearsheet tables: LaTeX l/r alignment = no wrap by default (verified, no changes)
+
+**State:** All pushed to main (2 commits: `fd93d14`, `58bcd15`). Pipeline renders cleanly. All outputs current.
+
+**Next:**
+1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
+2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
+
+---
+
 ### 2026-05-22 — First /improve audit
 - **Findings:** 4 critical, 5 important, 3 nice-to-have
 - **Top concerns:** 100% SKU failure rate caused by three compounding code bugs (wrong score denominator, missing field mappings in retailer readiness, UPC validation failure). Narrative will need full rewrite after fixes.
