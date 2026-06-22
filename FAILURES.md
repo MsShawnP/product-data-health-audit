@@ -95,6 +95,13 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix:** Queried actual data via `readRDS()` + `unique(d$product_line)` to discover all 5 values, then mapped all 5 in `scale_fill_manual`. Always verify categorical palette mappings against the actual data, not just the existing code.
 - **Tags:** ggplot, scale_fill_manual, unmapped-categories, data-code-mismatch
 
+### 2026-06-22 — Variable used before definition in Quarto setup chunk
+
+- **What happened:** Changed growth formula at line 148 to use `n_retailers`, but `n_retailers` was defined at line 187. Render failed with "object 'n_retailers' not found."
+- **Why it failed:** Quarto setup chunks execute top-to-bottom. Moving a formula to use a new variable without checking where that variable is defined creates a forward-reference error.
+- **Fix:** Moved `n_retailers <- n_distinct(rrs$retailer)` up before line 148 and removed the duplicate at line 187. Lesson: when adding a dependency on an existing variable, grep for its definition line and verify the ordering.
+- **Tags:** quarto, R, variable-ordering, setup-chunk, render-failure
+
 ### 2026-05-22 — Edit tool string-not-found after sequential edits to large file
 
 - **What happened:** After several large edits to report.qmd in sequence, an Edit call failed because the target `old_string` no longer matched the file content. Prior edits had changed surrounding lines, shifting the context.

@@ -101,6 +101,12 @@ Durable choices with rationale. These should hold across future sessions.
   - Only true categorical comparisons (data-defect type A vs B, retailer A vs retailer B in multi-series) get multiple distinct hues.
 - **Do not:** Add color variety "to make charts more visually interesting." If the x-axis or label already identifies the category, the bar color is decoration. Remove it.
 
+### 2026-06-22 — Part 4 methodology: single collapsible section, not individual callouts
+
+- **Why:** 8 separate collapsible callouts created visual noise, inconsistent expand/collapse state, and forced readers to hunt for specific methodology topics. A single collapsible section with ## subsection headings inside is scannable when open and unobtrusive when collapsed.
+- **Scope:** `quarto/report.qmd` Part 4 (lines ~727–896). The outer fence is `:::: {.callout-note collapse="true"}`, inner `:::` fences handle PDF `\newpage` blocks.
+- **Do not:** Split Part 4 back into individual callouts. If new methodology topics are added, add them as ## headings inside the existing collapsible section.
+
 ### 2026-06-21 — Revenue-at-risk table: fix vectorization bug
 
 - **Why:** `rev_at_risk(retailer)` in the report's rr-summary-table chunk was called vectorized inside `transmute`, receiving all 6 retailer names at once instead of one at a time. The recycled `==` comparison produced a near-total join, returning ~$18.9M for every retailer regardless of their actual failure count.
