@@ -425,7 +425,6 @@ margin_tbl <- rpnl |>
 cat(kable(margin_tbl, format = "pipe", align = c("l", "r", "r", "r", "r")), sep = "\n")
 ```
 
-![True net margin by retailer.](`r chart("03_retailer_net_margin")`){fig-alt="Waterfall chart per retailer, showing Walmart winning gross dollars but not necessarily margin density."}
 
 `r best_margin_ret$retailer` contributes `r round(100 * best_margin_ret$net_margin_pct_of_gross_revenue)` cents of margin on every dollar of revenue. `r worst_margin_ret$retailer` contributes `r round(100 * worst_margin_ret$net_margin_pct_of_gross_revenue)` cents. The `r round(100 * best_margin_ret$net_margin_pct_of_gross_revenue) - round(100 * worst_margin_ret$net_margin_pct_of_gross_revenue)`-cent gap is almost entirely trade spend.
 
