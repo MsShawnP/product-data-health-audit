@@ -119,15 +119,6 @@ blockquote strong {
 
 /* ── Reactable tables: card wrapper + dark header ─────────────────── */
 
-/* Break tables out of the content container */
-.reactable,
-.cell-output-display > table {
-  width: 95vw !important;
-  max-width: 1400px !important;
-  margin-left: calc(-50vw + 50%) !important;
-  position: relative !important;
-}
-
 .reactable,
 .Reactable {
   border: 1px solid #d9d9d9 !important;
@@ -213,9 +204,14 @@ blockquote strong {
   min-width: 100px !important;
 }
 
-/* Overflow wrapper for wide tables */
+/* Horizontal scroll for wide tables */
 .reactable-container {
   overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rt-table {
+  min-width: 1100px !important;
 }
 
 /* Striped rows */
