@@ -107,6 +107,18 @@ Durable choices with rationale. These should hold across future sessions.
 - **Scope:** `quarto/report.qmd` Part 4 (lines ~727–896). The outer fence is `:::: {.callout-note collapse="true"}`, inner `:::` fences handle PDF `\newpage` blocks.
 - **Do not:** Split Part 4 back into individual callouts. If new methodology topics are added, add them as ## headings inside the existing collapsible section.
 
+### 2026-06-22 — Dynamic inline R over hardcoded dollar figures in narrative
+
+- **Why:** The post-reseed data changed every dollar figure in the report. Three hardcoded "$228,845" survived undetected until a human caught the discrepancy. Dozens more hardcoded figures ($896,803, $56,502, $18,834, $7,976, etc.) required manual replacement. Dynamic `ds(annual_cb)`, `ds(dg007$ttm_revenue)`, etc. make the prose self-updating when the data changes.
+- **Scope:** `quarto/report.qmd` (section headings, inline prose, comparison figures), `quarto/dashboard.qmd`, `quarto/tearsheet.qmd` (where Quarto inline R is supported). `index.html` remains hardcoded (static HTML, no R engine).
+- **Do not:** Hardcode dollar figures in `.qmd` prose when a computed variable exists. If Quarto inline R can't reach the value (e.g., inside a `fig-alt` string), hardcode but add a comment with the variable name so grep can find it on next data refresh.
+
+### 2026-06-22 — Post-reseed Postgres data is canonical ($146,961 annual)
+
+- **Why:** The June 2026 Cinderhaven data reseed changed underlying chargeback distribution. The committed raw_tables.rds at HEAD was from the pre-reseed database ($228,845 annual). The current Postgres/SQLite database produces $146,961 annual. User confirmed: current database is SSOT.
+- **Scope:** All pipeline outputs, all report prose, all deployed artifacts. The pre-reseed $228,845 figure is retired.
+- **Do not:** Revert to pre-reseed data or treat the committed raw_tables.rds at HEAD as authoritative. Always regenerate from the current database.
+
 ### 2026-06-21 — Revenue-at-risk table: fix vectorization bug
 
 - **Why:** `rev_at_risk(retailer)` in the report's rr-summary-table chunk was called vectorized inside `transmute`, receiving all 6 retailer names at once instead of one at a time. The recycled `==` comparison produced a near-total join, returning ~$18.9M for every retailer regardless of their actual failure count.

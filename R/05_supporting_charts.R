@@ -36,6 +36,7 @@ sku_master_full <- read_frame("sku_master_full")
 retailer_pnl    <- read_frame("retailer_pnl")
 retailer_rs     <- read_frame("retailer_readiness_summary")
 chargebacks_enriched   <- read_frame("chargebacks_enriched")
+n_chargeback_months    <- length(unique(chargebacks_enriched$month))
 deauth_summary  <- read_frame("deauth_summary")
 process_debt    <- read_frame("process_debt")
 time_to_shelf_s <- read_frame("time_to_shelf_sku")
@@ -463,7 +464,7 @@ cat("\n[12] Growth projection — chargebacks at 1x / 2.5x / 5x SKU count\n")
 
 current_skus <- nrow(sku_master_full)
 current_cb_36mo <- sum(sku_master_full$chargeback_total)
-current_cb_per_year <- current_cb_36mo * 12 / 36
+current_cb_per_year <- current_cb_36mo * 12 / n_chargeback_months
 current_revenue <- sum(sku_master_full$ttm_revenue)
 
 stage2_skus <- as.integer(ceiling(current_skus * 2.5))

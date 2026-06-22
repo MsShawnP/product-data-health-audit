@@ -95,9 +95,10 @@ smf <- readRDS("../output/frames/sku_master_full.rds")
 rrs <- readRDS("../output/frames/retailer_readiness_summary.rds")
 cbe <- readRDS("../output/frames/chargebacks_enriched.rds")
 
+n_chargeback_months <- length(unique(cbe$month))
 n_skus <- nrow(smf)
 total_cb_36mo <- sum(smf$chargeback_total, na.rm = TRUE)
-annual_cb <- round(total_cb_36mo * 12 / 36)
+annual_cb <- round(total_cb_36mo * 12 / n_chargeback_months)
 total_ttm_rev <- sum(smf$ttm_revenue, na.rm = TRUE)
 
 wm_readiness <- rrs |> filter(retailer == "Walmart") |>
@@ -188,7 +189,7 @@ triage <- smf |>
   transmute(
     SKU = sku,
     Product = latex_escape(product_name),
-    `Annual cb savings` = fmt_dollar(chargeback_total * 12 / 36),
+    `Annual cb savings` = fmt_dollar(chargeback_total * 12 / n_chargeback_months),
     `Fix time` = fmt_minutes(est_fix_hours),
     `Savings per hour` = fmt_per_hr(savings_per_hour))
 
@@ -211,7 +212,7 @@ cat(kable(triage, format = "latex", booktabs = TRUE,
 
 ## The crown jewel
 
-CHP-DG-007, Trail Mix Premium, is the ninth-highest-revenue SKU in the catalog ($896,803 TTM) and fails every retailer's readiness check — zero of six. 54 chargeback events across 36 months, $56,502 in penalties, 23 store authorizations revoked. It carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. Fixing all three takes 50 minutes. The SKU that generates $18,834 a year in chargebacks and fails every retailer it sells to is less than an hour of clerical work from full compliance.
+CHP-DG-007, Trail Mix Premium, is the sixth-highest-revenue SKU in the catalog ($2.2 million TTM) and fails every retailer's readiness check — zero of six. 73 chargeback events across 36 months, $23,760 in penalties, 28 store authorizations revoked. It carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. Fixing all three takes 50 minutes. A $2.2 million product that fails every retailer it sells to is less than an hour of clerical work from full compliance.
 
 ## A one-week turnaround
 

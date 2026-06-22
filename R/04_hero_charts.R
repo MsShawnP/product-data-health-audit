@@ -36,6 +36,7 @@ sku_master_full   <- read_frame("sku_master_full")
 time_to_shelf_sku <- read_frame("time_to_shelf_sku")
 retailer_pnl      <- read_frame("retailer_pnl")
 chargebacks_enriched     <- read_frame("chargebacks_enriched")
+n_chargeback_months      <- length(unique(chargebacks_enriched$month))
 
 save_chart <- function(p, name, w = 10, h = 5.5, dpi = 300) {
   rds_path <- file.path(OUT_DIR, paste0(name, ".rds"))
@@ -281,7 +282,7 @@ fix_roi <- tibble(
                amt_36("Damaged goods"))
 ) |>
   filter(hours > 0) |>
-  mutate(annual_saved = amt_36mo * 12 / 36,
+  mutate(annual_saved = amt_36mo * 12 / n_chargeback_months,
          per_hour     = ifelse(hours > 0, annual_saved / hours, 0),
          is_top       = per_hour == max(per_hour),
          label        = sprintf(
