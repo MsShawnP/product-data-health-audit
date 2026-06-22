@@ -200,7 +200,7 @@ reactable(
     cellPadding    = "6px 10px",
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-      fontSize   = "0.88rem")
+      fontSize   = "0.75rem")
   )
 )
 ```
@@ -324,7 +324,7 @@ reactable(
     cellPadding    = "8px 12px",
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-      fontSize   = "0.92rem")
+      fontSize   = "0.75rem")
   )
 )
 ```
@@ -436,7 +436,7 @@ reactable(
     cellPadding    = "6px 10px",
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-      fontSize   = "0.88rem")
+      fontSize   = "0.75rem")
   )
 )
 ```

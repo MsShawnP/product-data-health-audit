@@ -40,7 +40,14 @@ finish_sheet <- function(wb, sheet, df, header_fill = "#1f2e7a") {
               color = wb_color(hex = header_fill))
   wb$add_font(sheet = sheet, dims = wb_dims(rows = 1, cols = 1:n_col),
               color = wb_color(hex = "FFFFFF"), bold = TRUE,
-              name  = "Calibri")
+              name  = "Calibri", size = 9)
+
+  # Data rows: compact 9pt font.
+  if (n_row > 0) {
+    wb$add_font(sheet = sheet,
+                dims = wb_dims(rows = 2:(n_row + 1), cols = 1:n_col),
+                name = "Calibri", size = 9)
+  }
 
   # Freeze top row, autofilter, autofit columns.
   wb$freeze_pane(sheet = sheet, first_active_row = 2)
