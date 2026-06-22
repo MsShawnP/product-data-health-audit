@@ -121,7 +121,7 @@ c5_long <- c5 |>
            "<br>Revenue at risk: ",
            dollar_short(c5$rev_at_risk[match(defect, c5$defect)])))
 
-c5_palette <- c("% of SKUs" = cinderhaven_palette$recede, "% of annual revenue" = cinderhaven_palette$red)
+c5_palette <- c("% of SKUs" = LL_BAR_SECONDARY, "% of annual revenue" = LL_BAR_DEFAULT)
 
 p5_base <- function(use_interactive) {
   dodge <- position_dodge(width = 0.75)
@@ -143,7 +143,7 @@ p5_base <- function(use_interactive) {
     scale_fill_manual(values = c5_palette, name = NULL,
                       breaks = c("% of SKUs", "% of annual revenue")) +
     labs(title    = "The defects concentrate in higher-revenue SKUs",
-         subtitle = "Red bar longer than grey = defect concentrated in higher-revenue SKUs",
+         subtitle = "Dark bar longer than light = defect concentrated in higher-revenue SKUs",
          x = NULL, y = NULL,
          caption = "Source: sku_dim + sku_master_full, audit run 2026-05-03") +
     theme_cinderhaven_horizontal()
@@ -194,14 +194,13 @@ p6_base <- function(use_interactive) {
               hjust = -0.02, size = 3.4, color = cinderhaven_palette$text) +
     scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
                        expand = expansion(mult = c(0, 0.55))) +
-    # One-accent encoding: Walmart (biggest exposure) red, others grey.
     scale_fill_manual(values = c(
-      "Walmart"        = cinderhaven_palette$red,
-      "Costco"         = cinderhaven_palette$recede,
-      "Whole Foods"    = cinderhaven_palette$recede,
-      "Kroger"         = cinderhaven_palette$recede,
-      "Sprouts"        = cinderhaven_palette$recede,
-      "Regional Group" = cinderhaven_palette$recede),
+      "Walmart"        = LL_BAR_HIGHLIGHT,
+      "Costco"         = LL_BAR_DEFAULT,
+      "Whole Foods"    = LL_BAR_DEFAULT,
+      "Kroger"         = LL_BAR_DEFAULT,
+      "Sprouts"        = LL_BAR_DEFAULT,
+      "Regional Group" = LL_BAR_DEFAULT),
       guide = "none") +
     labs(title    = wrap_title(sprintf("Revenue at risk: %s rides on data Walmart could reject today",
                            dollar_short(c6$rev_at_risk[which(c6$retailer == "Walmart")]))),
@@ -248,11 +247,10 @@ p7_base <- function(use_interactive) {
   p +
     geom_text(aes(label = sprintf("%.2f", issues_per_million)),
               vjust = -0.5, size = 4) +
-    # Pantry Staples is the worst — accent red. Others recede.
     scale_fill_manual(values = c(
-      "Artisan Sauces"       = cinderhaven_palette$recede,
-      "Specialty Condiments" = cinderhaven_palette$recede,
-      "Pantry Staples"       = cinderhaven_palette$red),
+      "Artisan Sauces"       = LL_BAR_DEFAULT,
+      "Specialty Condiments" = LL_BAR_DEFAULT,
+      "Pantry Staples"       = LL_BAR_HIGHLIGHT),
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
     labs(title    = wrap_title({
@@ -308,8 +306,8 @@ p8_base <- function(use_interactive) {
               hjust = -0.05, size = 3.3, color = cinderhaven_palette$text) +
     scale_x_continuous(labels = percent_format(accuracy = 1),
                        expand = expansion(mult = c(0, 0.18))) +
-    scale_fill_manual(values = c(`TRUE`  = cinderhaven_palette$red,
-                                 `FALSE` = cinderhaven_palette$recede),
+    scale_fill_manual(values = c(`TRUE`  = LL_BAR_HIGHLIGHT,
+                                 `FALSE` = LL_BAR_DEFAULT),
                       guide = "none") +
     labs(title    = wrap_title("Chargebacks as % of gross margin — top 15 SKUs"),
          subtitle = "Where chargeback dollars are largest relative to the margin the SKU earns",
@@ -373,11 +371,7 @@ p9_base <- function(use_interactive) {
                   label = sprintf("mean %.0f days", mean_d)),
               inherit.aes = FALSE, size = 3.4, fontface = "bold",
               color = cinderhaven_palette$text) +
-    scale_color_manual(values = c(
-      "Worst 25%"     = cinderhaven_palette$red,
-      "Below average" = cinderhaven_palette$recede,
-      "Above average" = cinderhaven_palette$recede,
-      "Best 25%"      = cinderhaven_palette$recede),
+    scale_color_manual(values = risk_band_colors,
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0.02, 0.14))) +
     labs(title    = wrap_title("Per-SKU view: bottom-half SKUs reach the shelf three times slower"),
@@ -430,14 +424,7 @@ p11_base <- function(use_interactive) {
     p <- p + geom_col(width = 0.6)
   }
   p +
-    # Two-shade red gradient: Worst 25% darkest, Below average lighter
-    # red — both bad, with the worst visually heaviest. The two passing
-    # tiers recede to grey.
-    scale_fill_manual(values = c(
-      "Worst 25%"     = cinderhaven_palette$red,   # #cc100a
-      "Below average" = cinderhaven_palette$coral,                  # lighter red
-      "Above average" = cinderhaven_palette$recede,
-      "Best 25%"      = cinderhaven_palette$recede),
+    scale_fill_manual(values = risk_band_colors,
       guide = "none") +
     geom_text(aes(label = paste0(percent(mean_rate, accuracy = 0.01),
                                  "  (", n_with_any, " of ", n_skus,
@@ -504,8 +491,8 @@ p12_base <- function(use_interactive) {
     p <- p + geom_col(width = 0.55)
   }
   p +
-    scale_fill_manual(values = c(`TRUE`  = cinderhaven_palette$red,
-                                 `FALSE` = cinderhaven_palette$recede),
+    scale_fill_manual(values = c(`TRUE`  = LL_BAR_HIGHLIGHT,
+                                 `FALSE` = LL_BAR_DEFAULT),
                       guide = "none") +
     geom_text(aes(label = dollar_short(proj_chargebacks)),
               vjust = -0.4, size = 4) +
@@ -575,8 +562,8 @@ p13_base <- function(use_interactive) {
               inherit.aes = FALSE,
               hjust = 1, vjust = 1, size = 3.3, fontface = "bold",
               color = cinderhaven_palette$text) +
-    scale_color_manual(values = c("Pass" = cinderhaven_palette$recede,
-                                  "Fail" = cinderhaven_palette$red),
+    scale_color_manual(values = c("Pass" = LL_BAR_DEFAULT,
+                                  "Fail" = LL_BAR_HIGHLIGHT),
                        name = NULL,
                        breaks = c("Fail", "Pass")) +
     coord_fixed(clip = "off") +
@@ -634,8 +621,8 @@ p14_base <- function(use_interactive) {
               hjust = -0.05, size = 3.4, color = cinderhaven_palette$text) +
     scale_x_continuous(labels = label_dollar(scale = 1e-3, suffix = "k"),
                        expand = expansion(mult = c(0, 0.25))) +
-    scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
-                                 `FALSE` = cinderhaven_palette$recede),
+    scale_fill_manual(values = c(`TRUE`  = LL_BAR_HIGHLIGHT,
+                                 `FALSE` = LL_BAR_DEFAULT),
                       guide = "none") +
     labs(title    = wrap_title({
            data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
@@ -670,7 +657,7 @@ c15 <- chargebacks_enriched |>
     "Chargebacks: ", dollar_short(amt), "<br>",
     "Events: ", n))
 
-c15_colors <- c("Data defects" = LL_RED, "Fulfillment" = LL_CHICAGO_LIGHT)
+c15_colors <- c("Data defects" = LL_TOKYO, "Fulfillment" = LL_CHICAGO_LIGHT)
 
 p15_base <- function(use_interactive) {
   p <- ggplot(c15, aes(x = month, y = amt, color = category))
@@ -729,7 +716,7 @@ c16_scan <- c16 |> distinct(month, scan_dollars)
 p16_base <- function(use_interactive) {
   p <- ggplot(c16, aes(x = month))
   p <- p + geom_col(data = c16_scan, aes(y = scan_dollars),
-                    fill = cinderhaven_palette$recede, width = 28)
+                    fill = LL_BAR_DEFAULT, width = 28)
   p <- p + geom_line(aes(y = cb_dollars * scale_factor, color = category),
                      linewidth = 1)
   if (use_interactive) {
@@ -801,10 +788,8 @@ p17_base <- function(use_interactive) {
     geom_text(aes(y = 0, label = paste0(n_skus, " SKUs")),
               vjust = 1.6, size = 3.0,
               color = cinderhaven_palette$text_muted) +
-    # All sources grey except the one that's doing it right (lowest
-    # chargeback per SKU) — that's the contrast the chart should make.
-    scale_fill_manual(values = c(`TRUE`  = cinderhaven_palette$teal,
-                                 `FALSE` = cinderhaven_palette$recede),
+    scale_fill_manual(values = c(`TRUE`  = LL_BAR_POSITIVE,
+                                 `FALSE` = LL_BAR_DEFAULT),
                       guide = "none") +
     scale_y_continuous(labels = label_dollar(),
                        expand = expansion(mult = c(0.05, 0.20))) +
@@ -866,8 +851,8 @@ p19_base <- function(use_interactive) {
     geom_text(aes(label = paste0(n, "  (", percent(pct, accuracy = 1), ")")),
               hjust = -0.05, size = 3.6, color = cinderhaven_palette$text) +
     scale_x_continuous(expand = expansion(mult = c(0, 0.18))) +
-    scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
-                                 `FALSE` = cinderhaven_palette$recede),
+    scale_fill_manual(values = c(`TRUE`  = LL_BAR_HIGHLIGHT,
+                                 `FALSE` = LL_BAR_DEFAULT),
                       guide = "none") +
     labs(title    = wrap_title(paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs are fully registered in OneWorldSync")),
          subtitle = paste0("Only ", sum(c19$n[c19$is_complete]), " of ", sum(c19$n), " SKUs (", round(100 * sum(c19$n[c19$is_complete]) / sum(c19$n)), "%) are 'Registered - Complete'."),
@@ -964,8 +949,8 @@ p21_base <- function(use_interactive) {
   c21$is_stale  <- c21$bin_start >= 360
   p <- ggplot(c21, aes(x = days_since_update, fill = is_stale))
   p <- p + geom_histogram(binwidth = 60, color = "white")
-  p <- p + scale_fill_manual(values = c(`TRUE`  = cinderhaven_palette$red,
-                                        `FALSE` = cinderhaven_palette$recede),
+  p <- p + scale_fill_manual(values = c(`TRUE`  = LL_BAR_HIGHLIGHT,
+                                        `FALSE` = LL_BAR_DEFAULT),
                              guide = "none")
   if (use_interactive) {
     # overlay invisible interactive points so each SKU has a tooltip
@@ -1025,9 +1010,9 @@ p22_base <- function(use_interactive) {
   if (use_interactive) {
     p <- p + geom_col_interactive(aes(tooltip = tooltip,
                                       data_id = as.character(serving_size)),
-                                  fill = cinderhaven_palette$recede, width = 0.75)
+                                  fill = LL_BAR_DEFAULT, width = 0.75)
   } else {
-    p <- p + geom_col(fill = cinderhaven_palette$recede, width = 0.75)
+    p <- p + geom_col(fill = LL_BAR_DEFAULT, width = 0.75)
   }
   p +
     geom_text(aes(label = n), hjust = -0.4, size = 3.4, color = cinderhaven_palette$text) +
@@ -1037,12 +1022,12 @@ p22_base <- function(use_interactive) {
              x = max(c22$n) * 1.05, xend = max(c22$n) * 1.05,
              y = min(match(tbsp_cluster, levels(c22$serving_size))) - 0.4,
              yend = max(match(tbsp_cluster, levels(c22$serving_size))) + 0.4,
-             color = cinderhaven_palette$red, linewidth = 0.8) +
+             color = LL_BAR_HIGHLIGHT, linewidth = 0.8) +
     annotate("text",
              x = max(c22$n) * 1.10,
              y = mean(match(tbsp_cluster, levels(c22$serving_size))),
              label = "Same serving,\nthree encodings",
-             color = cinderhaven_palette$red,
+             color = LL_BAR_HIGHLIGHT,
              hjust = 0, size = 3.3, fontface = "bold") +
     scale_x_continuous(expand = expansion(mult = c(0, 0.40))) +
     labs(title    = wrap_title("Serving size is recorded fourteen different ways"),
@@ -1101,12 +1086,10 @@ p23_base <- function(use_interactive) {
               aes(label = round(fix_priority_score)),
               hjust = -0.35, size = 2.9, fontface = "bold",
               color = cinderhaven_palette$text) +
-    # Only "Fix now" gets red — that's the action list. The other three
-    # tiers exist for context and recede to grey.
-    scale_fill_manual(values = c("Low priority" = cinderhaven_palette$recede,
-                                  "Medium"       = cinderhaven_palette$recede,
-                                  "High"         = cinderhaven_palette$recede_mid,
-                                  "Fix now"      = cinderhaven_palette$red),
+    scale_fill_manual(values = c("Low priority" = LL_BAR_DEFAULT,
+                                  "Medium"       = LL_BAR_DEFAULT,
+                                  "High"         = LL_BAR_SECONDARY,
+                                  "Fix now"      = LL_BAR_HIGHLIGHT),
                       name = NULL,
                       breaks = c("Fix now", "High", "Medium", "Low priority")) +
     scale_x_continuous(breaks = seq(0, 100, 20),

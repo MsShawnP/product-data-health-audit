@@ -87,7 +87,7 @@ p1 <- ggplot(cb_p, aes(rank, cum_pct)) +
            hjust = -0.10, vjust = 1.4,
            size = 3.8, fontface = "bold",
            color = cinderhaven_palette$white,
-           fill  = cinderhaven_palette$red,
+           fill  = LL_BAR_HIGHLIGHT,
            label.size = 0,
            label.padding = unit(0.30, "lines"),
            label.r = unit(0.05, "lines")) +
@@ -97,7 +97,7 @@ p1 <- ggplot(cb_p, aes(rank, cum_pct)) +
            hjust = -0.10, vjust = 1.4,
            size = 3.8, fontface = "bold",
            color = cinderhaven_palette$white,
-           fill  = cinderhaven_palette$red,
+           fill  = LL_BAR_HIGHLIGHT,
            label.size = 0,
            label.padding = unit(0.30, "lines"),
            label.r = unit(0.05, "lines")) +
@@ -174,15 +174,7 @@ p2 <- ggplot(tier_summary, aes(mean_days, tier, fill = tier)) +
            color = cinderhaven_palette$text,
            size = 3.9, fontface = "italic") +
 
-  # One-accent encoding: only the Worst 25% bar gets red — that's the
-  # finding. The other three tiers exist as comparison baseline and
-  # recede into grey.
-  scale_fill_manual(values = c(
-    "Worst 25%"     = cinderhaven_palette$red,
-    "Below average" = cinderhaven_palette$recede,
-    "Above average" = cinderhaven_palette$recede,
-    "Best 25%"      = cinderhaven_palette$recede),
-    guide = "none") +
+  scale_fill_manual(values = risk_band_colors, guide = "none") +
   scale_x_continuous(limits = c(0, max(tier_summary$mean_days) * 1.25),
                      breaks = seq(0, 50, 10),
                      expand = expansion(mult = c(0, 0))) +
@@ -223,7 +215,7 @@ c3_long <- c3_pnl |>
 
 bar_palette <- c(
   "Gross revenue"    = LL_CHICAGO,
-  "Trade spend"      = LL_REFERENCE,
+  "Trade spend"      = LL_CHICAGO_LIGHT,
   "Chargebacks"      = LL_TOKYO,
   "Net contribution" = LL_CHICAGO)
 
@@ -310,8 +302,8 @@ if (nrow(fix_roi) > 0 && any(fix_roi$per_hour > 0)) {
 
 p4 <- ggplot(fix_roi, aes(per_hour, action, fill = is_top)) +
   geom_col(width = 0.55) +
-  scale_fill_manual(values = c(`TRUE` = cinderhaven_palette$red,
-                               `FALSE` = cinderhaven_palette$recede),
+  scale_fill_manual(values = c(`TRUE` = LL_BAR_HIGHLIGHT,
+                               `FALSE` = LL_BAR_DEFAULT),
                     guide = "none") +
   geom_text(aes(label = label),
             hjust = -0.04, size = 3.7,
