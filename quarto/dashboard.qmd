@@ -280,28 +280,29 @@ pnl_tbl <- retailer_pnl |>
 reactable(
   pnl_tbl,
   searchable = FALSE, filterable = FALSE, sortable = TRUE,
-  fullWidth = FALSE, bordered = TRUE, striped = TRUE, highlight = TRUE,
+  fullWidth = TRUE, bordered = TRUE, striped = TRUE, highlight = TRUE,
   defaultPageSize = 4,
   defaultColDef = colDef(
+    minWidth = 120,
     headerStyle = list(background = "#1f2e7a",
                        fontWeight = 600,
                        color      = "#ffffff")
   ),
   columns = list(
-    Retailer = colDef(width = 130, style = list(fontWeight = "600")),
-    `Gross revenue`    = colDef(align = "right",
+    Retailer = colDef(minWidth = 130, style = list(fontWeight = "600")),
+    `Gross revenue`    = colDef(minWidth = 130, align = "right",
                                 cell = function(v) dollar_cell(v)),
-    `Trade spend`      = colDef(align = "right",
+    `Trade spend`      = colDef(minWidth = 120, align = "right",
                                 cell = function(v) dollar_cell(v)),
-    `Trade % of rev`   = colDef(align = "right",
+    `Trade % of rev`   = colDef(minWidth = 130, align = "right",
                                 cell = function(v) sprintf("%.1f%%", v * 100)),
-    `Chargebacks`      = colDef(align = "right",
+    `Chargebacks`      = colDef(minWidth = 120, align = "right",
                                 cell = function(v) dollar_cell(v)),
-    `Cb % of rev`      = colDef(align = "right",
+    `Cb % of rev`      = colDef(minWidth = 110, align = "right",
                                 cell = function(v) sprintf("%.2f%%", v * 100)),
-    `Net contribution` = colDef(align = "right",
+    `Net contribution` = colDef(minWidth = 140, align = "right",
                                 cell = function(v) dollar_cell(v)),
-    `Net margin %`     = colDef(align = "right",
+    `Net margin %`     = colDef(minWidth = 120, align = "right",
                                 cell = function(v) sprintf("%.1f%%", v * 100),
                                 style = function(v) list(fontWeight = "600"))
   ),
@@ -403,9 +404,10 @@ reactable(
     ),
     `Still broken` = colDef(
       minWidth = 250,
+      html = TRUE,
       class = "col-still-broken",
       headerClass = "col-still-broken",
-      cell = function(v) if (is.na(v)) "" else v,
+      cell = function(v) if (is.na(v)) "" else gsub("; ", ";<br>", v),
       style = function(v) {
         base <- list(whiteSpace = "normal")
         if (!is.na(v)) {
