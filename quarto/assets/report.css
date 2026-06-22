@@ -101,13 +101,12 @@ div.cell-output-display {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Break tables out of the content container */
-.reactable,
-.cell-output-display > table {
-  width: 95vw !important;
-  max-width: 1400px !important;
-  margin-left: calc(-50vw + 50%) !important;
-  position: relative !important;
+.cell-output-display {
+  overflow-x: auto !important;
+}
+
+.cell-output-display .reactable .rt-table {
+  min-width: 1100px !important;
 }
 
 table {
