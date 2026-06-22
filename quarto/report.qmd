@@ -569,7 +569,7 @@ smf <- readRDS("../output/frames/sku_master_full.rds")
 # sku_master_full (built in R/02_build_frames.R per the rebuild plan:
 # composite is 40% revenue rank + 30% quality rank + 30% chargeback rank).
 triage <- smf |>
-  arrange(desc(chargeback_total > 0), desc(fix_priority_score)) |>
+  arrange(desc(savings_per_hour > 0), desc(savings_per_hour)) |>
   transmute(
     SKU              = sku,
     Product          = product_name,
@@ -620,20 +620,17 @@ reactable(
   striped         = TRUE,
   bordered        = FALSE,
   defaultPageSize = 15,
-  defaultSorted   = list(`Composite priority` = "desc"),
+  defaultSorted   = list(`$ saved / hour` = "desc"),
   defaultColDef   = colDef(
     headerStyle = list(background = pal_pale, color = pal_text,
-                       fontWeight = 600)
+                       fontWeight = 600, whiteSpace = "nowrap")
   ),
   columns = list(
     SKU = colDef(width = 95),
     Product = colDef(minWidth = 180),
     `TTM revenue` = colDef(
       align = "right",
-      cell  = function(value) dollar_cell(value),
-      style = function(value) {
-        list(background = ramp_teal(value / max(triage$`TTM revenue`, na.rm = TRUE)))
-      }
+      cell  = function(value) dollar_cell(value)
     ),
     `Quality score` = colDef(
       align = "right",
@@ -651,10 +648,7 @@ reactable(
     ),
     `Composite priority` = colDef(
       align = "right",
-      style = function(value) {
-        list(background  = ramp_red(value / max_priori),
-             fontWeight  = "600")
-      }
+      style = list(fontWeight = "600")
     ),
     `Est. fix hours` = colDef(
       align = "right",
