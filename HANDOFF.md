@@ -378,3 +378,27 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 **Next:**
 1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
 2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
+
+## 2026-06-22 — Chart bar fill sweep (session 8)
+
+**Started from:** Session 7 applied design system to chrome/layout but left bar fills wrong. 19 of 21 charts used `LL_RECEDE` (gridline gray `#d9d9d9`) for bar fills and `LL_RED` (`#CC100A`, Red-42) for accents — both wrong per design system.
+
+**Did:**
+- **00_theme.R:** Replaced `LL_RECEDE`/`LL_RECEDE_MID`/`LL_RECEDE_DARK` aliases with proper chart-role aliases: `LL_BAR_DEFAULT` (Chicago-20 `#1f2e7a`), `LL_BAR_HIGHLIGHT` (Tokyo-40 `#b82d4a`), `LL_BAR_POSITIVE` (HK teal), `LL_BAR_SECONDARY` (Chicago Light), `LL_BAR_RED` (Red Dark `#8e0b07`). Updated `risk_band_colors` and `passfail_colors` to use `LL_RED_DARK` instead of `LL_RED`. Updated `cinderhaven_palette` list to match.
+- **04_hero_charts.R:** Fixed all 4 hero charts — Pareto annotation fill, time-to-shelf (→ `risk_band_colors`), retailer margin trade spend bar, fix ROI bars.
+- **05_supporting_charts.R:** Fixed all 15 active supporting charts (5–9, 11–17, 19–23). Every `cinderhaven_palette$recede` → `LL_BAR_DEFAULT`, every `cinderhaven_palette$red` as fill → `LL_BAR_HIGHLIGHT`, risk-tier charts → `risk_band_colors`, line chart colors → `LL_TOKYO`/`LL_CHICAGO_LIGHT`.
+- Deleted stale `20_retailer_setup_readiness_stacked.*` files (leftover from grouped-bar conversion).
+- Full pipeline re-rendered twice (206s each). Quarto reports + PDFs clean.
+
+**Verification (grep of all SVGs):**
+- `#CC100A`: **zero** occurrences across all SVGs
+- `#1F2E7A` (Chicago-20): present in 14/19 active charts; 5 charts correctly use specialized palettes (risk bands: `#8E0B07`/`#B82D4A`/`#8E9AD0`/`#158F75`; line chart: `#B82D4A`/`#8E9AD0`; pass/fail: `#B82D4A`/`#0C6552`)
+
+**State:**
+- Git: clean, pushed to main (`720f035`)
+- CI: passed (27922364799, 3m56s)
+- All charts, reports, dashboard, PDFs current and deployed
+
+**Next:**
+1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
+2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
