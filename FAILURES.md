@@ -102,6 +102,13 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix:** Moved `n_retailers <- n_distinct(rrs$retailer)` up before line 148 and removed the duplicate at line 187. Lesson: when adding a dependency on an existing variable, grep for its definition line and verify the ordering.
 - **Tags:** quarto, R, variable-ordering, setup-chunk, render-failure
 
+### 2026-06-22 — PowerShell here-strings piped to Rscript fail with BOM encoding
+
+- **What happened:** Used `@'...'@ | Rscript -` in PowerShell to pipe an R script. Rscript errored with "unexpected input" at line 1.
+- **Why it failed:** PowerShell 5.1 here-strings piped via `|` add a UTF-8 BOM to the start of the stream. R's parser rejects the BOM as unexpected input. Same root cause as the earlier `Set-Content` BOM issue but triggered via pipe instead of file write.
+- **Fix:** Write the R script to a temp `.R` file using the Write tool (which outputs clean UTF-8 without BOM), then run `Rscript tempfile.R`. Delete the temp file after. Never pipe PowerShell string content directly to Rscript.
+- **Tags:** powershell, R, BOM, encoding, pipe, here-string, windows
+
 ### 2026-05-22 — Edit tool string-not-found after sequential edits to large file
 
 - **What happened:** After several large edits to report.qmd in sequence, an Edit call failed because the target `old_string` no longer matched the file content. Prior edits had changed surrounding lines, shifting the context.

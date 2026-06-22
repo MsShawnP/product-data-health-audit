@@ -104,10 +104,12 @@ rrs  <- readRDS("../output/frames/retailer_readiness_summary.rds")
 cbe  <- readRDS("../output/frames/chargebacks_enriched.rds")
 rpnl <- readRDS("../output/frames/retailer_pnl.rds")
 
+n_chargeback_months <- length(unique(cbe$month))
+
 n_skus        <- nrow(smf)
 n_gtin_fail   <- sum(!smf$gtin_valid, na.rm = TRUE)
 total_cb_36mo <- sum(smf$chargeback_total, na.rm = TRUE)
-annual_cb     <- round(total_cb_36mo * 12 / 36)
+annual_cb     <- round(total_cb_36mo * 12 / n_chargeback_months)
 n_cb_events   <- nrow(cbe)
 n_zero_cb     <- sum(smf$chargeback_total == 0 | is.na(smf$chargeback_total))
 total_ttm_rev <- sum(smf$ttm_revenue, na.rm = TRUE)
@@ -155,10 +157,10 @@ stage3_cb   <- round(annual_cb * (stage3_skus / n_skus) * (12 / n_retailers))
 top_rev <- smf |> arrange(desc(ttm_revenue)) |> slice(1)
 top_cb  <- smf |> arrange(desc(chargeback_total)) |> slice(1)
 top_rev_events  <- cbe |> filter(sku == top_rev$sku) |> nrow()
-top_rev_annual  <- round(top_rev$chargeback_total * 12 / 36)
-top_rev_monthly <- round(top_rev$chargeback_total / 36)
+top_rev_annual  <- round(top_rev$chargeback_total * 12 / n_chargeback_months)
+top_rev_monthly <- round(top_rev$chargeback_total / n_chargeback_months)
 top_cb_events   <- cbe |> filter(sku == top_cb$sku) |> nrow()
-top_cb_annual   <- round(top_cb$chargeback_total * 12 / 36)
+top_cb_annual   <- round(top_cb$chargeback_total * 12 / n_chargeback_months)
 
 n_upc_fail <- sum(!smf$upc_valid, na.rm = TRUE)
 
@@ -170,7 +172,7 @@ non_data_annual <- round(annual_cb * (100 - data_defect_pct) / 100)
 barcode_cb_36mo <- cbe |>
   filter(grepl("Label.*barcode", reason, ignore.case = TRUE)) |>
   summarise(t = sum(amount, na.rm = TRUE)) |> pull(t)
-barcode_annual <- round(barcode_cb_36mo * 12 / 36)
+barcode_annual <- round(barcode_cb_36mo * 12 / n_chargeback_months)
 
 smf_ranked <- smf |> arrange(desc(chargeback_total)) |>
   mutate(cum_cb = cumsum(chargeback_total), cum_pct = cum_cb / sum(chargeback_total))
@@ -198,6 +200,8 @@ n_both_barcode_valid <- sum(smf$gtin_valid & smf$upc_valid, na.rm = TRUE)
 By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of Cinderhaven's `r n_skus` SKUs carry GTIN-14s that do not pass. `r n_upc_fail` carry invalid UPC check digits. `r if (n_both_barcode_valid == 0) "Not a single SKU has both a valid GTIN and a valid UPC." else paste0(n_skus - n_both_barcode_valid, " SKUs carry at least one invalid barcode check digit.")` Those SKUs cannot participate in the transition until someone corrects the digits.
 
 Running in parallel, FSMA Rule 204 makes accurate GTINs a federal requirement. FDA food traceability mandates them as the product identifier backbone for tracking food through the supply chain. The barcode that used to be a scanning convenience is becoming the regulatory infrastructure for food safety. This is not a retailer preference. It is law.
+
+All figures in this report are computed from Cinderhaven's transaction data covering January 2023 through December 2025 — `r n_chargeback_months` months of chargebacks, scan data, and distribution records.
 
 These two deadlines land on a company whose product master would fail basic validation at nearly every retailer today. `r n_sku_fail_all` of `r n_skus` SKUs fail every retailer's required-field checks. `r n_retailer_zero_pass` of `r n_retailers` retailers have a 0% pass rate. The handful of SKUs that pass at one or two retailers do so because those retailers require fewer fields — not because the data is clean. `r ds(total_ttm_rev)` in trailing twelve-month revenue rides on data that would not survive the onboarding process at most retailers if submitted fresh.
 
@@ -295,7 +299,7 @@ The pattern is not unique to `r deauth_ex$sku`. Across the catalog, `r deauth_st
 
 The cost of a deauthorization is not the lost revenue at that store. It is the competitive displacement. A specialty food brand does not compete for abstract "shelf space." It competes for specific slots in specific planograms that are reviewed on 12-to-24-month cycles. Losing a slot to a competitor means that competitor's product will generate 12 to 24 months of velocity data at that location, data the category manager will use to justify keeping it during the next review. The brand that lost the slot has to overcome a year of incumbent velocity data with nothing but a pitch deck and a promise.
 
-## The $111-a-month problem nobody sees
+## The $56-a-month problem nobody sees
 
 The 12 invalid GTIN check digits, 12 invalid UPC check digits, and 19 missing case dimension records in Cinderhaven's product master have been wrong since the day each SKU was entered. In that time, nobody corrected a single one. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
 
@@ -305,11 +309,11 @@ On the other side, the product master sits in whatever system Cinderhaven uses t
 
 The ops team is not negligent. They are fully occupied. Six retailer portals. Broker coordination. Velocity reports rebuilt by hand every Monday. Trade spend reconciliation. New SKU launches. Promotional planning. Data cleanup is on the list. It is always on the list. It sits between "update the trade spend template" and "fix the label printer" and it never reaches the top because the chargebacks arrive in amounts too small to demand attention and too steady to ever stop on their own.
 
-CHP-AS-005, Classic Tomato Basil, carries $7,976 in annualized chargebacks spread across all six retailers. That works out to roughly $111 per retailer per month. Each month, at each retailer, $111 appears on the settlement statement as a compliance deduction. Not large enough to flag. Not unusual enough to investigate. Not connected to the other five retailers generating the same charge for the same reason.
+CHP-AS-005, Classic Tomato Basil, carries $4,029 in annualized chargebacks spread across all six retailers. That works out to roughly $56 per retailer per month. Each month, at each retailer, $56 appears on the settlement statement as a compliance deduction. Not large enough to flag. Not unusual enough to investigate. Not connected to the other five retailers generating the same charge for the same reason.
 
-A hundred and eleven dollars. Six retailers. Thirty-six months. One wrong digit.
+Fifty-six dollars. Six retailers. Thirty-six months. One wrong digit.
 
-This is the structural problem. The chargebacks persist because the defects persist. The defects persist because nobody has time to find them. Nobody has time to find them because the cost of each individual defect is too small to surface through normal business processes. The total is $228,845 a year. The individual units are invisible. The system that would make them visible does not exist yet. Part 3 of this report describes what that system looks like.
+This is the structural problem. The chargebacks persist because the defects persist. The defects persist because nobody has time to find them. Nobody has time to find them because the cost of each individual defect is too small to surface through normal business processes. The total is `r ds(annual_cb)` a year. The individual units are invisible. The system that would make them visible does not exist yet. Part 3 of this report describes what that system looks like.
 
 ## The revenue you're not capturing
 
@@ -333,7 +337,7 @@ top10_tbl_simple <- smf |>
   slice(1:10) |>
   transmute(SKU = sku, Product = product_name,
             `TTM revenue` = ds_short(ttm_revenue),
-            `18-mo chargebacks` = ds_short(chargeback_total))
+            `36-mo chargebacks` = ds_short(chargeback_total))
 cat(kable(top10_tbl_simple, format = "pipe", align = c("l", "l", "r", "r")), sep = "\n")
 ```
 
@@ -345,34 +349,45 @@ The gap between "blocked" and "ready" is barcode check digits and case dimension
 
 ## The SKU you can't afford to ignore
 
-CHP-DG-007, Trail Mix Premium, is the ninth-best-selling product in the Cinderhaven catalog. $896,803 in trailing twelve-month revenue. 212 stores across every channel. Velocity of 14.1 units per store per week. It represents 2.7% of company revenue and $655,280 in annual gross margin.
+```{r dg007-setup}
+#| include: false
+dg007 <- smf |> filter(sku == "CHP-DG-007")
+dg007_events <- cbe |> filter(sku == "CHP-DG-007") |> nrow()
+dg007_annual <- round(dg007$chargeback_total * 12 / n_chargeback_months)
+sku_ret_pass <- rrs |>
+  group_by(sku) |>
+  summarise(n_pass = sum(overall_pass), n_total = n(), .groups = "drop")
+```
+
+CHP-DG-007, Trail Mix Premium, is the sixth-best-selling product in the Cinderhaven catalog. `r ds(dg007$ttm_revenue)` in trailing twelve-month revenue. `r dg007$auth_count` stores across every channel. It represents `r ds(dg007$annual_gross_margin)` in annual gross margin.
 
 It fails every retailer's readiness check. Zero of six.
 
-The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated 54 chargeback events over 36 months — $56,502 in penalties, roughly $1,570 a month. Twenty-three of its 212 store authorizations have been revoked. Those slots are gone.
+The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated `r dg007_events` chargeback events over 36 months — `r ds(dg007$chargeback_total)` in penalties. `r dg007$deauth_count` of its `r dg007$auth_count` store authorizations have been revoked. Those slots are gone.
 
-The chargebacks break down by reason: late deliveries account for 35.7%, short shipments for 28.6%, damaged goods for 18.3%, and label and barcode fines for 17.4%. The data defect — the barcode — drives only a fraction of the chargeback dollars directly. What it drives is the deauthorization risk. A retailer's automated readiness check does not distinguish between a $1,570-a-month product and a $15-a-month product. It checks the barcode. The digit fails. The product is flagged.
+The chargebacks are not the point. At `r ds(dg007_annual)` a year, they barely register against `r ds(dg007$ttm_revenue)` in revenue. What registers is the deauthorization risk. A retailer's automated readiness check does not distinguish between a `r ds(dg007_annual)`-a-year chargeback product and a $70-a-year one. It checks the barcode. The digit fails. The product is flagged.
 
-Fixing CHP-DG-007 takes 50 minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, $18,834 a year in chargebacks is reduced, 23 lost store authorizations stop compounding, and the #9 SKU moves from zero of six retailers passing to a candidate for all six.
+Fixing CHP-DG-007 takes 50 minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of six retailers passing to a candidate for all six.
 
 The same pattern repeats across the top of the catalog:
 
-| Rank | Product | Revenue | DQ score | Chargebacks | Retailers passing |
-|------|---------|---------|----------|-------------|-------------------|
-| 1 | Truffle Mushroom Sauce | $1.2M | 100.0 | $0 | 6 of 6 |
-| 2 | Extra Virgin Olive Oil | $1.1M | 83.3 | $6,941 | 1 of 6 |
-| 3 | Maple Syrup Grade A | $1.0M | 83.3 | $0 | 1 of 6 |
-| 4 | Wildflower Honey | $1.0M | 100.0 | $2,319 | 6 of 6 |
-| 5 | Balsamic Fig Glaze | $1.0M | 83.3 | $2,671 | 1 of 6 |
-| 6 | Smoky Chipotle BBQ Sauce | $1.0M | 83.3 | $5,155 | 1 of 6 |
-| 7 | Sun-Dried Tomatoes | $961k | 83.3 | $2,280 | 3 of 6 |
-| 8 | Lemon Herb Chimichurri | $919k | 100.0 | $0 | 6 of 6 |
-| 9 | Trail Mix Premium | $897k | 83.3 | $26,462 | 0 of 6 |
-| 10 | Carolina Gold BBQ | $885k | 100.0 | $0 | 6 of 6 |
+```{r top10-rev-dq-table}
+#| results: asis
+top10_dq <- smf |>
+  arrange(desc(ttm_revenue)) |>
+  slice(1:10) |>
+  left_join(sku_ret_pass, by = "sku") |>
+  transmute(Rank = row_number(), Product = product_name,
+            Revenue = ds_short(ttm_revenue),
+            `DQ score` = data_quality_score,
+            `Chargebacks (36mo)` = ds_short(chargeback_total),
+            `Retailers passing` = paste(n_pass, "of", n_total))
+cat(kable(top10_dq, format = "pipe", align = c("r","l","r","r","r","c")), sep = "\n")
+```
 
-Four of the top ten are clean — perfect data quality scores, no chargebacks, passing all six retailers. Six are not. The difference is not commercial attention. Everyone at Cinderhaven knows what Trail Mix Premium sells. Nobody knows that its GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
+The difference is not commercial attention. Everyone at Cinderhaven knows what Trail Mix Premium sells. Nobody knows that its GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
 
-The risk of leaving CHP-DG-007 unfixed is not the $18,834. The risk is that a retailer runs the check. Walmart does not send a chargeback for a readiness failure. Walmart sends a deauthorization. And when a $900,000 SKU — one that already fails every retailer it ships to — loses shelf space at its largest account, the conversation is not with the data team. It is with the board.
+The risk of leaving CHP-DG-007 unfixed is not the `r ds(dg007_annual)`. The risk is that a retailer runs the check. Walmart does not send a chargeback for a readiness failure. Walmart sends a deauthorization. And when a `r ds(dg007$ttm_revenue)` product — one that already fails every retailer it ships to — loses shelf space at its largest account, the conversation is not with the data team. It is with the board.
 
 # Part 2: Why It Happens
 
@@ -392,9 +407,16 @@ The fix is structural: a gate between data entry and the live product master. A 
 
 The catalog is not uniformly broken. It is split: 23 clean SKUs and 27 with defects. But the 27 carry defects of the same type. 12 have invalid UPC check digits. 12 have invalid GTIN-14 check digits. 19 have missing case dimensions. The basic completeness checks — brand owner, country of origin, weights — all pass. The barcodes are present and the right length. They just fail check-digit validation, which is what retailers actually run. The case dimensions were never entered.
 
-The instinct is to assume the big sellers would have been cleaned up by now. The assumption is wrong because it confuses commercial attention with data attention. Everyone at Cinderhaven knows that Trail Mix Premium sells $897,000 a year. Nobody at Cinderhaven knows that its GTIN-14 check digit is wrong and its case dimensions are blank. Those are two different kinds of knowing, and only the first one happens naturally.
+The instinct is to assume the big sellers would have been cleaned up by now. The assumption is wrong because it confuses commercial attention with data attention. Everyone at Cinderhaven knows that Trail Mix Premium sells `r ds(dg007$ttm_revenue)` a year. Nobody at Cinderhaven knows that its GTIN-14 check digit is wrong and its case dimensions are blank. Those are two different kinds of knowing, and only the first one happens naturally.
 
-Data entry is clerical work. It happens at launch, when somebody has 20 minutes between other tasks, and it never happens again. Nobody revisits the product master after a SKU is selling. The record freezes at whatever state it was in on the day someone typed it. A $1.2 million SKU and a $319,000 SKU both get one pass through data entry. The difference is that the clean $1.2 million SKU happened to have its digits typed correctly on day one. The $897,000 SKU did not.
+```{r clean-dirty-comparison}
+#| include: false
+clean_top <- smf |> filter(data_quality_score == 100) |> arrange(desc(ttm_revenue)) |> slice(1)
+dirty_lower <- smf |> filter(data_quality_score < 100, sku != "CHP-DG-007") |>
+  arrange(ttm_revenue) |> slice(1)
+```
+
+Data entry is clerical work. It happens at launch, when somebody has 20 minutes between other tasks, and it never happens again. Nobody revisits the product master after a SKU is selling. The record freezes at whatever state it was in on the day someone typed it. A `r ds(clean_top$ttm_revenue)` SKU and a `r ds(dirty_lower$ttm_revenue)` SKU both get one pass through data entry. The difference is that the clean `r ds(clean_top$ttm_revenue)` SKU happened to have its digits typed correctly on day one. The `r ds(dg007$ttm_revenue)` SKU did not.
 
 The fix does not require better data entry. It requires a list. Put the revenue number next to every SKU on the ops team's screen. Sort by revenue. Start at the top. The people doing the work have never been shown which products their work protects. Give them that information and the triage takes care of itself.
 
@@ -479,18 +501,18 @@ The takeaway for triage: when the ops team starts fixing barcodes, prioritize th
 barcode_fix_minutes <- n_skus * 10
 upc_fix_minutes <- n_upc_fail * 10
 gtin_fix_minutes <- n_gtin_fail * 10
-data_defect_annual <- round((total_cb_36mo * data_defect_pct / 100) * 12 / 36)
+data_defect_annual <- round((total_cb_36mo * data_defect_pct / 100) * 12 / n_chargeback_months)
 barcode_savings_per_min <- round(barcode_annual / barcode_fix_minutes)
 barcode_pct_of_annual <- round(100 * barcode_annual / annual_cb)
 ```
 
-## 15 hours against $228,845
+## 15 hours against `r ds(annual_cb)`
 
 12 SKUs have invalid UPC check digits. 12 have invalid GTIN-14 check digits. 19 have missing case dimensions. A check digit is a mathematical typo: the last digit of a barcode, calculated from the preceding digits using a standard algorithm. It exists so scanning systems can detect keying errors. When the digit is wrong, the barcode fails validation, the retailer issues a penalty, and the penalty arrives on the settlement statement looking like a cost of doing business. It is not. It is a cost of a wrong digit. A missing case dimension is even simpler: someone did not type four numbers into four fields.
 
 Each barcode SKU takes about ten minutes to fix. The algorithm is deterministic. The input is already in the record. Each case dimension entry takes about thirty minutes: pull the product, measure length, width, height, and weight, enter them. The fix is arithmetic and a tape measure, not judgment.
 
-"Label / barcode fine" chargebacks totaled $137,041 over 36 months, annualized to $45,680 a year. Combined with pricing errors ($5,466 annualized), data-related chargebacks account for 22% of the total bill. The remaining chargebacks trace to fulfillment operations and are outside the scope of this data audit.
+Label and barcode fine chargebacks, combined with pricing errors, account for `r data_defect_pct`% of the total bill — `r ds(annual_cb - non_data_annual)` a year traced directly to data defects. The remaining `r 100 - data_defect_pct`% traces to fulfillment operations and is outside the scope of this data audit.
 
 | Fix action | SKUs | Time | Annual savings |
 |---|---|---|---|
@@ -502,7 +524,7 @@ Each barcode SKU takes about ten minutes to fix. The algorithm is deterministic.
 
 15 hours of data entry. That is the entire scope. Brand owner, country of origin (with one exception), and weights are all already complete and correct. The product master's defects are barcode check digits and case dimensions.
 
-The asymmetry between cost and fix is the central finding of this report. Not the $228,845 total. Not the Pareto concentration. Not the majority retailer readiness failure — with pass rates between 46% and 50% at the four strictest retailers. The asymmetry. The fact that a $34 million company is generating $51,147 a year in data-related penalties because nobody has spent 15 hours on data entry. The fact that the same defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop on their own.
+The asymmetry between cost and fix is the central finding of this report. Not the `r ds(annual_cb)` total. Not the Pareto concentration. Not the majority retailer readiness failure — with pass rates between 46% and 50% at the four strictest retailers. The asymmetry. The fact that a $34 million company is generating $51,147 a year in data-related penalties because nobody has spent 15 hours on data entry. The fact that the same defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop on their own.
 
 ## What's still broken right now
 
@@ -713,7 +735,7 @@ Phase three takes two days. Deploy the Monday Morning Dashboard. Configure the a
 
 The three phases build on each other. Phase one produces immediate financial return and unlocks expansion. Phase two prevents recurrence. Phase three makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the barcodes but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected.
 
-These three phases address the data-attributable chargebacks — $51,147 a year. The remaining $177,698 traces to fulfillment operations: short shipments, late deliveries, and receiving discrepancies. Those require different interventions — carrier management, demand planning, warehouse process changes — and are outside the scope of a data audit. The companion fulfillment analysis sizes that exposure separately.
+These three phases address the data-attributable chargebacks — `r ds(annual_cb - non_data_annual)` a year. The remaining `r ds(non_data_annual)` traces to fulfillment operations: short shipments, late deliveries, and receiving discrepancies. Those require different interventions — carrier management, demand planning, warehouse process changes — and are outside the scope of a data audit. The companion fulfillment analysis sizes that exposure separately.
 
 The total: `r round(total_fix_hours)` hours of data entry addresses the entire barcode cleanup. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is `r ds(annual_cb)` a year in chargebacks. At the growth target, it exceeds `r ds(stage3_cb)`. The cost of fixing it is one week.
 
@@ -771,13 +793,13 @@ The "mean fields short" column matters for planning. Fixing barcode check digits
 
 ## Chargeback trend analysis
 
-Monthly chargeback dollars have held roughly flat at about $19,000 per month over the 36-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
+Monthly chargeback dollars have held roughly flat at about `r ds(round(total_cb_36mo / n_chargeback_months))` per month over the `r n_chargeback_months`-month observation window. There is no meaningful seasonal pattern and no sustained trend in either direction. This is consistent with the underlying cause: the defects are static. An invalid check digit does not get worse over time. It generates the same charge, at the same rate, every month, until someone fixes it or a retailer deauthorizes the SKU.
 
 The flat trend applies to data-driven chargebacks specifically — static defects produce static costs. Fulfillment-driven chargebacks show seasonal variation, particularly in Q4 when fill rates dip across all retailers.
 
-![Monthly chargeback dollars over the 36-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $19,000 per month."}
+![Monthly chargeback dollars over the 36-month window.](`r chart("15_monthly_chargeback_trend")`){fig-alt="Line chart of monthly chargeback dollars showing a roughly flat trend at about $12,200 per month."}
 
-Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is stable at $1.8 to $2.5 million per month. Chargebacks oscillate between $8,000 and $28,000 with no correlation to revenue volume. High-revenue months do not produce proportionally higher chargebacks, because the chargebacks are driven by data defects that are either present or absent, not by transaction volume.
+Chart 16 overlays monthly chargebacks against monthly scan revenue. Revenue is stable at $1.8 to $2.5 million per month. Chargebacks oscillate between $5,000 and $22,000 with no correlation to revenue volume. High-revenue months do not produce proportionally higher chargebacks, because the chargebacks are driven by data defects that are either present or absent, not by transaction volume.
 
 ![Monthly chargebacks overlaid on monthly scan revenue.](`r chart("16_monthly_chargebacks_vs_scan")`){fig-alt="Dual-axis line chart of monthly chargebacks and monthly scan revenue showing no correlation."}
 
@@ -885,7 +907,7 @@ Serving size data is not present in the product master. Retailer readiness check
 
 All dollar estimates in this report state their assumptions at point of claim. The key methodological choices:
 
-Chargeback annualization: 36-month totals are multiplied by 12/36 to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
+Chargeback annualization: `r n_chargeback_months`-month totals are multiplied by 12/`r n_chargeback_months` to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
 
 Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. Data quality scores fall into three tiers (66.7, 83.3, and 100), enabling a basic quality-tier comparison. In a real engagement with more varied defect types, a richer differential analysis would isolate the data-quality contribution to deauthorization with greater precision.
 

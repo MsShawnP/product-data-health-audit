@@ -344,7 +344,7 @@ reactable(
 > **What to do with it:** Use the composite column to set the quarterly
 > cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
 > with the six quick-win SKUs (20 minutes each). They take two hours
-> combined and each recovers over $20,000 per fix-hour.
+> combined and each recovers over $15,000 per fix-hour.
 
 ```{r triage-tracker}
 # Triage columns (composite priority, fix hours, savings/hour, still-broken)

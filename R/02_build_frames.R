@@ -61,6 +61,8 @@ chargebacks <- chargebacks |>
     late_delivery = "Late delivery",
     short_ship    = "Short shipment"))
 
+n_chargeback_months <- length(unique(chargebacks$month))
+
 # Coerce date columns once.
 chargebacks      <- chargebacks      |> mutate(month_date = ymd(paste0(month, "-01")))
 distribution     <- distribution     |> mutate(authorized_date = ymd(authorized_date),
@@ -396,7 +398,7 @@ sku_master_full <- sku_master_full |>
     est_fix_hours    = fix_minutes_est / 60,
     savings_per_hour = ifelse(
       est_fix_hours > 0,
-      (chargeback_total * 12 / 36) / est_fix_hours,
+      (chargeback_total * 12 / n_chargeback_months) / est_fix_hours,
       NA_real_),
     still_broken     = still_broken_df$still_broken[match(sku, still_broken_df$sku)]) |>
   select(-fix_minutes_est)

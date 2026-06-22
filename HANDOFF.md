@@ -424,6 +424,34 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 3. Fix 3 methodology contradictions (lines ~218, 918, 920) — carried from session 4
 4. /improve review due (last: 2026-05-22)
 
+## 2026-06-22 — Post-reseed narrative update + date audit (session 11)
+
+**Started from:** Report built on pre-reseed data ($228,845 annual). Post-reseed Postgres/SQLite has $146,961. ~15 hardcoded dollar amounts from old data throughout report, tearsheet, dashboard, landing page.
+
+**Did:**
+- Investigated $245K chargeback discrepancy — traced to raw_tables.rds regenerated from re-seeded database (not a pipeline bug)
+- Deleted stale raw_tables.rds, regenerated from SQLite, re-ran full R pipeline (steps 01-06)
+- Converted 3 hardcoded "$228,845" in report.qmd to dynamic `ds(annual_cb)` inline R
+- Applied all 12 items from audit-reseed-rewrites.md: $111→$56 section, CHP-DG-007 at $2.2M/#6, data-defect share 22%→35%, fulfillment $177K→dynamic, monthly CB $19K→dynamic, revenue references→dynamic, tearsheet paragraph, landing page $177K→$96K, dashboard $20K→$15K, top-10 revenue table→dynamic R chunk
+- Audited all date anchors: TTM anchored to max(week_ending) not Sys.Date(), chargebacks use full dataset with no date filter, no CURRENT_DATE in any computation
+- Confirmed CHP-SC-006 TTM revenue is $51,332 (88% CB-to-revenue ratio — confirmed from raw scan data)
+- Verified zero remaining hits for old figures ($228,845, $686,534, $896,803, etc.) in any .qmd source
+
+**State:**
+- All .qmd source files updated. Rendered HTML is stale (needs Quarto re-render).
+- Two open issues NOT resolved:
+  1. Chargebacks span 37 months (Jan 2023 – Jan 2026) but annualization divisor is hardcoded to 36. ~2.7% undercount.
+  2. No explicit observation period stated in the report.
+- NOT committed, NOT pushed.
+
+**Next:**
+1. Resolve 36/37 chargeback month mismatch (filter to 36 months OR dynamic divisor)
+2. Add explicit observation period statement to report
+3. Re-render all Quarto outputs (report HTML/PDF, dashboard, tearsheet, scorecard, compliance timeline)
+4. CHP-SC-006 88% CB-to-revenue ratio — Chat may want to adjust framing
+5. Fix 3 methodology contradictions (report.qmd lines ~218/918/920) — carried from session 4
+6. Commit and deploy
+
 ## 2026-06-22 — Chart bar fill sweep (session 8)
 
 **Started from:** Session 7 applied design system to chrome/layout but left bar fills wrong. 19 of 21 charts used `LL_RECEDE` (gridline gray `#d9d9d9`) for bar fills and `LL_RED` (`#CC100A`, Red-42) for accents — both wrong per design system.
