@@ -121,7 +121,7 @@ blockquote strong {
 
 .reactable,
 .Reactable {
-  width: fit-content !important;
+  width: 100% !important;
   margin-left: auto !important;
   margin-right: auto !important;
   border: 1px solid #d9d9d9 !important;
@@ -187,6 +187,12 @@ blockquote strong {
   font-size: 0.75rem !important;
   border-bottom: 1px solid #e0e0e0 !important;
   white-space: nowrap !important;
+}
+
+/* Inner wrappers (reactable 0.4.5 nests content here) */
+.rt-th-inner,
+.rt-td-inner {
+  font-size: 0.75rem !important;
 }
 
 /* Column overrides: "Still broken" wraps, SKU gets min-width */
