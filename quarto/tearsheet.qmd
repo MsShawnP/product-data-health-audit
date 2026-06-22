@@ -194,6 +194,7 @@ triage <- smf |>
     `Savings per hour` = fmt_per_hr(savings_per_hour))
 
 # Header colored navy with white text; rows zebra-striped via colortbl.
+cat("\\small\n")
 cat("\\rowcolors{2}{chbgpale!40}{white}\n")
 cat(kable(triage, format = "latex", booktabs = TRUE,
           escape = FALSE,

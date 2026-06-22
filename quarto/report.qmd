@@ -61,7 +61,7 @@ format:
           \setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}%
           \let\oldlongtable\longtable
           \let\oldendlongtable\endlongtable
-          \def\longtable{\par\noindent\begin{minipage}{\linewidth}\oldlongtable}%
+          \def\longtable{\par\noindent\begin{minipage}{\linewidth}\small\oldlongtable}%
           \def\endlongtable{\oldendlongtable\end{minipage}\par}%
         }
 
@@ -691,7 +691,7 @@ reactable(
     highlightColor    = "#e8eaf4",
     cellPadding       = "6px 10px",
     style             = list(fontFamily = "'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-                             fontSize   = "0.85rem")
+                             fontSize   = "0.75rem")
   )
 )
 ```

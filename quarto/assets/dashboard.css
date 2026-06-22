@@ -141,7 +141,7 @@ blockquote strong {
   color: #fff !important;
   font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
   font-weight: 600 !important;
-  font-size: 0.82rem !important;
+  font-size: 0.75rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.03em !important;
   padding: 8px 10px !important;
@@ -184,7 +184,7 @@ blockquote strong {
 .Reactable .rt-tbody .rt-td,
 .rt-tbody .rt-td {
   padding: 5px 10px !important;
-  font-size: 0.8rem !important;
+  font-size: 0.75rem !important;
   border-bottom: 1px solid #e0e0e0 !important;
   white-space: nowrap !important;
 }
@@ -228,7 +228,7 @@ blockquote strong {
   border: 1px solid #d9d9d9 !important;
   border-radius: 2px !important;
   padding: 4px 8px !important;
-  font-size: 0.82rem !important;
+  font-size: 0.75rem !important;
 }
 
 /* ── Tab panes fill width ─────────────────────────────────────────── */
