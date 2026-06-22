@@ -119,11 +119,17 @@ blockquote strong {
 
 /* ── Reactable tables: card wrapper + dark header ─────────────────── */
 
+/* Break tables out of the content container */
+.reactable,
+.cell-output-display > table {
+  width: 95vw !important;
+  max-width: 1400px !important;
+  margin-left: calc(-50vw + 50%) !important;
+  position: relative !important;
+}
+
 .reactable,
 .Reactable {
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
   border: 1px solid #d9d9d9 !important;
   border-radius: 2px !important;
   box-shadow: none !important;
