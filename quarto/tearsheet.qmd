@@ -118,9 +118,9 @@ ds <- function(x) {
   else formatC(round(x), big.mark = ",", format = "d")
 }
 
-stage3_skus <- n_skus * 5L
-stage3_retailers <- 8L
-stage3_cb <- round(annual_cb * (stage3_skus / n_skus) * (stage3_retailers / 3))
+n_retailers <- n_distinct(rrs$retailer)
+stage3_skus <- as.integer(n_skus * 5L)
+stage3_cb <- round(annual_cb * (stage3_skus / n_skus) * (12 / n_retailers))
 
 total_fix_hours <- sum(smf$est_fix_hours, na.rm = TRUE)
 ```
@@ -184,7 +184,7 @@ latex_escape <- function(x) {
 }
 
 triage <- smf |>
-  arrange(desc(chargeback_total > 0), desc(fix_priority_score)) |>
+  arrange(desc(savings_per_hour > 0), desc(savings_per_hour)) |>
   slice(1:10) |>
   transmute(
     SKU = sku,

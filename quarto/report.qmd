@@ -655,20 +655,11 @@ reactable(
       align = "right",
       cell  = function(value) dollar_cell(value)
     ),
-    `Quality score` = colDef(
-      align = "right",
-      style = function(value) {
-        # Lower quality = redder. Score is 0-100.
-        list(background = ramp_red(1 - value / 100))
-      }
-    ),
+    `Quality score` = colDef(align = "right"),
     `Chargebacks 36mo` = colDef(
       align = "right",
       minWidth = 150,
-      cell  = function(value) dollar_cell(value),
-      style = function(value) {
-        list(background = ramp_red(value / max_cb))
-      }
+      cell  = function(value) dollar_cell(value)
     ),
     `Composite priority` = colDef(
       align = "right",
@@ -700,7 +691,7 @@ reactable(
     highlightColor    = "#e8eaf4",
     cellPadding       = "6px 10px",
     style             = list(fontFamily = "'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-                             fontSize   = "1rem")
+                             fontSize   = "0.85rem")
   )
 )
 ```
