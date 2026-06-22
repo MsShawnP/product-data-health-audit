@@ -641,6 +641,7 @@ reactable(
     ),
     `Chargebacks 36mo` = colDef(
       align = "right",
+      minWidth = 150,
       cell  = function(value) dollar_cell(value),
       style = function(value) {
         list(background = ramp_red(value / max_cb))
@@ -648,6 +649,7 @@ reactable(
     ),
     `Composite priority` = colDef(
       align = "right",
+      minWidth = 155,
       style = list(fontWeight = "600")
     ),
     `Est. fix hours` = colDef(
@@ -674,8 +676,8 @@ reactable(
     stripedColor      = "#f2f2f2",
     highlightColor    = "#e8eaf4",
     cellPadding       = "6px 10px",
-    style             = list(fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-                             fontSize   = "0.88rem")
+    style             = list(fontFamily = "'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+                             fontSize   = "1rem")
   )
 )
 ```

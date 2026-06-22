@@ -70,7 +70,7 @@ h3 { font-size: 1.15rem; color: var(--ll-text-sec); }
 a       { color: var(--ll-text); text-decoration: underline; }
 a:hover { color: var(--ll-chicago-20); }
 
-p, li { font-size: 1rem; max-width: 660px; }
+p, li { font-size: 1rem; }
 
 strong { color: var(--ll-ink); }
 
@@ -87,6 +87,13 @@ div.callout.callout-tip {
   border-left-color: var(--ll-chicago-20) !important;
 }
 
+.callout-body-container p,
+.callout-body-container li,
+.callout-body p,
+.callout-body li {
+  max-width: none;
+}
+
 /* Wrap tables in a scroll container so wide tables never force horizontal page scroll */
 .table-wrapper,
 div.cell-output-display {
@@ -96,7 +103,7 @@ div.cell-output-display {
 
 table {
   font-family: var(--ll-sans);
-  font-size: 0.92rem;
+  font-size: 1rem;
   border-collapse: collapse;
   margin: 1rem 0;
   width: auto;
