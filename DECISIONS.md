@@ -91,6 +91,16 @@ Durable choices with rationale. These should hold across future sessions.
 - **Scope:** All four triage table sorts: `report.qmd`, `tearsheet.qmd`, `dashboard.qmd`, `R/06_excel_workbook.R`. Sort is now `desc(chargeback_total > 0), desc(fix_priority_score)` — chargeback-bearing SKUs first, then by composite priority within each tier.
 - **Do not:** Change `fix_priority_score` formula itself — it's still valid as a general-purpose composite. The sort change is display-level only.
 
+### 2026-06-21 — Chart color encoding rule: color = information, not decoration
+
+- **Why:** Multiple charts used different hues for single-series bars (one metric across categories) or multi-hue palettes for ordinal scales. This violates the principle that color should encode information the reader can't already get from labels. Decorative color adds cognitive load without adding meaning.
+- **Scope:** All charts in `R/04_hero_charts.R` and `R/05_supporting_charts.R`. Applies to any future chart.
+- **Rules:**
+  - Single-series (one metric, multiple categories) = one fill color (Chicago-20), optionally highlight the most important bar (Tokyo-40).
+  - Ordinal scale (ranked tiers) = single-hue sequential gradient (darkest = most severe, lightest = least).
+  - Only true categorical comparisons (data-defect type A vs B, retailer A vs retailer B in multi-series) get multiple distinct hues.
+- **Do not:** Add color variety "to make charts more visually interesting." If the x-axis or label already identifies the category, the bar color is decoration. Remove it.
+
 ### 2026-06-21 — Revenue-at-risk table: fix vectorization bug
 
 - **Why:** `rev_at_risk(retailer)` in the report's rr-summary-table chunk was called vectorized inside `transmute`, receiving all 6 retailer names at once instead of one at a time. The recycled `==` comparison produced a near-total join, returning ~$18.9M for every retailer regardless of their actual failure count.
