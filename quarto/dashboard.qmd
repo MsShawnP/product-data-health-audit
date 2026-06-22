@@ -165,7 +165,7 @@ reactable(
     Stores   = colDef(minWidth = 80, align = "right"),
     `4w u/store/wk`  = colDef(minWidth = 150, align = "right",
                               format = colFormat(digits = 2)),
-    `12w u/store/wk` = colDef(minWidth = 155, align = "right",
+    `12w u/store/wk` = colDef(minWidth = 140, align = "right",
                               format = colFormat(digits = 2)),
     `% change` = colDef(
       minWidth = 110, align = "right",
@@ -377,29 +377,29 @@ reactable(
                        color      = "#ffffff")
   ),
   columns = list(
-    SKU     = colDef(minWidth = 100, class = "col-sku", headerClass = "col-sku"),
-    Product = colDef(minWidth = 250),
+    SKU     = colDef(minWidth = 85, class = "col-sku", headerClass = "col-sku"),
+    Product = colDef(minWidth = 200),
     `TTM revenue` = colDef(
-      minWidth = 130, align = "right",
+      minWidth = 105, align = "right",
       cell  = function(v) dollar_cell(v)
     ),
-    `Quality score` = colDef(minWidth = 130, align = "right"),
+    `Quality score` = colDef(minWidth = 110, align = "right"),
     `Chargebacks 36mo` = colDef(
-      minWidth = 160, align = "right",
+      minWidth = 140, align = "right",
       cell  = function(v) dollar_cell(v)
     ),
     `Composite priority` = colDef(
-      minWidth = 165, align = "right",
+      minWidth = 140, align = "right",
       style = function(v) list(fontWeight = "600")
     ),
     `Est. fix hours` = colDef(
-      minWidth = 130, align = "right",
+      minWidth = 110, align = "right",
       cell  = function(v) {
         if (is.na(v) || v == 0) "—" else sprintf("%.2f", v)
       }
     ),
     `$ saved / hour` = colDef(
-      minWidth = 155, align = "right",
+      minWidth = 120, align = "right",
       cell  = function(v) {
         if (is.na(v)) return("—")
         if (v >= 1e3) sprintf("$%.1fk/hr", v / 1e3)
@@ -407,7 +407,7 @@ reactable(
       }
     ),
     `Still broken` = colDef(
-      minWidth = 250,
+      minWidth = 220,
       html = TRUE,
       class = "col-still-broken",
       headerClass = "col-still-broken",
