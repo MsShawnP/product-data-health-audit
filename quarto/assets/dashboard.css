@@ -23,9 +23,9 @@ html, body {
 
 /* ── Title block: canvas background, editorial ───────────────────── */
 
-body .quarto-dashboard .quarto-title-block,
-body .quarto-dashboard header#title-block-header,
-body .quarto-dashboard .quarto-title-block.default,
+body.quarto-light #title-block-header,
+body.quarto-light .quarto-title-block,
+body.quarto-light header#title-block-header.quarto-title-block.default,
 #title-block-header,
 .quarto-title-block,
 .quarto-title-block.default,
