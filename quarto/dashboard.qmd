@@ -127,7 +127,7 @@ reactable(
                        color      = "#ffffff")
   ),
   columns = list(
-    SKU      = colDef(width = 95),
+    SKU      = colDef(minWidth = 100, class = "col-sku", headerClass = "col-sku"),
     Product  = colDef(width = 220),
     Retailer = colDef(width = 110, filterInput = function(values, name) {
       tags$select(
@@ -385,7 +385,7 @@ reactable(
                        color      = "#ffffff")
   ),
   columns = list(
-    SKU     = colDef(width = 90),
+    SKU     = colDef(minWidth = 100, class = "col-sku", headerClass = "col-sku"),
     Product = colDef(width = 280),
     `TTM revenue` = colDef(
       align = "right",
@@ -415,11 +415,17 @@ reactable(
       }
     ),
     `Still broken` = colDef(
-      width = 310,
+      minWidth = 250,
+      class = "col-still-broken",
+      headerClass = "col-still-broken",
       cell = function(v) if (is.na(v)) "" else v,
       style = function(v) {
-        if (is.na(v)) NULL
-        else list(color = cinderhaven_palette$red, fontWeight = "500")
+        base <- list(whiteSpace = "normal")
+        if (!is.na(v)) {
+          base$color <- cinderhaven_palette$red
+          base$fontWeight <- "500"
+        }
+        base
       }
     )
   ),
