@@ -248,18 +248,20 @@ p7_base <- function(use_interactive) {
     geom_text(aes(label = sprintf("%.2f", issues_per_million)),
               vjust = -0.5, size = 4) +
     scale_fill_manual(values = c(
+      "Specialty Condiments" = LL_BAR_HIGHLIGHT,
       "Artisan Sauces"       = LL_BAR_DEFAULT,
-      "Specialty Condiments" = LL_BAR_DEFAULT,
-      "Pantry Staples"       = LL_BAR_HIGHLIGHT),
+      "Dried Goods"          = LL_BAR_DEFAULT,
+      "Pantry Staples"       = LL_BAR_DEFAULT,
+      "Snack Bites"          = LL_BAR_DEFAULT),
       guide = "none") +
     scale_y_continuous(expand = expansion(mult = c(0, 0.12))) +
     labs(title    = wrap_title({
-           ps_ipm <- c7$issues_per_million[c7$product_line == "Pantry Staples"]
-           as_ipm <- c7$issues_per_million[c7$product_line == "Artisan Sauces"]
-           if (length(ps_ipm) && length(as_ipm) && !is.na(ps_ipm) && !is.na(as_ipm) && as_ipm > 0) {
-             pct_more <- round(100 * (ps_ipm / as_ipm - 1))
-             sprintf("Pantry Staples carries %d%% more data debt per dollar than Artisan Sauces",
-                     pct_more)
+           top <- c7[which.max(c7$issues_per_million), ]
+           bot <- c7[which.min(c7$issues_per_million), ]
+           if (nrow(top) && nrow(bot) && !is.na(bot$issues_per_million) && bot$issues_per_million > 0) {
+             pct_more <- round(100 * (top$issues_per_million / bot$issues_per_million - 1))
+             sprintf("%s carries %d%% more data debt per dollar than %s",
+                     top$product_line, pct_more, bot$product_line)
            } else {
              "Data debt by product line (revenue data unavailable for ratio)"
            }
@@ -424,7 +426,11 @@ p11_base <- function(use_interactive) {
     p <- p + geom_col(width = 0.6)
   }
   p +
-    scale_fill_manual(values = risk_band_colors,
+    scale_fill_manual(values = c(
+      "Worst 25%"     = "#0c6552",
+      "Below average" = "#158f75",
+      "Above average" = "#35b595",
+      "Best 25%"      = "#b5e4d8"),
       guide = "none") +
     geom_text(aes(label = paste0(percent(mean_rate, accuracy = 0.01),
                                  "  (", n_with_any, " of ", n_skus,

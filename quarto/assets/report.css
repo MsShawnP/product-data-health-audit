@@ -82,6 +82,11 @@ blockquote, .callout {
   border-radius: 0 2px 2px 0;
 }
 
+div.callout.callout-note,
+div.callout.callout-tip {
+  border-left-color: var(--ll-chicago-20) !important;
+}
+
 /* Wrap tables in a scroll container so wide tables never force horizontal page scroll */
 .table-wrapper,
 div.cell-output-display {
