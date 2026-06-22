@@ -475,3 +475,24 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 **Next:**
 1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
 2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
+
+## 2026-06-22 — Dashboard table CSS fixes (session 12)
+
+**Started from:** Dashboard tabs 1 and 3 had narrow tables confined to content container. Tab 2's P&L table extended wider. Headers truncated on tabs 1/3.
+
+**Did:**
+- Diagnosed root cause: `fullWidth = FALSE` added `rt-inline` class (inline-flex) constraining table width. Changed to `fullWidth = TRUE` on tabs 1 and 3.
+- Changed all column `width` → `minWidth` in dashboard.qmd so columns grow instead of being fixed.
+- Fixed CSS specificity battle: dashboard.css `.rt-table` lost to report.css `.cell-output-display .reactable .rt-table` (higher specificity wins when both have `!important`). Added matching selector in dashboard.css.
+- Fixed `.Reactable { overflow: hidden }` → `overflow: visible` to allow table expansion past container.
+- Tried and reverted viewport-width breakout CSS (95vw + calc(-50vw+50%)) — too aggressive, pushed content off screen.
+- Final: all 3 tabs have zero truncated headers verified via scrollWidth DOM inspection. Tables extend beyond 1320px container with horizontal scroll.
+
+**State:** Committed and pushed (91b238a). CI passed. Working tree has pre-existing uncommitted changes (.Rprofile deleted, raw_tables.rds modified, waterfall SVG modified).
+
+**Next:**
+1. Resolve 36/37 chargeback month mismatch (filter to 36 months OR dynamic divisor)
+2. Add explicit observation period statement to report
+3. Fix 3 methodology contradictions (report.qmd lines ~218/918/920) — carried from session 4
+4. Re-render all Quarto outputs, commit, deploy
+5. /improve review due (last: 2026-05-22). Next dep audit: 2026-07-22.

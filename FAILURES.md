@@ -109,6 +109,27 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix:** Write the R script to a temp `.R` file using the Write tool (which outputs clean UTF-8 without BOM), then run `Rscript tempfile.R`. Delete the temp file after. Never pipe PowerShell string content directly to Rscript.
 - **Tags:** powershell, R, BOM, encoding, pipe, here-string, windows
 
+### 2026-06-22 — Viewport-width breakout CSS pushes content off screen
+
+- **What happened:** Applied `width: 95vw; max-width: 1400px; margin-left: calc(-50vw + 50%)` to both report.css and dashboard.css to make tables wider than their container. Tables overflowed the viewport on smaller screens.
+- **Why it failed:** The 95vw + negative margin trick works on centered, unconstrained layouts. The dashboard's `#quarto-content` has its own padding and max-width, so the negative margin didn't center correctly — it pushed content past the right edge. On viewports close to 1400px, the max-width cap did nothing useful.
+- **Fix:** Reverted entirely. Used `overflow-x: auto` on the wrapper + `fullWidth = TRUE` + `minWidth` columns instead. The table sizes itself to column content and scrolls horizontally when wider than the container.
+- **Tags:** css, viewport-width, breakout, layout, reactable, dashboard
+
+### 2026-06-22 — CSS specificity beats source order when both rules have !important
+
+- **What happened:** dashboard.css had `.rt-table { min-width: 1500px !important }`. report.css had `.cell-output-display .reactable .rt-table { min-width: 1100px !important }`. Expected dashboard.css to win because it loads last. The 1100px rule won.
+- **Why it failed:** When two rules both have `!important`, specificity breaks the tie — not source order. The report.css selector has 3 class selectors (0,3,0) vs dashboard.css's 1 class selector (0,1,0). Higher specificity wins regardless of load order.
+- **Fix:** Added matching specificity selector in dashboard.css: `.cell-output-display .reactable .rt-table, .rt-table { ... }`. When fighting `!important` wars, always check the full selector specificity, not just which file loads last.
+- **Tags:** css, specificity, important, load-order, reactable
+
+### 2026-06-22 — overflow:hidden on .Reactable clips table expansion
+
+- **What happened:** Set `min-width: 1500px` on `.rt-table` but the table stayed at container width (1282px). The wider content was invisible.
+- **Why it failed:** Reactable's `.Reactable` wrapper has `overflow: hidden` by default (from reactable.css). The inner `.rt-table` can't expand past its parent's overflow boundary. The min-width is set but the content is clipped.
+- **Fix:** Changed `.Reactable { overflow: visible !important }` and moved `overflow-x: auto` to the outer `.reactable` wrapper. The scroll container must be OUTSIDE the overflow-hidden boundary.
+- **Tags:** css, overflow, reactable, clipping, min-width
+
 ### 2026-05-22 — Edit tool string-not-found after sequential edits to large file
 
 - **What happened:** After several large edits to report.qmd in sequence, an Edit call failed because the target `old_string` no longer matched the file content. Prior edits had changed surrounding lines, shifting the context.

@@ -139,7 +139,7 @@ reactable(
         style = "width:100%; height:24px"
       )
     }),
-    Line     = colDef(minWidth = 150, filterInput = function(values, name) {
+    Line     = colDef(minWidth = 135, filterInput = function(values, name) {
       tags$select(
         onchange = sprintf(
           "Reactable.setFilter('velocity-table', '%s', event.target.value || undefined)",
@@ -197,10 +197,12 @@ reactable(
     borderColor    = "#d9d9d9",
     stripedColor   = "#f2f2f2",
     highlightColor = "#e8eaf4",
-    cellPadding    = "6px 10px",
+    cellPadding    = "4px 8px",
+    cellStyle      = list(fontSize = "11px", padding = "4px 8px"),
+    headerStyle    = list(fontSize = "11px", padding = "4px 8px"),
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-      fontSize   = "0.75rem")
+      fontSize   = "11px")
   )
 )
 ```
@@ -309,10 +311,12 @@ reactable(
   theme = reactableTheme(
     borderColor    = "#d9d9d9",
     stripedColor   = "#f2f2f2",
-    cellPadding    = "8px 12px",
+    cellPadding    = "4px 8px",
+    cellStyle      = list(fontSize = "11px", padding = "4px 8px"),
+    headerStyle    = list(fontSize = "11px", padding = "4px 8px"),
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-      fontSize   = "0.75rem")
+      fontSize   = "11px")
   )
 )
 ```
@@ -422,10 +426,12 @@ reactable(
     borderColor    = "#d9d9d9",
     stripedColor   = "#f2f2f2",
     highlightColor = "#e8eaf4",
-    cellPadding    = "6px 10px",
+    cellPadding    = "4px 8px",
+    cellStyle      = list(fontSize = "11px", padding = "4px 8px"),
+    headerStyle    = list(fontSize = "11px", padding = "4px 8px"),
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
-      fontSize   = "0.75rem")
+      fontSize   = "11px")
   )
 )
 ```

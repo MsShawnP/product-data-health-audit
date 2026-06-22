@@ -142,10 +142,10 @@ blockquote strong {
   color: #fff !important;
   font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif !important;
   font-weight: 600 !important;
-  font-size: 0.75rem !important;
+  font-size: 11px !important;
   text-transform: uppercase !important;
   letter-spacing: 0.03em !important;
-  padding: 8px 10px !important;
+  padding: 4px 8px !important;
   border-bottom: none !important;
   white-space: nowrap !important;
 }
@@ -184,8 +184,8 @@ blockquote strong {
 .reactable .rt-tbody .rt-td,
 .Reactable .rt-tbody .rt-td,
 .rt-tbody .rt-td {
-  padding: 5px 10px !important;
-  font-size: 0.75rem !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
   border-bottom: 1px solid #e0e0e0 !important;
   white-space: nowrap !important;
 }
@@ -193,7 +193,7 @@ blockquote strong {
 /* Inner wrappers (reactable 0.4.5 nests content here) */
 .rt-th-inner,
 .rt-td-inner {
-  font-size: 0.75rem !important;
+  font-size: 11px !important;
 }
 
 /* Column overrides: "Still broken" wraps, SKU gets min-width */
@@ -216,7 +216,7 @@ blockquote strong {
 
 .cell-output-display .reactable .rt-table,
 .rt-table {
-  min-width: 1700px !important;
+  min-width: auto !important;
 }
 
 /* Striped rows */

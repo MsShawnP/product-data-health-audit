@@ -119,6 +119,18 @@ Durable choices with rationale. These should hold across future sessions.
 - **Scope:** All pipeline outputs, all report prose, all deployed artifacts. The pre-reseed $228,845 figure is retired.
 - **Do not:** Revert to pre-reseed data or treat the committed raw_tables.rds at HEAD as authoritative. Always regenerate from the current database.
 
+### 2026-06-22 — Dashboard reactables: fullWidth=TRUE + minWidth columns
+
+- **Why:** `fullWidth = FALSE` adds the `rt-inline` class (display: inline-flex), which constrains the table to its content width and prevents it from filling the container. Combined with fixed `width` column parameters, headers get truncated when the total exceeds the container. `fullWidth = TRUE` removes `rt-inline`; `minWidth` (not `width`) sets a floor but allows columns to grow with available space.
+- **Scope:** All three tabs in `quarto/dashboard.qmd`. Tab 2 was already `fullWidth = TRUE`; tabs 1 and 3 were changed this session.
+- **Do not:** Use `fullWidth = FALSE` or fixed `width` on dashboard reactable columns. If a table needs to be narrower than its container, constrain via `minWidth` values and let the table self-size.
+
+### 2026-06-22 — Dashboard table overflow: visible on .Reactable, auto on .reactable
+
+- **Why:** Reactable's `.Reactable` div has `overflow: hidden` by default, which clips any inner `.rt-table` wider than the container — even if `min-width` is set. The fix is to set `.Reactable { overflow: visible }` so the table can expand, and `.reactable { overflow-x: auto }` on the outer wrapper so the browser provides a horizontal scrollbar. The scroll container must be outside the hidden boundary.
+- **Scope:** `quarto/assets/dashboard.css`. Applies to all reactable tables in the dashboard.
+- **Do not:** Set `overflow: hidden` or `overflow: auto` on `.Reactable` (inner wrapper). Horizontal scroll must be on `.reactable` (outer wrapper) or `.reactable-container`.
+
 ### 2026-06-21 — Revenue-at-risk table: fix vectorization bug
 
 - **Why:** `rev_at_risk(retailer)` in the report's rr-summary-table chunk was called vectorized inside `transmute`, receiving all 6 retailer names at once instead of one at a time. The recycled `==` comparison produced a near-total join, returning ~$18.9M for every retailer regardless of their actual failure count.
