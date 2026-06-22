@@ -191,9 +191,9 @@ p2 <- ggplot(tier_summary, aes(mean_days, tier, fill = tier)) +
 
 save_chart(p2, "02_time_to_shelf", h = 5.5)
 
-# ---- 3. True net margin by retailer (grouped bars) -----------------------
+# ---- 3. True net margin by retailer (small multiples) --------------------
 
-cat("\n[3/4] True net margin by retailer (grouped bars)\n")
+cat("\n[3/4] True net margin by retailer (small multiples)\n")
 
 contracted <- c("Walmart", "Whole Foods", "Costco")
 
@@ -213,32 +213,26 @@ c3_long <- c3_pnl |>
     levels = c("Gross revenue", "Trade spend",
                "Chargebacks", "Net contribution")))
 
-bar_palette <- c(
-  "Gross revenue"    = LL_CHICAGO,
-  "Trade spend"      = LL_CHICAGO_LIGHT,
-  "Chargebacks"      = LL_TOKYO,
-  "Net contribution" = LL_CHICAGO)
-
 c3_long$label <- fmt_dollar_short(c3_long$value)
 
-p3 <- ggplot(c3_long, aes(x = value, y = fct_rev(component), fill = component)) +
-  geom_col(width = 0.6) +
+p3 <- ggplot(c3_long, aes(x = value, y = fct_rev(retailer))) +
+  geom_col(width = 0.6, fill = LL_CHICAGO) +
   geom_text(aes(label = label),
-            hjust = 1.1, color = "white", fontface = "bold", size = 3.6) +
-  scale_fill_manual(values = bar_palette, guide = "none") +
-  scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
-                     expand = expansion(mult = c(0, 0.08))) +
-  facet_wrap(~ retailer, ncol = 1, scales = "free_x") +
+            hjust = -0.05, color = LL_INK, fontface = "bold", size = 3.4) +
+  facet_wrap(~ component, ncol = 1, scales = "free_x") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.20))) +
   labs(title    = wrap_title("Walmart wins on dollars; Whole Foods wins on margin"),
-       subtitle = "Gross revenue, trade spend, chargebacks, and net contribution by retailer",
+       subtitle = "Each metric on its own scale so all bars are readable",
        x        = NULL,
        y        = NULL,
        caption  = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
   theme_cinderhaven_horizontal() +
-  theme(axis.text.y = element_text(size = 11),
-        strip.text  = element_text(size = 12, face = "bold",
-                                   color = LL_INK,
-                                   family = "Playfair Display"))
+  theme(axis.text.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        panel.grid   = element_blank(),
+        strip.text   = element_text(size = 11, face = "bold",
+                                    color = LL_INK,
+                                    family = "Playfair Display"))
 
 save_chart(p3, "03_retailer_net_margin", h = 7)
 
