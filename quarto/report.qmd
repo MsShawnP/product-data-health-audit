@@ -520,11 +520,11 @@ Label and barcode fine chargebacks, combined with pricing errors, account for `r
 | Fix GTIN-14 check digits | 12 | 2.0 hrs | — |
 | Fix missing case dimensions | 19 | 9.5 hrs | — |
 | Fix missing country of origin | 1 | 0.5 hrs | — |
-| **Total** | **27 unique** | **15 hrs** | **$51,147 data-defect** |
+| **Total** | **27 unique** | **15 hrs** | **$`r fmt_d(data_defect_annual)` data-defect** |
 
 15 hours of data entry. That is the entire scope. Brand owner, country of origin (with one exception), and weights are all already complete and correct. The product master's defects are barcode check digits and case dimensions.
 
-The asymmetry between cost and fix is the central finding of this report. Not the `r ds(annual_cb)` total. Not the Pareto concentration. Not the majority retailer readiness failure — with pass rates between 46% and 50% at the four strictest retailers. The asymmetry. The fact that a $34 million company is generating $51,147 a year in data-related penalties because nobody has spent 15 hours on data entry. The fact that the same defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop on their own.
+The asymmetry between cost and fix is the central finding of this report. Not the `r ds(annual_cb)` total. Not the Pareto concentration. Not the majority retailer readiness failure — with pass rates between 46% and 50% at the four strictest retailers. The asymmetry. The fact that a $34 million company is generating `r ds(data_defect_annual)` a year in data-related penalties because nobody has spent 15 hours on data entry. The fact that the same defects have been present since the day each SKU was entered, accumulating charges in amounts too small to trigger investigation and too steady to ever stop on their own.
 
 ## What's still broken right now
 
