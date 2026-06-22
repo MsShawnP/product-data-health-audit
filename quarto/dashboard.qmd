@@ -242,30 +242,17 @@ pnl_long <- pnl |>
   mutate(component = factor(component,
     levels = c("Gross revenue", "Trade spend", "Chargebacks", "Net contribution")))
 
-bar_palette <- c(
-  "Gross revenue"    = "#1f2e7a",
-  "Trade spend"      = "#666666",
-  "Chargebacks"      = "#b82d4a",
-  "Net contribution" = "#1f2e7a")
-
-text_palette <- c(
-  "Gross revenue"    = "white",
-  "Trade spend"      = "white",
-  "Chargebacks"      = "white",
-  "Net contribution" = "white")
-
+pnl_long$bar_fill <- ifelse(pnl_long$component == "Chargebacks", "#b82d4a", "#1f2e7a")
 pnl_long$label <- dollar_short(pnl_long$value)
 
-ggplot(pnl_long, aes(x = value, y = fct_rev(component), fill = component)) +
-  geom_col(width = 0.6) +
-  geom_text(aes(label = label, color = component),
-            hjust = 1.1, fontface = "bold", size = 3.6,
-            show.legend = FALSE) +
-  scale_fill_manual(values = bar_palette, guide = "none") +
-  scale_color_manual(values = text_palette, guide = "none") +
+ggplot(pnl_long, aes(x = value, y = fct_rev(retailer), fill = bar_fill)) +
+  geom_col(width = 0.55) +
+  geom_text(aes(label = label), color = "white",
+            hjust = 1.1, fontface = "bold", size = 3.6) +
+  scale_fill_identity() +
   scale_x_continuous(labels = label_dollar(scale = 1e-6, suffix = "M"),
                      expand = expansion(mult = c(0, 0.08))) +
-  facet_wrap(~ retailer, ncol = 1, scales = "free_x") +
+  facet_wrap(~ component, ncol = 1, scales = "free_x") +
   labs(x = NULL, y = NULL,
        caption = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
   theme_cinderhaven_horizontal() +
