@@ -99,11 +99,10 @@ table {
   font-size: 0.92rem;
   border-collapse: collapse;
   margin: 1rem 0;
-  max-width: 100%;
-  width: 100%;
+  width: auto;
 }
 th { border-bottom: 2px solid var(--ll-text); text-align: left; padding: 0.4rem 0.6rem; white-space: nowrap; }
-td { border-bottom: 1px solid var(--ll-gridline); padding: 0.35rem 0.6rem; }
+td { border-bottom: 1px solid var(--ll-gridline); padding: 0.35rem 0.6rem; white-space: nowrap; }
 
 figure { margin: 1.5rem 0; }
 figcaption { font-size: 0.88rem; color: var(--ll-text-sec); font-style: italic; }
