@@ -400,6 +400,30 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
 2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
 
+## 2026-06-22 — Report polish: layout, Part 4 restructure, text fixes, growth formula (session 10)
+
+**Started from:** Chart color encoding confirmed correct (session 9). Remaining: triage table, layout, Part 4 structure, text fixes, growth formula.
+
+**Did:**
+- Fixed triage reactable (strip fills, sort savings/hr, nowrap headers)
+- Fixed report layout (body text fills 1200px, reactable font/size, panel text width)
+- Restructured Part 4: 8 collapsible callouts → 1 single collapsible with ## subsections
+- Applied 10+ text fixes across report.qmd (chargeback range, DQ checks 8→6, artifact counts, retailer readiness rewrite, etc.)
+- Fixed growth formula: denominator hardcoded 3 → dynamic n_retailers (6), retailers 5/8 → 8/12
+- Updated R/05_supporting_charts.R chart 12 to match
+- Corrected stale memory ($228K → $147K annual cb)
+
+**State:**
+- 2 commits pushed: `07c26db`, `6440cd6`
+- Working tree: 3 pre-existing uncommitted changes (.Rprofile, raw_tables.rds, waterfall SVG)
+- Flagged NOT fixed: 3× hardcoded "$228,845" in report.qmd, chart 11 teal hexes → LL_SEQ, 3 methodology contradictions (lines ~218/918/920)
+
+**Next:**
+1. Fix 3 hardcoded "$228,845" → `ds(annual_cb)` inline R expressions
+2. Fix chart 11: hardcoded teal → LL_SEQ Hong Kong sequential gradient
+3. Fix 3 methodology contradictions (lines ~218, 918, 920) — carried from session 4
+4. /improve review due (last: 2026-05-22)
+
 ## 2026-06-22 — Chart bar fill sweep (session 8)
 
 **Started from:** Session 7 applied design system to chrome/layout but left bar fills wrong. 19 of 21 charts used `LL_RECEDE` (gridline gray `#d9d9d9`) for bar fills and `LL_RED` (`#CC100A`, Red-42) for accents — both wrong per design system.
