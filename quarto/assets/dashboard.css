@@ -209,14 +209,17 @@ blockquote strong {
 }
 
 /* No horizontal scrollbar — table extends past edge if needed */
-.reactable-container {
+.reactable-container,
+.cell-output-display {
   overflow-x: visible !important;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible !important;
 }
 
 .cell-output-display .reactable .rt-table,
 .rt-table {
   min-width: 1280px !important;
+  overflow-x: visible !important;
+  overflow: visible !important;
 }
 
 /* Striped rows */
