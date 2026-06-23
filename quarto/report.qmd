@@ -689,9 +689,11 @@ reactable(
     borderColor       = "#d9d9d9",
     stripedColor      = "#f2f2f2",
     highlightColor    = "#e8eaf4",
-    cellPadding       = "6px 10px",
+    cellPadding       = "4px 8px",
+    cellStyle         = list(fontSize = "11px", padding = "4px 8px"),
+    headerStyle       = list(fontSize = "11px", padding = "4px 8px", fontWeight = "bold"),
     style             = list(fontFamily = "'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-                             fontSize   = "0.75rem")
+                             fontSize   = "11px")
   )
 )
 ```

@@ -216,7 +216,7 @@ blockquote strong {
 
 .cell-output-display .reactable .rt-table,
 .rt-table {
-  min-width: auto !important;
+  min-width: 1500px !important;
 }
 
 /* Striped rows */
