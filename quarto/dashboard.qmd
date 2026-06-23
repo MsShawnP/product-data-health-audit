@@ -114,7 +114,7 @@ retailer_filter <- function(values, filterValue) {
 reactable(
   vel_tbl,
   searchable      = TRUE,
-  filterable      = TRUE,
+  filterable      = FALSE,
   highlight       = TRUE,
   striped         = TRUE,
   fullWidth       = TRUE,
@@ -372,7 +372,7 @@ max_sph    <- max(triage$`$ saved / hour`,    na.rm = TRUE)
 reactable(
   triage,
   searchable      = TRUE,
-  filterable      = TRUE,
+  filterable      = FALSE,
   highlight       = TRUE,
   striped         = TRUE,
   fullWidth       = TRUE,
