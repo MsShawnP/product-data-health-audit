@@ -89,6 +89,8 @@ velocity <- read_p("velocity") |>
 > problem. A velocity decline at a flagged SKU may be a data problem
 > disguised as a commercial one.
 
+::: {.wide-table-container}
+
 ```{r velocity-table}
 vel_tbl <- velocity |>
   transmute(
@@ -207,6 +209,8 @@ reactable(
 )
 ```
 
+:::
+
 ## Tab 2: Retailer P&L
 
 > **What this shows:** Gross revenue, trade spend, chargebacks, and net
@@ -263,6 +267,8 @@ ggplot(pnl_long, aes(x = value, y = fct_rev(retailer), fill = bar_fill)) +
                                    color = "#0d0d0d",
                                    family = "Playfair Display"))
 ```
+
+::: {.wide-table-container}
 
 ```{r retailer-pnl-table}
 pnl_tbl <- retailer_pnl |>
@@ -321,6 +327,8 @@ reactable(
 )
 ```
 
+:::
+
 ## Tab 3: Triage Tracker
 
 > **What this shows:** All `r nrow(sku_master_full)` SKUs ranked by fix priority. The composite
@@ -337,6 +345,8 @@ reactable(
 > cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
 > with the six quick-win SKUs (20 minutes each). They take two hours
 > combined and each recovers over $15,000 per fix-hour.
+
+::: {.wide-table-container}
 
 ```{r triage-tracker}
 # Triage columns (composite priority, fix hours, savings/hour, still-broken)
@@ -435,5 +445,7 @@ reactable(
   )
 )
 ```
+
+:::
 
 :::
