@@ -123,8 +123,8 @@ blockquote strong {
   border: 1px solid #d9d9d9 !important;
   border-radius: 2px !important;
   box-shadow: none !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
 }
 
 .Reactable {
@@ -145,7 +145,7 @@ blockquote strong {
   font-size: 11px !important;
   text-transform: uppercase !important;
   letter-spacing: 0.03em !important;
-  padding: 4px 8px !important;
+  padding: 3px 5px !important;
   border-bottom: none !important;
   white-space: nowrap !important;
 }
@@ -184,7 +184,7 @@ blockquote strong {
 .reactable .rt-tbody .rt-td,
 .Reactable .rt-tbody .rt-td,
 .rt-tbody .rt-td {
-  padding: 4px 8px !important;
+  padding: 3px 5px !important;
   font-size: 11px !important;
   border-bottom: 1px solid #e0e0e0 !important;
   white-space: nowrap !important;
@@ -208,15 +208,15 @@ blockquote strong {
   min-width: 100px !important;
 }
 
-/* Horizontal scroll for wide tables */
+/* No horizontal scrollbar — table extends past edge if needed */
 .reactable-container {
-  overflow-x: auto !important;
+  overflow-x: visible !important;
   -webkit-overflow-scrolling: touch;
 }
 
 .cell-output-display .reactable .rt-table,
 .rt-table {
-  min-width: 1500px !important;
+  min-width: 1280px !important;
 }
 
 /* Striped rows */
