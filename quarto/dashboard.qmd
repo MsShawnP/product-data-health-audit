@@ -197,9 +197,9 @@ reactable(
     borderColor    = "#d9d9d9",
     stripedColor   = "#f2f2f2",
     highlightColor = "#e8eaf4",
-    cellPadding    = "4px 8px",
-    cellStyle      = list(fontSize = "11px", padding = "4px 8px"),
-    headerStyle    = list(fontSize = "11px", padding = "4px 8px"),
+    cellPadding    = "3px 5px",
+    cellStyle      = list(fontSize = "11px", padding = "3px 5px"),
+    headerStyle    = list(fontSize = "11px", padding = "3px 5px"),
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
       fontSize   = "11px")
@@ -311,9 +311,9 @@ reactable(
   theme = reactableTheme(
     borderColor    = "#d9d9d9",
     stripedColor   = "#f2f2f2",
-    cellPadding    = "4px 8px",
-    cellStyle      = list(fontSize = "11px", padding = "4px 8px"),
-    headerStyle    = list(fontSize = "11px", padding = "4px 8px"),
+    cellPadding    = "3px 5px",
+    cellStyle      = list(fontSize = "11px", padding = "3px 5px"),
+    headerStyle    = list(fontSize = "11px", padding = "3px 5px"),
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
       fontSize   = "11px")
@@ -377,29 +377,29 @@ reactable(
                        color      = "#ffffff")
   ),
   columns = list(
-    SKU     = colDef(minWidth = 85, class = "col-sku", headerClass = "col-sku"),
-    Product = colDef(minWidth = 200),
+    SKU     = colDef(minWidth = 95, class = "col-sku", headerClass = "col-sku"),
+    Product = colDef(minWidth = 175),
     `TTM revenue` = colDef(
       minWidth = 105, align = "right",
       cell  = function(v) dollar_cell(v)
     ),
-    `Quality score` = colDef(minWidth = 110, align = "right"),
+    `Quality score` = colDef(minWidth = 105, align = "right"),
     `Chargebacks 36mo` = colDef(
-      minWidth = 140, align = "right",
+      minWidth = 130, align = "right",
       cell  = function(v) dollar_cell(v)
     ),
     `Composite priority` = colDef(
-      minWidth = 140, align = "right",
+      minWidth = 135, align = "right",
       style = function(v) list(fontWeight = "600")
     ),
     `Est. fix hours` = colDef(
-      minWidth = 110, align = "right",
+      minWidth = 105, align = "right",
       cell  = function(v) {
         if (is.na(v) || v == 0) "—" else sprintf("%.2f", v)
       }
     ),
     `$ saved / hour` = colDef(
-      minWidth = 120, align = "right",
+      minWidth = 100, align = "right",
       cell  = function(v) {
         if (is.na(v)) return("—")
         if (v >= 1e3) sprintf("$%.1fk/hr", v / 1e3)
@@ -426,9 +426,9 @@ reactable(
     borderColor    = "#d9d9d9",
     stripedColor   = "#f2f2f2",
     highlightColor = "#e8eaf4",
-    cellPadding    = "4px 8px",
-    cellStyle      = list(fontSize = "11px", padding = "4px 8px"),
-    headerStyle    = list(fontSize = "11px", padding = "4px 8px"),
+    cellPadding    = "3px 5px",
+    cellStyle      = list(fontSize = "11px", padding = "3px 5px"),
+    headerStyle    = list(fontSize = "11px", padding = "3px 5px"),
     style          = list(
       fontFamily = "'Helvetica Neue', Inter, system-ui, sans-serif",
       fontSize   = "11px")
