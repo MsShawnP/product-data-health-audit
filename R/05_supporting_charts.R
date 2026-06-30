@@ -632,16 +632,9 @@ p14_base <- function(use_interactive) {
     scale_fill_manual(values = c(`TRUE`  = LL_BAR_HIGHLIGHT,
                                  `FALSE` = LL_BAR_DEFAULT),
                       guide = "none") +
-    labs(title    = wrap_title({
-           data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
-           sprintf("Two data-defect reasons account for %.0f%% of chargeback dollars",
-                   data_defect_pct)
-         }),
-         subtitle = {
-           data_defect_pct <- sum(c14$pct[c14$is_data_defect]) * 100
-           sprintf("Two data-defect reasons (red) account for %.1f%% of chargeback dollars.",
-                   data_defect_pct)
-         },
+    labs(title    = wrap_title("Chargeback dollars by reason code"),
+         subtitle = paste0("Reasons coded directly to product data (red) versus fulfillment (gray). ",
+                           "Causal attribution traces more dollars to data than the reason codes alone show."),
          x = NULL, y = NULL,
          caption = "Source: chargebacks_enriched") +
     theme_cinderhaven()

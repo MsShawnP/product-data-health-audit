@@ -144,7 +144,7 @@ for (t in names(raw)) cat(sprintf("  %-22s %10d rows  %3d cols\n",
 expected <- list(
   product_master    = c("sku", "gtin14", "upc", "product_name",
                         "cogs_per_unit", "wholesale_price"),
-  chargebacks       = c("sku", "retailer", "amount", "reason"),
+  chargebacks       = c("sku", "retailer", "amount", "reason", "triggered_by_field"),
   stores            = c("store_id", "retailer"),
   distribution      = c("sku", "store_id", "authorized_date"),
   scan_data         = c("sku", "store_id", "week_ending", "units_sold"),
