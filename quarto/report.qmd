@@ -168,6 +168,7 @@ data_defect_pct <- cbe |>
   mutate(is_data = reason %in% c("Label / barcode fine", "Pricing error")) |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
 non_data_annual <- round(annual_cb * (100 - data_defect_pct) / 100)
+data_defect_annual <- round((total_cb_36mo * data_defect_pct / 100) * 12 / n_chargeback_months)
 
 barcode_cb_36mo <- cbe |>
   filter(grepl("Label.*barcode", reason, ignore.case = TRUE)) |>
