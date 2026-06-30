@@ -20,3 +20,5 @@ git clone https://github.com/MsShawnP/lailara-design-system.git
 `docs/solutions/` contains structured knowledge docs (bug fixes, design patterns, best practices) with YAML frontmatter for searchability. Check this directory before investigating a problem — a prior solution may already be documented.
 
 ---
+
+Never write secrets, tokens, or passwords into tracked files, READMEs, or commit messages — use environment variables and secret stores only.
