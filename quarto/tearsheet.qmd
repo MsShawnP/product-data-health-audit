@@ -125,7 +125,7 @@ stage3_cb <- round(annual_cb * (stage3_skus / n_skus) * (12 / n_retailers))
 total_fix_hours <- sum(smf$est_fix_hours, na.rm = TRUE)
 
 data_defect_pct <- cbe |>
-  mutate(is_data = reason %in% c("Label / barcode fine", "Pricing error")) |>
+  mutate(is_data = !is.na(triggered_by_field) & nzchar(triggered_by_field)) |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
 data_defect_annual <- round((total_cb_36mo * data_defect_pct / 100) * 12 / n_chargeback_months)
 ```
