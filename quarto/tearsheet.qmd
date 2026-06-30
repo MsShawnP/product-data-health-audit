@@ -127,11 +127,11 @@ total_fix_hours <- sum(smf$est_fix_hours, na.rm = TRUE)
 
 ## The price of poor housekeeping
 
-\stat{\$`r ds(annual_cb)` per year} in retailer chargebacks from product data defects, plus stalled-launch revenue loss and shelf loss from deauthorizations linked to data quality.
+\stat{\$`r ds(data_defect_annual)` per year} in retailer chargebacks traced to product data defects (of \$`r ds(annual_cb)` in total chargebacks; the rest is fulfillment), plus stalled-launch revenue loss and shelf loss from deauthorizations linked to data quality.
 
 \stat{\$`r ds(wm_rev_at_risk)` in revenue at risk} at Walmart. `r wm_fail` of `r n_skus` SKUs fail Walmart's required-field check today. Those `r wm_fail` carry `r wm_rev_pct`% of the catalog's trailing twelve-month revenue. Costco and Whole Foods have similar gaps at lower thresholds.
 
-\stat{\$`r ds(stage3_cb)` in projected annual chargebacks} at the growth target, if current defect rates hold. Each new SKU and each new retailer adds to the chargeback surface independently. The projection is linear. In practice, defect rates tend to worsen during rapid growth because data entry processes that strain at `r n_skus` SKUs break at `r n_skus * 5`.
+\stat{\$`r ds(stage3_cb)` in projected annual chargebacks (all causes)} at the growth target, if current defect rates hold. Each new SKU and each new retailer adds to the chargeback surface independently. The projection is linear. In practice, defect rates tend to worsen during rapid growth because data entry processes that strain at `r n_skus` SKUs break at `r n_skus * 5`.
 
 ## The compliance deadline
 
