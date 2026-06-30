@@ -101,6 +101,9 @@ report_full_tmp.txt
 report_full.txt
 *report_full*.txt
 
+# Security - secret leak prevention
+secrets.*
+
 # OS noise
 .DS_Store
 Thumbs.db
