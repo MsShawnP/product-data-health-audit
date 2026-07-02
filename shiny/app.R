@@ -8,8 +8,16 @@
 #   chargebacks_yr   = C (user input)
 #   stalled_launch   = N (1 - P) * A * launch_share * (delay_days / 365)
 #   shelf_loss       = N (1 - P) * A * deauth_diff_rate
-# Constants below were calibrated so the reference defaults reproduce the
-# ~$430k total that appears in the case study.
+#
+# Only chargebacks_yr is a canonical, measured figure: its default ($93,000)
+# is Cinderhaven's real causally-attributed annual data-defect chargeback
+# cost (281 of 2,873 retailer chargebacks; see CINDERHAVEN_CANONICAL.md).
+# stalled_launch and shelf_loss are illustrative modeled exposure, not
+# measured — the audit's own report does not quantify them (data
+# limitation; see quarto/report.qmd line ~908). LAUNCH_SHARE, DELAY_DAYS,
+# and DEAUTH_DIFF are realistic assumptions, not back-solved to hit any
+# specific total. Do not read the calculator's default total as a
+# reproduction of any case-study number — only the chargebacks slice is.
 
 suppressPackageStartupMessages({
   library(shiny)
@@ -53,7 +61,7 @@ PAL <- list(
 
 # ---- model constants -----------------------------------------------------
 LAUNCH_SHARE   <- 0.25     # share of failing SKUs in a launch window in any year
-DELAY_DAYS     <- 40       # calibrated so N=50 defaults reproduce the ~$430k case-study total
+DELAY_DAYS     <- 40       # realistic assumption: typical retailer readiness re-review cycle
 DEAUTH_DIFF    <- 0.0010   # incremental annual deauth rate attributable to low data quality
 TODAY          <- Sys.Date()
 GS1_SUNRISE    <- as.Date("2027-12-31")
@@ -262,10 +270,11 @@ ui <- page_navbar(
           tags$div(class = "form-text",
                    "Distinct retailer accounts you ship to. Range: 1 to 12."),
           numericInput("annual_cb", "Annual chargebacks ($)",
-                       value = 112000, min = 0, max = 5e6, step = 1000,
+                       value = 93000, min = 0, max = 5e6, step = 1000,
                        width = "100%"),
           tags$div(class = "form-text",
-                   "What retailers deduct from your settlement statements each year."),
+                   "What retailers deduct from your settlement statements each year. ",
+                   "Default is the measured Cinderhaven figure from the case study."),
           sliderInput("pass_rate", "Data quality pass rate",
                       value = 0.60, min = 0, max = 1, step = 0.01,
                       ticks = FALSE, width = "100%"),
@@ -362,7 +371,7 @@ ui <- page_navbar(
           numericInput("n_retailers2", "Retailer count",
                        value = 4, min = 1, max = 12, step = 1),
           numericInput("annual_cb2", "Annual chargebacks ($)",
-                       value = 112000, min = 0, max = 5e6, step = 1000),
+                       value = 93000, min = 0, max = 5e6, step = 1000),
           sliderInput("pass_rate2", "Data quality pass rate",
                       value = 0.60, min = 0, max = 1, step = 0.01,
                       ticks = FALSE),
@@ -442,7 +451,7 @@ server <- function(input, output, session) {
   # Last-known-good values for the 5 inputs. Seeded with the reference
   # defaults; updated by the per-input observers below ONLY when the
   # incoming value passes ok_num().
-  last <- reactiveValues(N = 50, R = 4, C = 112000, P = 0.60, A = 559000)
+  last <- reactiveValues(N = 50, R = 4, C = 93000, P = 0.60, A = 559000)
 
   observe({ if (ok_num(input$n_skus,      1, 500))  last$N <- as.numeric(input$n_skus) })
   observe({ if (ok_num(input$n_retailers, 1, 12))   last$R <- as.numeric(input$n_retailers) })
@@ -579,9 +588,9 @@ server <- function(input, output, session) {
                          expand = expansion(mult = c(0, 0.08))) +
       labs(x = NULL, y = NULL,
            caption = paste0(
-             "Chargebacks: what retailers deduct now.  ",
-             "Stalled launches: revenue lost while failing SKUs sit in queue.  ",
-             "Shelf loss: deauthorizations driven by quality.")) +
+             "Chargebacks: what retailers deduct now — a measured figure.  ",
+             "Stalled launches (modeled estimate): revenue lost while failing SKUs sit in queue.  ",
+             "Shelf loss (modeled estimate): deauthorizations driven by quality.")) +
       theme_calc() +
       theme(axis.text.y = element_text(color = PAL$text_sec, size = 11),
             axis.ticks = element_blank(),
@@ -705,9 +714,9 @@ server <- function(input, output, session) {
       tags$b(v$R, " retailers"), " generates an estimated ",
       tags$b(style = paste0("color:", PAL$red), dollar_short(cc$total)),
       " in annual data-debt cost. That breaks into ",
-      dollar_short(cc$chargebacks), " in chargebacks, ",
-      dollar_short(cc$stalled), " in stalled-launch revenue loss, and ",
-      dollar_short(cc$shelf), " in shelf loss from deauthorizations. ",
+      dollar_short(cc$chargebacks), " in chargebacks (a measured figure), plus modeled exposure of ",
+      dollar_short(cc$stalled), " in stalled-launch revenue loss and ",
+      dollar_short(cc$shelf), " in shelf loss from deauthorizations — the latter two are illustrative estimates, not case-study figures. ",
       "The chargeback density of ", tags$b(density_fmt, " per $1M"),
       " sits in the ", tags$b(style = paste0("color:", band$color), band$label),
       " band. A pass rate of ", tags$b(sprintf("%.0f%%", v$P * 100)),
