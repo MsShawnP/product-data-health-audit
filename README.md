@@ -1,20 +1,14 @@
 # Product Data Readiness Audit — Cinderhaven Provisions
 
-A complete product data health audit for a fictional specialty food company, built as a portfolio piece for a data consulting practice targeting CEOs of growing food brands.
+A complete product data health audit for a specialty food brand — one pipeline, one command, five executive-ready deliverables that quantify what dirty product data is already costing.
 
-Cinderhaven Provisions is a $34 million specialty food brand with 50 SKUs, 5 product lines (Artisan Sauces, Pantry Staples, Specialty Condiments, Dried Goods, Snack Bites), and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+**Live:** https://audit.lailarallc.com · Data Debt Calculator → https://calculator.lailarallc.com
 
-## Data Contract
+Cinderhaven Provisions is a fictional $34M specialty food brand with 50 SKUs, 5 product lines, and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
 
-Cinderhaven canonical platform data: 50 SKUs across 5 product lines (Artisan Sauces, Pantry Staples, Specialty Condiments, Dried Goods, Snack Bites), 6 contracted retailers (Walmart, Costco, Whole Foods, Sprouts, Kroger, Regional Group), 3 distributors (UNFI, KeHE, DPI Northwest) + 1 DTC channel (Shopify). Source: `CINDERHAVEN_CANONICAL.md` in `cinderhaven-data-platform`.
+## What it does
 
-## Why now
-
-GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D barcodes — the deadline is confirmed with no extension. But the federal timeline is already beside the point: Walmart began enforcing FSMA 204-style traceability requirements on August 1, 2025. Kroger's deadline passed June 30, 2025. Over 70 retailers have announced their own traceability programs, and nearly half require compliance for all foods — not just the FDA's Food Traceability List. Most specialty food companies don't know which of their SKUs will fail these requirements. This audit finds out — and quantifies what dirty data is already costing.
-
-## What this produces
-
-One pipeline generates five artifacts:
+One R pipeline generates five artifacts:
 
 1. **Audit report** (Quarto HTML + PDF) — 8-page case study finding $93,000 a year in retailer chargebacks traced directly to product data defects, with a triage list that ranks every SKU by fix priority
 2. **Executive tearsheet** (2-page PDF) — board-level summary with three headline numbers and a 14-day turnaround plan
@@ -24,47 +18,13 @@ One pipeline generates five artifacts:
 
 Plus two one-page shareable artifacts: a GS1 Sunrise 2027 / FSMA 204 compliance timeline and a product data health scorecard template.
 
-## Why Quarto over Jupyter
+## Why it matters
 
-Three reasons. First, the primary audience is a CEO who opens an HTML file in a browser, not a data scientist who opens a notebook. Quarto renders to HTML and PDF from the same source without compromises in either format. Jupyter's PDF output requires LaTeX gymnastics that fight the toolchain instead of using it.
+GS1 Sunrise 2027 requires every food brand to re-validate product data for 2D barcodes — the deadline is confirmed with no extension. But the federal timeline is already beside the point: Walmart began enforcing FSMA 204-style traceability requirements on August 1, 2025. Kroger's deadline passed June 30, 2025. Over 70 retailers have announced their own traceability programs, and nearly half require compliance for all foods — not just the FDA's Food Traceability List.
 
-Second, the project has five distinct output artifacts with different formats, layouts, and rendering requirements. Quarto's project system handles this natively: one `_quarto.yml`, multiple `.qmd` files, each with its own format config. Jupyter would require a separate export pipeline for each artifact.
+Most specialty food companies don't know which of their SKUs will fail these requirements — or that dirty product data is already a recurring line item on their remittances. This audit finds out, quantifies the cost, and ranks the fixes.
 
-Third, R is the right language for this project (ggplot2 for charts, reactable for interactive tables, openxlsx2 for Excel generation, Shiny for the calculator), and Quarto's R integration is native. Jupyter's R kernel works but is a second-class citizen in the Jupyter ecosystem.
-
-## How the synthetic data was engineered
-
-The dataset was designed to mimic real retail product data, including the ways real data breaks. The data generation log (`data_generation_log.md`) documents every intentional defect and the real-world pattern it simulates.
-
-Key design decisions:
-
-- GTIN-14 check digits invalid on ~24% of SKUs (GS1-compliant computation with stochastic corruption)
-- Chargeback concentrations follow a quality-weighted Pareto distribution: top 10% of worst-quality SKUs carry 49% of chargeback dollars
-- Field missingness at controlled rates: case dimensions 10-18%, weights 6%, country of origin 2%
-- Serving size strings varied across 14 formats to simulate inconsistent multi-source data entry
-- Time-to-shelf modeled with quality-dependent lag
-
-The dataset is generated by the Cinderhaven Data Platform (Postgres SSOT) and exported to a local SQLite snapshot via `scripts/export_from_postgres.py`. The R pipeline reads from this snapshot. With real data, three things would change: chargeback-to-defect linkage would be mechanical (retailers name the failing field), promotional lift analysis would be meaningful with proper control-store methodology, and competitive context would exist from category-level scan data. The analytical frameworks are designed to work identically with real data.
-
-## How Claude was used
-
-This project was built using Claude Code for all technical implementation (R scripts, Quarto scaffolding, chart rendering, Excel workbook generation, Shiny app, pipeline orchestration) and Claude Chat for all narrative prose (report text, chart annotations, dashboard headers, data dictionary, compliance timeline content, scorecard content). The division was strict: Claude Code never wrote reader-facing prose, Claude Chat never wrote R code. The user made all structural and editorial decisions.
-
-The collaboration pattern: Claude Chat drafted prose in conversation, the user reviewed and revised, approved text was handed to Claude Code as a file for assembly into the rendering pipeline. Claude Code built the technical infrastructure, reported back on what worked and what needed fixing, and the user directed the next step. Total build time across all phases was approximately two weeks of part-time work.
-
-## Technical stack
-
-- **R** — data prep, analytical frames, charts, workbook generation
-- **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts
-- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 3,357 chargebacks; optional for reproduction — SQLite snapshot included)
-- **ggplot2** — all charts, custom theme with project color palette
-- **plotly** — interactive chart versions in HTML report
-- **reactable** — interactive tables in report and dashboard
-- **openxlsx2** — Excel workbook generation (8 tabs)
-- **R/Shiny** — Data Debt Calculator standalone app
-- **renv** — dependency management and reproducibility
-
-## How to reproduce
+## Quick start
 
 **Prerequisites:** [R](https://cran.r-project.org/) and [Quarto](https://quarto.org/docs/get-started/).
 
@@ -75,17 +35,11 @@ Rscript -e "renv::restore()"
 Rscript R/run_all.R
 ```
 
-No database required. The repository includes a cached snapshot of all source data (`output/frames/raw_tables.rds`). When `DATABASE_URL` is not set, the pipeline skips the database step and builds everything from this cache.
-
-The R pipeline builds all canonical data frames, generates 21 charts, renders the Excel workbook, and produces the Quarto artifacts. Total R run time: approximately two minutes.
+No database required. The repository includes a cached snapshot of all source data (`output/frames/raw_tables.rds`). When `DATABASE_URL` is not set, the pipeline builds everything from this cache: all canonical data frames, 21 charts, the 8-tab Excel workbook, and the Quarto artifacts. Total run time is approximately two minutes.
 
 The Shiny calculator runs separately: `Rscript -e "shiny::runApp('shiny/')"`.
 
-Live site → https://audit.lailarallc.com · Data Debt Calculator → https://calculator.lailarallc.com
-
-### Refreshing source data
-
-The cached `raw_tables.rds` is sufficient for reproducing all artifacts. To refresh the underlying data from the Cinderhaven Data Platform (Postgres):
+**Refreshing source data** from the Cinderhaven Data Platform (Postgres):
 
 ```bash
 flyctl proxy 5434 -a cinderhaven-db          # in another terminal
@@ -93,63 +47,50 @@ POSTGRES_PASSWORD=... python scripts/export_from_postgres.py
 Rscript R/run_all.R
 ```
 
-The export script connects to Postgres, runs mart-level transformations (merges `product_master` + `sku_costs`, resolves retailer IDs to names, computes per-store scan aggregates), and writes `data/cinderhaven_product_master.db`. The R pipeline detects this SQLite file in `01_load_raw.R`, loads 7 tables, and saves a fresh `raw_tables.rds`. All downstream scripts read from the cache.
+The export script runs mart-level transformations and writes `data/cinderhaven_product_master.db` (SQLite); the R pipeline detects it and refreshes the cache. Alternatively, set `DATABASE_URL` in `.Renviron` to connect the R pipeline directly to Postgres marts.
 
-Alternatively, set `DATABASE_URL` in `.Renviron` to connect the R pipeline directly to Postgres marts (if available).
+## Tech stack
+
+- **R** — data prep, analytical frames, charts, workbook generation
+- **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts (chosen over Jupyter for native multi-format, multi-artifact rendering and first-class R support)
+- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 3,357 chargebacks; optional — SQLite snapshot included)
+- **ggplot2 / plotly / reactable** — static charts, interactive charts, interactive tables
+- **openxlsx2** — Excel workbook generation
+- **R/Shiny** — Data Debt Calculator standalone app
+- **renv** — dependency management and reproducibility
+
+## How the synthetic data was engineered
+
+The dataset mimics real retail product data, including the ways real data breaks. `data_generation_log.md` documents every intentional defect and the real-world pattern it simulates. Key decisions:
+
+- GTIN-14 check digits invalid on ~24% of SKUs (GS1-compliant computation with stochastic corruption)
+- Chargeback concentrations follow a quality-weighted Pareto distribution: the worst-quality 10% of SKUs carry 49% of chargeback dollars
+- Field missingness at controlled rates: case dimensions 10–18%, weights 6%, country of origin 2%
+- Serving size strings varied across 14 formats to simulate inconsistent multi-source entry
+
+With real data the frameworks work identically; chargeback-to-defect linkage would become mechanical because retailers name the failing field.
 
 ## Running this for a different company
 
-The R pipeline reads company-specific parameters from `config.yml`: database path, output filename prefix, and company name. To reuse this audit methodology for a different company:
+The pipeline reads company-specific parameters from `config.yml`. To reuse the methodology: replace the `config.yml` values, populate a Postgres database with the same raw schema, update the Quarto front matter (title/author/date in the `.qmd` files), rewrite the report prose for the new findings, and run `Rscript R/run_all.R`. The R scripts, chart logic, workbook structure, and analytical frameworks carry over unchanged. The Shiny calculator is already company-agnostic.
 
-1. **Replace `config.yml` values** with the new company's name and output prefix.
-2. **Populate a Postgres database** with the same raw schema (`product_master`, `sku_costs`, `retailers`, `stores`, `distribution_log`, `retailer_chargebacks`, `scan_data`, `promotions`, `retailer_requirements`) and update the connection parameters in `scripts/export_from_postgres.py`.
-3. **Update Quarto front matter** — title, subtitle, author, and date in `quarto/report.qmd`, `dashboard.qmd`, and `tearsheet.qmd`. These are per-engagement metadata, not auto-generated.
-4. **Rewrite report prose** — the body text in the `.qmd` files is written for Cinderhaven's specific findings. New data produces new numbers through the pipeline, but the narrative interpretation is always per-engagement.
-5. **Run `Rscript R/run_all.R`** — the pipeline, charts, Excel workbook, and all rendered artifacts rebuild from the new data.
-
-The R scripts, chart logic, Excel workbook structure, and analytical frameworks carry over unchanged. The Shiny Data Debt Calculator is already company-agnostic.
-
-## Directory structure
+## Project structure
 
 ```
-product-data-health-audit/
-├── config.yml                           # Company-specific parameters
-├── .Renviron.example                    # DATABASE_URL template (optional direct Postgres)
-├── scripts/
-│   └── export_from_postgres.py          # Postgres → SQLite export with mart transforms
-├── data/
-│   └── cinderhaven_product_master.db    # SQLite snapshot (78 MB, gitignored)
-├── R/
-│   ├── 00_theme.R                       # Custom ggplot2 theme + color palette
-│   ├── 01_load_raw.R                    # Load tables from Postgres or SQLite
-│   ├── 02_build_frames.R               # Build all canonical data frames
-│   ├── 03_verify.R                      # Distribution verification
-│   ├── 04_hero_charts.R                 # 4 hero charts
-│   ├── 05_supporting_charts.R           # 17 supporting charts
-│   ├── 06_excel_workbook.R              # 8-tab Excel workbook
-│   └── run_all.R                        # Pipeline orchestrator
-├── quarto/
-│   ├── _quarto.yml                      # Quarto project config
-│   ├── report.qmd                       # Audit report (HTML + PDF)
-│   ├── tearsheet.qmd                    # Executive tearsheet (PDF)
-│   ├── dashboard.qmd                    # Monday Morning Dashboard (HTML)
-│   ├── compliance_timeline.qmd          # Shareable compliance timeline (PDF)
-│   └── scorecard.qmd                    # Shareable scorecard template (PDF)
-├── shiny/
-│   └── app.R                            # Data Debt Calculator
-├── output/                              # All generated (gitignored, rebuilt by pipeline)
-│   ├── frames/                          # Canonical .rds data frames
-│   ├── charts/                          # All chart PNGs + interactive HTML
-│   ├── cinderhaven_audit.xlsx           # Excel workbook
-│   ├── compliance_timeline.pdf          # Shareable artifact
-│   └── scorecard.pdf                    # Shareable artifact
-├── docs/process/                        # Build-process documentation
-├── docs/solutions/                      # Structured knowledge docs (design patterns, fixes)
-├── data_generation_log.md               # How the synthetic data was built
-├── .github/workflows/render.yml         # CI pipeline
-├── renv.lock                            # Dependency snapshot
-└── README.md                            # This file
+config.yml                       Company-specific parameters
+scripts/export_from_postgres.py  Postgres → SQLite export with mart transforms
+data/                            SQLite snapshot (gitignored)
+R/                               00_theme → 06_excel_workbook pipeline + run_all.R orchestrator
+quarto/                          report.qmd, tearsheet.qmd, dashboard.qmd, shareable artifacts
+shiny/app.R                      Data Debt Calculator
+output/                          All generated artifacts (gitignored, rebuilt by pipeline)
+data_generation_log.md           How the synthetic data was built
+renv.lock                        Dependency snapshot
 ```
+
+## How Claude was used
+
+Claude Code handled all technical implementation (R scripts, Quarto scaffolding, charts, Excel generation, Shiny app, orchestration); Claude Chat drafted all reader-facing prose. The division was strict, and the user made all structural and editorial decisions. Total build time: approximately two weeks of part-time work.
 
 ## License
 
