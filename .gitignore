@@ -30,6 +30,10 @@ output/pdf_pages/
 quarto/*.html
 quarto/*.pdf
 
+# Quarto self-contained JS/CSS lib dependencies (reactable, htmlwidgets, react,
+# core-js, etc.); regenerated on every render.
+quarto/report_files/libs/
+
 # Data directory: SQLite exports and legacy artifacts.
 data/*.db
 data/*.db-wal
