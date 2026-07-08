@@ -360,7 +360,7 @@ Phase three takes two days. This is the phase that prevents the first two from b
 
 Phase four takes two days. Deploy the Monday Morning Dashboard. Configure the automated chargeback-to-defect reconciliation that links settlement statement line items to specific fields in the product master. Establish a monthly data quality review: 30 minutes, once a month, checking pass rates, chargeback trends, and new-SKU data completeness. When phase four is done, the visibility gap closes. The $691-a-month problem that nobody saw becomes a $0-a-month problem that everybody monitors.
 
-The four phases build on each other. Phase one produces immediate financial return. Phase two eliminates the remaining exposure and unlocks expansion. Phase three prevents recurrence. Phase four makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the GTINs but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected. The sequence is not arbitrary. It is a dependency chain.
+The four phases build on each other. Phase one produces immediate financial return. Phase two eliminates the remaining exposure and frees the team to expand. Phase three prevents recurrence. Phase four makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the GTINs but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected. The sequence is not arbitrary. It is a dependency chain.
 
 The total: 27 hours of data entry eliminates $56,000 a year in direct chargebacks. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is $361,000 a year. At the growth target, it exceeds $600,000. The cost of fixing it is two weeks.
 
@@ -475,7 +475,7 @@ The R pipeline (14 analytical frames, 21 charts, and 4 output artifacts) regener
 
 ### Note on dataset construction
 
-The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data ecosystem. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
+The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data systems. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
 
 Key design decisions in the synthetic data:
 

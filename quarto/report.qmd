@@ -727,7 +727,7 @@ Phase two takes two days. This is the phase that prevents phase one from being w
 
 Phase three takes two days. Deploy the Monday Morning Dashboard. Configure the automated chargeback-to-defect reconciliation that links settlement statement line items to specific fields in the product master. Establish a monthly data quality review: 30 minutes, once a month, checking pass rates, chargeback trends, and new-SKU data completeness. When phase three is done, the visibility gap closes.
 
-The three phases build on each other. Phase one produces immediate financial return and unlocks expansion. Phase two prevents recurrence. Phase three makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the barcodes but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected.
+The three phases build on each other. Phase one produces immediate financial return and frees the team to expand. Phase two prevents recurrence. Phase three makes the system self-monitoring. Skip any phase and the value of the others degrades. Fix the barcodes but don't install the gate, and the next product launch introduces new defects. Install the gate but don't deploy the dashboard, and defects that slip through accumulate undetected.
 
 These three phases address the data-attributable chargebacks — `r ds(annual_cb - non_data_annual)` a year. The remaining `r ds(non_data_annual)` traces to fulfillment operations: short shipments, late deliveries, and receiving discrepancies. Those require different interventions — carrier management, demand planning, warehouse process changes — and are outside the scope of a data audit. The companion fulfillment analysis sizes that exposure separately.
 
@@ -885,7 +885,7 @@ The R pipeline (15 analytical frames, 19 charts, and 7 output deliverables) rege
 
 ## Note on dataset construction
 
-The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data ecosystem. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
+The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data systems. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
 
 Key design decisions in the synthetic data:
 
