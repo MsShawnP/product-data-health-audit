@@ -53,7 +53,7 @@ The export script runs mart-level transformations and writes `data/cinderhaven_p
 
 - **R** — data prep, analytical frames, charts, workbook generation
 - **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts (chosen over Jupyter for native multi-format, multi-artifact rendering and first-class R support)
-- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 3,357 chargebacks; optional — SQLite snapshot included)
+- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 2,873 chargebacks; optional — SQLite snapshot included)
 - **ggplot2 / plotly / reactable** — static charts, interactive charts, interactive tables
 - **openxlsx2** — Excel workbook generation
 - **R/Shiny** — Data Debt Calculator standalone app

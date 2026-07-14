@@ -3,6 +3,9 @@
 // Lailara Design System v2 — Quarto SCSS theme layer
 // Applied on top of cosmo; report.css handles layout-specific overrides.
 
+// Kill the cosmo theme's Google Fonts CDN import — fonts are self-hosted
+$web-font-path: false;
+
 // Canvas & ink
 $body-bg: #f5f3ee;
 $body-color: #333333;
