@@ -476,6 +476,24 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
 2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
 
+## 2026-07-24 — Final remediation: dynamic dates, readiness rewrite, deploy (session 14)
+
+**Started from:** Session 13 left 4 PLAN.md items: phases 5e, 5f, 5c, and Phase 6.
+
+**Did:**
+- Resolved 5e: replaced 3 hardcoded "36 months" with dynamic `n_chargeback_months` (37)
+- Resolved 5f: added `cb_start_date`/`cb_end_date` dynamic date variables for observation period
+- Resolved 5c: rewrote readiness paragraph for post-reseed data (38/50 pass, 12/50 fail all 6, 46-76% range), consolidated redundant three-tier methodology language
+- Resolved Phase 6: rendered report (HTML+PDF) + dashboard, verified dynamic values, committed (`16e5a60`), pushed
+- Documented CSS specificity battle via /ce-compound (`311f3b3`)
+
+**State:** All 16-issue remediation phases complete. Git clean, pushed to main.
+
+**Next:**
+1. Confirm calculator.lailarallc.com is live (only remaining PLAN.md item)
+2. /improve review overdue (last: 2026-05-22)
+3. Dep audit overdue (was due: 2026-07-22)
+
 ## 2026-07-24 — Dashboard card frames + filter removal (session 13)
 
 **Started from:** Dashboard wide-table-container and inline font fixes deployed. Tables lacked bordered card frame matching instruction panels; Tabs 1 and 3 still had per-column filter boxes.
