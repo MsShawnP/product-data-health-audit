@@ -476,6 +476,26 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 1. Fix 3 remaining methodology contradictions (report.qmd lines 218, 918, 920) — carried from session 4
 2. Project in maintenance mode. Next /improve: 2026-06-22. Next dep audit: 2026-07-22.
 
+## 2026-07-24 — Dashboard card frames + filter removal (session 13)
+
+**Started from:** Dashboard wide-table-container and inline font fixes deployed. Tables lacked bordered card frame matching instruction panels; Tabs 1 and 3 still had per-column filter boxes.
+
+**Did:**
+- Confirmed prior commit (7e2b9d6) deployed successfully via GitHub Actions → Cloudflare Pages
+- Added bordered card frame to `.wide-table-container` (1px #d9d9d9, 6px radius, white bg, 16px padding)
+- Set `filterable=FALSE` on Tabs 1 and 3 (Tab 2 already FALSE)
+- Verified all 3 tabs: card frame correct, no filter inputs, no scrollbars, all columns visible
+- Committed and pushed (2cdb4bb)
+
+**State:** All changes live at audit.lailarallc.com. Git clean, pushed to main.
+
+**Next:**
+1. Resolve 36/37 chargeback month mismatch (filter to 36 months OR dynamic divisor)
+2. Add explicit observation period statement to report
+3. Fix 3 methodology contradictions (report.qmd lines ~218/918/920) — carried from session 4
+4. Re-render all Quarto outputs, commit, deploy
+5. /improve review overdue (last: 2026-05-22). Next dep audit: 2026-07-22.
+
 ## 2026-06-22 — Dashboard table CSS fixes (session 12)
 
 **Started from:** Dashboard tabs 1 and 3 had narrow tables confined to content container. Tab 2's P&L table extended wider. Headers truncated on tabs 1/3.
