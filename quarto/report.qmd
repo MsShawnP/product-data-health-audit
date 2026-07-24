@@ -105,6 +105,8 @@ cbe  <- readRDS("../output/frames/chargebacks_enriched.rds")
 rpnl <- readRDS("../output/frames/retailer_pnl.rds")
 
 n_chargeback_months <- length(unique(cbe$month))
+cb_start_date <- format(min(cbe$month_date), "%B %Y")
+cb_end_date   <- format(max(cbe$month_date), "%B %Y")
 
 n_skus        <- nrow(smf)
 n_gtin_fail   <- sum(!smf$gtin_valid, na.rm = TRUE)
@@ -202,9 +204,9 @@ By the end of 2027, every barcode in American retail will change. GS1 Sunrise 20
 
 Running in parallel, FSMA Rule 204 makes accurate GTINs a federal requirement. FDA food traceability mandates them as the product identifier backbone for tracking food through the supply chain. The barcode that used to be a scanning convenience is becoming the regulatory infrastructure for food safety. This is not a retailer preference. It is law.
 
-All figures in this report are computed from Cinderhaven's transaction data covering January 2023 through December 2025 — `r n_chargeback_months` months of chargebacks, scan data, and distribution records.
+All figures in this report are computed from Cinderhaven's transaction data covering `r cb_start_date` through `r cb_end_date` — `r n_chargeback_months` months of chargebacks, scan data, and distribution records.
 
-These two deadlines land on a company whose product master would fail basic validation at nearly every retailer today. `r n_sku_fail_all` of `r n_skus` SKUs fail every retailer's required-field checks. `r n_retailer_zero_pass` of `r n_retailers` retailers have a 0% pass rate. The handful of SKUs that pass at one or two retailers do so because those retailers require fewer fields — not because the data is clean. `r ds(total_ttm_rev)` in trailing twelve-month revenue rides on data that would not survive the onboarding process at most retailers if submitted fresh.
+These two deadlines land on a company whose product master is split: `r n_skus - n_sku_fail_all` of `r n_skus` SKUs pass readiness checks at every retailer, but `r n_sku_fail_all` fail all `r n_retailers`. The failing SKUs share the same defect profile — invalid barcode check digits and missing case dimensions — and no retailer's requirements are lenient enough to let them through. Retailer pass rates range from `r min(rr_stats$pass_rate)`% to `r max(rr_stats$pass_rate)`%, which means the catalog is not uniformly broken, but the broken portion is completely blocked. `r ds(total_ttm_rev)` in trailing twelve-month revenue includes products on both sides of that line.
 
 ```{r rr-summary-table}
 #| results: asis
@@ -227,7 +229,7 @@ Of the `r ds(annual_cb)` in annual chargebacks, `r ds(data_defect_annual)` trace
 
 ## The `r ds(annual_cb)` you already pay
 
-Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_36mo)` in chargebacks from settlement payments over the past 36 months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
+Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_36mo)` in chargebacks from settlement payments over the past `r n_chargeback_months` months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
 
 The chargebacks arrive under five headings: label and barcode fines, pricing errors, damaged goods, late deliveries, and short shipments. But the reason on the chargeback isn't the same as its cause. Tracing each charge to the field that triggered it, `r data_defect_pct`% of the dollars trace to a product-data defect — a wrong barcode, a bad case dimension, a missing required field — even when the charge was filed as a receiving discrepancy or a short shipment. The other `r 100 - data_defect_pct`% are genuine fulfillment failures. This audit scopes to the data side. Not because the logistics side is smaller. Because the data side is bounded, clerical work — check digit corrections measured in hours per SKU, with a quantifiable effort and a predictable outcome. Fixing a short-ship rate is an operational overhaul with neither. Both matter. This report addresses the one where the scope, effort, and return are known before the work starts.
 
@@ -312,7 +314,7 @@ The ops team is not negligent. They are fully occupied. Six retailer portals. Br
 
 CHP-AS-005, Classic Tomato Basil, carries $4,029 in annualized chargebacks spread across all six retailers. That works out to roughly $56 per retailer per month. Each month, at each retailer, $56 appears on the settlement statement as a compliance deduction. Not large enough to flag. Not unusual enough to investigate. Not connected to the other five retailers generating the same charge for the same reason.
 
-Fifty-six dollars. Six retailers. Thirty-six months. One wrong digit.
+Fifty-six dollars. Six retailers. `r n_chargeback_months` months. One wrong digit.
 
 This is the structural problem. The chargebacks persist because the defects persist. The defects persist because nobody has time to find them. Nobody has time to find them because the cost of each individual defect is too small to surface through normal business processes. The data-defect total is `r ds(data_defect_annual)` a year. The individual units are invisible. The system that would make them visible does not exist yet. Part 3 of this report describes what that system looks like.
 
@@ -364,7 +366,7 @@ CHP-DG-007, Trail Mix Premium, is the sixth-best-selling product in the Cinderha
 
 It fails every retailer's readiness check. Zero of six.
 
-The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated `r dg007_events` chargeback events over 36 months — `r ds(dg007$chargeback_total)` in penalties. `r dg007$deauth_count` of its `r dg007$auth_count` store authorizations have been revoked. Those slots are gone.
+The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated `r dg007_events` chargeback events over `r n_chargeback_months` months — `r ds(dg007$chargeback_total)` in penalties. `r dg007$deauth_count` of its `r dg007$auth_count` store authorizations have been revoked. Those slots are gone.
 
 The chargebacks are not the point. At `r ds(dg007_annual)` a year, they barely register against `r ds(dg007$ttm_revenue)` in revenue. What registers is the deauthorization risk. A retailer's automated readiness check does not distinguish between a `r ds(dg007_annual)`-a-year chargeback product and a $70-a-year one. It checks the barcode. The digit fails. The product is flagged.
 
@@ -903,11 +905,11 @@ All dollar estimates in this report state their assumptions at point of claim. T
 
 Chargeback annualization: `r n_chargeback_months`-month totals are multiplied by 12/`r n_chargeback_months` to produce annual run rates. This assumes the monthly chargeback rate is stationary. Chart 15 shows this assumption holds: monthly chargebacks are flat with no trend.
 
-Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. Data quality scores fall into three tiers (66.7, 83.3, and 100), enabling a basic quality-tier comparison. In a real engagement with more varied defect types, a richer differential analysis would isolate the data-quality contribution to deauthorization with greater precision.
+Deauthorization analysis: the catalog-wide mean deauthorization rate is `r mean_deauth_pct`%. The three-tier score distribution (see Data quality scoring below) enables basic quality-tier comparison; a real engagement with more varied defect types would support richer differential analysis.
 
-Cost model: this report scopes to the data-attributable portion of annualized chargebacks (`r ds(data_defect_annual)` of the `r ds(annual_cb)` total) as the primary cost metric; fulfillment-driven chargebacks are out of scope. Stalled-launch and shelf-loss costs are not quantified because the three-tier data quality distribution provides directional support for differential analysis, though the limited number of tiers constrains precision.
+Cost model: this report scopes to the data-attributable portion of annualized chargebacks (`r ds(data_defect_annual)` of the `r ds(annual_cb)` total) as the primary cost metric; fulfillment-driven chargebacks are out of scope. Stalled-launch and shelf-loss costs are not quantified because the dataset lacks the defect variety needed to model their contribution with precision.
 
-Data quality scoring: each SKU is scored on 6 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present). Score = (checks passed / 6) × 100. SKUs score between 66.7 and 100. Clean SKUs (23 of 50) score 100. Single-defect SKUs score 83.3. Multi-defect SKUs score 66.7. The failing checks are barcode-related (GTIN-14 and UPC) and case dimensions; all other checks pass universally. The three-tier score distribution supports quality-tier analysis — a limitation that would not exist in a real engagement where defect types are more varied.
+Data quality scoring: each SKU is scored on 6 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present). Score = (checks passed / 6) × 100. SKUs score between 66.7 and 100. Clean SKUs (23 of 50) score 100. Single-defect SKUs score 83.3. Multi-defect SKUs score 66.7. The failing checks are barcode-related (GTIN-14 and UPC) and case dimensions; all other checks pass universally.
 
 Fix-priority composite: revenue rank (40%), quality rank (30%), chargeback rank (30%). Ranks are percentile-based (1 = best/highest). Effort is shown separately, not incorporated into the composite. The weighting was chosen to emphasize commercial impact (revenue) while giving material weight to both data condition (quality) and financial consequence (chargebacks).
 ::::
