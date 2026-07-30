@@ -110,10 +110,10 @@ p1 <- ggplot(cb_p, aes(rank, cum_pct)) +
                      expand = expansion(mult = c(0.01, 0.02))) +
 
   labs(title    = sprintf("%d SKUs drive half the total chargeback bill", n50),
-       subtitle = "Cumulative share of chargeback dollars by SKU rank, 18 months",
+       subtitle = "Cumulative share of chargeback dollars by SKU rank, 36 months",
        x        = "SKUs ranked from highest chargeback total to lowest",
        y        = NULL,
-       caption  = src_caption("Cinderhaven chargeback ledger, 18 months")) +
+       caption  = src_caption("Cinderhaven chargeback ledger, 36 months")) +
   theme_cinderhaven()
 
 save_chart(p1, "01_chargeback_pareto", h = 5.5)
