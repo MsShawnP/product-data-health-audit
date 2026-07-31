@@ -136,3 +136,16 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Why it failed:** The Edit tool requires an exact match. Long chains of edits to the same file accumulate drift between what the assistant remembers and what the file actually contains.
 - **Fix:** Re-read the file with the Read tool to find the current text before attempting further edits. For large rewrites, periodic re-reads between edit batches prevent this.
 - **Tags:** edit-tool, workflow, large-files, context-drift
+
+### 2026-07-31 — Ad-hoc `Rscript --no-init-file` snippets segfault on this machine
+- **What happened:** Quick verification snippets (`Rscript --no-init-file -e '...'` reading frames + dplyr) segfaulted intermittently (exit 139), even after `source("renv/activate.R")`. The full `run_all.R` (normal invocation) ran fine.
+- **Why it failed:** `--no-init-file` skips `.Rprofile`, so renv doesn't activate cleanly; mixing the fallback user library with renv packages corrupted memory. Root cause upstream: `.Rprofile` had been deleted, so renv wasn't auto-activating at all.
+- **Fix:** Restored `.Rprofile` (`source("renv/activate.R")`), ran the real pipeline with normal invocation, and verified results by grepping the *rendered* HTML/PDF and the live site instead of re-deriving in ad-hoc R.
+- **Tags:** R, renv, rprofile, segfault, verification-strategy
+
+### 2026-07-31 — `min-width:0` on main.content did not fix report horizontal scroll
+- **What happened:** Hypothesized a CSS grid/flex min-content blowout and set `min-width:0` on `main.content`; overflow was unchanged. Reducing `main.content` max-width was also ignored.
+- **Why it failed:** Width wasn't controlled by `main.content` at all — the Quarto `page-columns` grid sized the body-content track, and a wide kable table (`table.table`, nowrap) pushed the page. `report.css` forcing `max-width:1200 !important` fought the grid.
+- **Fix:** Used Quarto's own `grid:` YAML (body/sidebar/margin widths), removed the conflicting CSS override, and made kable tables scroll within their column (`main.content table.table{display:block;overflow-x:auto}`). Verified no page scroll at 1280 & 1440 via live browser measurement.
+- **Tags:** css, quarto, grid, layout, horizontal-scroll, wrong-hypothesis
+

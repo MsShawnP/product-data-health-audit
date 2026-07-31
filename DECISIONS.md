@@ -136,3 +136,13 @@ Durable choices with rationale. These should hold across future sessions.
 - **Why:** `rev_at_risk(retailer)` in the report's rr-summary-table chunk was called vectorized inside `transmute`, receiving all 6 retailer names at once instead of one at a time. The recycled `==` comparison produced a near-total join, returning ~$18.9M for every retailer regardless of their actual failure count.
 - **Scope:** `quarto/report.qmd` line 211. Fix: wrap in `sapply()`.
 - **Do not:** Remove the `rev_at_risk()` function — it's correct when called with a single retailer name.
+
+### 2026-07-31 — Data-quality score counts barcode *validity*, not length
+- **Why:** `checks_passed_6` in `R/02_build_frames.R` keyed on barcode length (`nchar==14`, `%in% c(12,13)`), so SKUs with an invalid check digit scored a perfect 100 — contradicting the documented methodology ("GTIN-14 valid, UPC valid") and the `issue_count` line directly above it (which uses `gtin_valid`/`upc_valid`). A product-data-health score that ignores barcode validity is indefensible for this tool.
+- **Scope:** `R/02_build_frames.R` `checks_passed_6` uses `gtin_valid`/`upc_valid`. All DQ-tier prose (report methodology, pattern section, tearsheet) is now dynamic (`dq_min`, `n_dq_100`) so distribution claims can't drift.
+- **Do not:** Revert to length-based checks. If the score definition changes, update the dynamic vars, not hardcoded tier counts.
+
+### 2026-07-31 — Retailer P&L annualizes chargebacks to match TTM revenue
+- **Why:** `retailer_pnl` subtracted the full multi-month `chargeback_total` from trailing-twelve-month revenue, overstating chargeback-%-of-revenue ~3x and making per-retailer rates irreconcilable with the report's ~0.43% headline.
+- **Scope:** `R/02_build_frames.R` `retailer_pnl` — `chargeback_annual = chargeback_total * 12 / n_chargeback_months` drives `net_contribution` and `chargeback_pct_of_revenue`.
+- **Do not:** Mix a multi-month chargeback numerator with a 12-month revenue denominator in any P&L. Keep both on the same clock.

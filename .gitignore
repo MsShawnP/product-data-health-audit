@@ -105,6 +105,9 @@ report_full_tmp.txt
 report_full.txt
 *report_full*.txt
 
+# UI-review tool output (ui-review-skill writes screenshots here)
+screenshots/
+
 # Security - secret leak prevention
 secrets.*
 

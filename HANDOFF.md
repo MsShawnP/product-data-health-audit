@@ -534,3 +534,13 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 3. Fix 3 methodology contradictions (report.qmd lines ~218/918/920) — carried from session 4
 4. Re-render all Quarto outputs, commit, deploy
 5. /improve review due (last: 2026-05-22). Next dep audit: 2026-07-22.
+
+## 2026-07-31 — CEO/CFO-readiness pass (improve + CE review + UI review)
+
+**Started from:** Stable/published. User asked for /improve + CE code review + UI review against a CEO/CFO lens (ready for exec, purpose clear in ≤30s).
+
+**Did:** Reviews found core money math sound and reconciling, but 1 metric bug + stale hardcoded example figures + comprehension/layout gaps. Fixed all 8 items + nice-to-haves: DQ score now counts barcode validity (33.3–100, was length-based 66.7–100); retailer P&L annualizes chargebacks; stale figures → dynamic inline R ($47/mo, 42%, fix-table foots to 15, "12 fail every retailer", $19.6M, DG-007 $27,067); 30-sec BLUF on landing (stat tiles) + report; month labels dynamic 37; dashboard badge contrast 4.02→7.00:1; report h-scroll fixed (Quarto grid + table scroll); all figures → Postgres truth ($33.4M); housekeeping. Restored deleted `.Rprofile` (renv activation → fixed local R segfaults). Committed `7039948`, pushed, CI green, verified live deploy.
+
+**State:** All shipped and live-verified (landing/report/tearsheet/dashboard reconcile). `.Rprofile` restored (local, untracked). `screenshots/` gitignored. Working tree clean bar this wrap's .gitignore.
+
+**Next:** No open work. Optional: confirm calculator.lailarallc.com live. `index.html` numbers hardcoded — manual update if data reseeds. Next /improve ~2026-10-29.
