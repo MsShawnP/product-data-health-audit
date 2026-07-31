@@ -120,11 +120,16 @@ sku_dim <- product_master |>
       as.integer(missing_country) +
       as.integer(missing_brand_owner) +
       as.integer(!is.na(weight_plausible) & !weight_plausible),
-    chk_gtin_len = !is.na(gtin14) & nchar(as.character(gtin14)) == 14,
-    chk_upc_len  = !is.na(upc) & nchar(as.character(upc)) %in% c(12L, 13L),
+    # Data-quality score counts barcode *validity* (check-digit correct),
+    # not merely barcode length. A SKU with a wrong check digit is a data
+    # defect and must not score as clean. This matches the documented
+    # methodology ("GTIN-14 valid, UPC valid, ...") and the issue_count
+    # above, which already keys on gtin_valid / upc_valid.
+    chk_gtin_ok = !is.na(gtin_valid) & gtin_valid,
+    chk_upc_ok  = !is.na(upc_valid)  & upc_valid,
     checks_passed_6 =
-      as.integer(chk_gtin_len) +
-      as.integer(chk_upc_len) +
+      as.integer(chk_gtin_ok) +
+      as.integer(chk_upc_ok) +
       as.integer(weight_plausible_simple) +
       as.integer(!missing_case_dims) +
       as.integer(!missing_country) +
@@ -261,10 +266,16 @@ retailer_pnl <- sku_retailer_revenue |>
   mutate(
     chargeback_total = coalesce(chargeback_total, 0),
     chargeback_count = coalesce(chargeback_count, 0L),
+    # gross_revenue is trailing-twelve-month; chargeback_total is the full
+    # multi-month total. Annualize chargebacks to the same 12-month basis
+    # so net_contribution and the chargeback %-of-revenue in the P&L are on
+    # one clock. (Mixing a 37-month numerator with 12-month revenue
+    # overstated the chargeback rate ~3x.)
+    chargeback_annual = chargeback_total * 12 / n_chargeback_months,
     trade_spend = trade_spend_total,
-    total_chargebacks = chargeback_total,
-    net_contribution = revenue_after_trade - chargeback_total,
-    chargeback_pct_of_revenue       = chargeback_total / gross_revenue,
+    total_chargebacks = chargeback_annual,
+    net_contribution = revenue_after_trade - chargeback_annual,
+    chargeback_pct_of_revenue       = chargeback_annual / gross_revenue,
     trade_spend_pct_of_revenue      = trade_spend_total / gross_revenue,
     net_margin_pct_of_gross_revenue = net_contribution / gross_revenue
   )

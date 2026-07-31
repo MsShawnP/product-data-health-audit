@@ -1,0 +1,56 @@
+project: product-data-health-audit
+base_url: https://audit.lailarallc.com
+
+routes:
+  - path: /
+    name: Landing
+  - path: /quarto/report.html
+    name: Audit Report
+  - path: /quarto/dashboard.html
+    name: Monday Morning Dashboard
+
+forbidden_content:
+  - pattern: "TODO|FIXME|HACK|XXX"
+    severity: warning
+    reason: Dev markers in production code
+  - pattern: "password\\s*=|api_key\\s*=|secret\\s*="
+    severity: fail
+    reason: Possible hardcoded credentials
+    exclude:
+      - "*.md"
+
+dom_checks:
+  - route: /
+    elements:
+      - selector: h1
+        label: Main heading present
+      - selector: .grid .card
+        label: Artifact cards present
+      - selector: footer
+        label: Footer present
+  - route: /quarto/report.html
+    elements:
+      - selector: h1
+        label: Report heading present
+      - selector: "#TOC, nav[role=doc-toc], .toc-active"
+        label: Table of contents present
+  - route: /quarto/dashboard.html
+    elements:
+      - selector: h1
+        label: Dashboard heading present
+
+layout:
+  - route: /
+    checks:
+      - name: No horizontal scroll
+        assert: no_horizontal_scroll
+  - route: /quarto/report.html
+    checks:
+      - name: No horizontal scroll
+        assert: no_horizontal_scroll
+  - route: /quarto/dashboard.html
+    checks:
+      - name: No horizontal scroll
+        assert: no_horizontal_scroll
+
+design_system: true

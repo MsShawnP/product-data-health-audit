@@ -189,7 +189,9 @@ reactable(
           list(background = "#b82d4a", color = "white",
                fontWeight = "600")
         else
-          list(background = "#158f75", color = "white",
+          # Darker HK teal (was #158f75) so white text clears WCAG AA
+          # contrast (4.5:1); #158f75 sat at 4.02:1.
+          list(background = "#0c6552", color = "white",
                fontWeight = "600")
       }
     )
@@ -358,14 +360,14 @@ triage <- sku_master_full |>
     Product               = product_name,
     `TTM revenue`         = ttm_revenue,
     `Quality score`       = round(data_quality_score, 1),
-    `Chargebacks 36mo`    = chargeback_total,
+    `Chargebacks (total)`    = chargeback_total,
     `Composite priority`  = fix_priority_score,
     `Est. fix hours`      = round(est_fix_hours, 2),
     `$ saved / hour`      = savings_per_hour,
     `Still broken`        = still_broken
   )
 
-max_cb     <- max(triage$`Chargebacks 36mo`, na.rm = TRUE)
+max_cb     <- max(triage$`Chargebacks (total)`, na.rm = TRUE)
 max_priori <- 100
 max_sph    <- max(triage$`$ saved / hour`,    na.rm = TRUE)
 
@@ -394,7 +396,7 @@ reactable(
       cell  = function(v) dollar_cell(v)
     ),
     `Quality score` = colDef(minWidth = 105, align = "right"),
-    `Chargebacks 36mo` = colDef(
+    `Chargebacks (total)` = colDef(
       minWidth = 130, align = "right",
       cell  = function(v) dollar_cell(v)
     ),

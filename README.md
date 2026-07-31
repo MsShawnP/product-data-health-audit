@@ -4,13 +4,13 @@ A complete product data health audit for a specialty food brand — one pipeline
 
 **Live:** https://audit.lailarallc.com · Data Debt Calculator → https://calculator.lailarallc.com
 
-Cinderhaven Provisions is a fictional $34M specialty food brand with 50 SKUs, 5 product lines, and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+Cinderhaven Provisions is a fictional specialty food brand with $33.4M in trailing-twelve-month revenue across 50 SKUs, 5 product lines, and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
 
 ## What it does
 
 One R pipeline generates five artifacts:
 
-1. **Audit report** (Quarto HTML + PDF) — 8-page case study finding $93,000 a year in retailer chargebacks traced directly to product data defects, with a triage list that ranks every SKU by fix priority
+1. **Audit report** (Quarto HTML + PDF) — case study finding $92,617 a year in retailer chargebacks traced directly to product data defects, with a triage list that ranks every SKU by fix priority
 2. **Executive tearsheet** (2-page PDF) — board-level summary with three headline numbers and a 14-day turnaround plan
 3. **Monday Morning Dashboard** (standalone HTML) — the velocity report, retailer P&L, and triage tracker a CEO currently builds by hand in Excel, rebuilt as an interactive tool
 4. **Excel workbook** (8 tabs, .xlsx) — the CEO's working copy with data dictionary and broker intake checklist
@@ -53,7 +53,7 @@ The export script runs mart-level transformations and writes `data/cinderhaven_p
 
 - **R** — data prep, analytical frames, charts, workbook generation
 - **Quarto** — HTML and PDF rendering for report, tearsheet, dashboard, shareable artifacts (chosen over Jupyter for native multi-format, multi-artifact rendering and first-class R support)
-- **Postgres** — Cinderhaven Data Platform (1.4M scan data rows, 2,873 chargebacks; optional — SQLite snapshot included)
+- **Postgres** — Cinderhaven Data Platform (1.3M scan data rows, 2,873 chargebacks; optional — SQLite snapshot included)
 - **ggplot2 / plotly / reactable** — static charts, interactive charts, interactive tables
 - **openxlsx2** — Excel workbook generation
 - **R/Shiny** — Data Debt Calculator standalone app
