@@ -544,3 +544,11 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 **State:** All shipped and live-verified (landing/report/tearsheet/dashboard reconcile). `.Rprofile` restored (local, untracked). `screenshots/` gitignored. Working tree clean bar this wrap's .gitignore.
 
 **Next:** No open work. Optional: confirm calculator.lailarallc.com live. `index.html` numbers hardcoded — manual update if data reseeds. Next /improve ~2026-10-29.
+
+## 2026-07-31 (cont.) — Deploy verified + milestone tag
+
+**Did:** Pushed wrap commit (`24974ac`, incl. restored `.Rprofile`) and a landing at-risk-tile correction `$33.4M -> $19.6M` (`70313c7`, tile label is "revenue on failing SKUs" = at-risk, not total). CI green on both; `.Rprofile` validated on CI (setup-renv). Live site cache-bust-verified: landing shows $19.6M tile, report/tearsheet/dashboard all serving new content. Tagged `ceo-ready-2026-07-31`.
+
+**State:** Fully shipped, live, verified. Working tree clean, all pushed.
+
+**Next:** No open work. Optional: confirm calculator.lailarallc.com live. Next /improve ~2026-10-29.
