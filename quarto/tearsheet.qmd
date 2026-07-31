@@ -232,7 +232,7 @@ CHP-DG-007, Trail Mix Premium, is among the ten highest-revenue SKUs in the cata
 
 ## A one-week turnaround
 
-- **Days 1–2:** Correct all barcode check digits (UPC and GTIN-14) across `r n_skus` SKUs. About `r round(sum(smf$est_fix_hours, na.rm = TRUE))` hours total. This addresses the entire data-defect scope and brings all SKUs to passing status at all retailers.
+- **Days 1–2:** Correct the barcode check digits (UPC and GTIN-14) on the `r n_gtin_fail` failing SKUs (~4 hours), then measure and enter the missing case dimensions and weights (~11 hours). About `r round(sum(smf$est_fix_hours, na.rm = TRUE))` hours total — that closes the entire data-defect scope behind the chargebacks and the readiness failures.
 - **Days 3–4:** Implement a check-digit validation gate on every data entry path. The GS1 algorithm is a single modulo operation — block saves when the digit is wrong.
 - **Day 5:** Deploy the Monday Morning Dashboard. Establish a monthly 30-minute data quality review.
 - **Result:** The product master supports GS1 Sunrise 2027 compliance, FSMA Rule 204 traceability, and retailer expansion without compounding data debt.

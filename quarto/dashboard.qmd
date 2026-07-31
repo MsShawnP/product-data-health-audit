@@ -346,7 +346,7 @@ reactable(
 > **What to do with it:** Use the composite column to set the quarterly
 > cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
 > with the six quick-win SKUs (20 minutes each). They take two hours
-> combined and each recovers over $15,000 per fix-hour.
+> combined and recover roughly $9,000–$16,000 per fix-hour.
 
 ::: {.wide-table-container}
 

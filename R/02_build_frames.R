@@ -165,6 +165,10 @@ sku_revenue <- scan_ttm |>
 scan_with_retailer <- scan_ttm |>
   left_join(stores |> select(store_id, retailer), by = "store_id")
 
+# NOTE: the product master carries no trade_spend_pct_kroger column, so any
+# retailer without a mapped rate (Kroger) falls back to the Regional Group
+# rate below. The report's retailer P&L discloses this proxy in a
+# methodology note — keep that note in sync if this fallback changes.
 regional_trade_spend <- product_master |>
   select(sku, trade_spend_pct = trade_spend_pct_regional)
 
