@@ -12,6 +12,12 @@ ROOT <- normalizePath(
 
 FRAMES <- file.path(ROOT, "output", "frames")
 
+# Canonical counts from the vendored canon (refreshed from the platform by
+# scripts/refresh_canonical.py), not hardcoded here.
+CANON <- jsonlite::fromJSON(file.path(ROOT, "reference", "canonical_values.json"))
+CANON_SKUS <- CANON$universe$skus_total$all_time
+CANON_LINES <- CANON$universe$product_lines$all_time
+
 pass <- 0L
 fail <- 0L
 
@@ -58,16 +64,16 @@ cat("\n--- sku_master_full regression ---\n")
 sku_master <- read.csv(file.path(FRAMES, "sku_master_full.csv"),
                        stringsAsFactors = FALSE)
 
-assert("sku_master_full has 50 rows (50 SKUs)",
-       nrow(sku_master) == 50L)
+assert("sku_master_full has CANON_SKUS rows",
+       nrow(sku_master) == CANON_SKUS)
 
 assert("sku_master_full has product_line column",
        "product_line" %in% names(sku_master))
 
 n_product_lines <- length(unique(sku_master$product_line))
 
-assert("sku_master_full has 5 distinct product lines",
-       n_product_lines == 5L)
+assert("sku_master_full has CANON_LINES distinct product lines",
+       n_product_lines == CANON_LINES)
 
 known_lines <- c("Artisan Sauces", "Pantry Staples", "Specialty Condiments",
                  "Dried Goods", "Snack Bites")
@@ -83,8 +89,8 @@ cat("\n--- sku_dim regression ---\n")
 sku_dim <- read.csv(file.path(FRAMES, "sku_dim.csv"),
                     stringsAsFactors = FALSE)
 
-assert("sku_dim has 50 rows (50 SKUs)",
-       nrow(sku_dim) == 50L)
+assert("sku_dim has CANON_SKUS rows",
+       nrow(sku_dim) == CANON_SKUS)
 
 assert("sku_dim has sku column",
        "sku" %in% names(sku_dim))
