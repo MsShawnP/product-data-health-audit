@@ -4,7 +4,7 @@ A complete product data health audit for a specialty food brand — one pipeline
 
 **Live:** https://audit.lailarallc.com · Data Debt Calculator → https://calculator.lailarallc.com
 
-Cinderhaven Provisions is a fictional specialty food brand with $33.4M in trailing-twelve-month revenue across 50 SKUs, 5 product lines, and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
+Cinderhaven Provisions is a fictional specialty food brand with $33.2M in trailing-twelve-month revenue across 50 SKUs, 5 product lines, and 6 contracted retailers. The company is fictional. The dataset is synthetic. The methodology, the analytical frameworks, and the deliverables are real. Everything regenerates from a single command.
 
 ## What it does
 
