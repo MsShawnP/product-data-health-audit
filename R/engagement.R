@@ -1,0 +1,119 @@
+# engagement.R — Single source of engagement parameters for the R/Quarto stage.
+#
+# Loads engagement.yml (or engagement.demo.yml) so no client-specific value is
+# hardcoded on the client path: client/brand name, as_of_date, retailer roster,
+# trade-spend rate proxy, and margin basis all come from here. The three .qmd
+# deliverables source this in their setup chunk.
+#
+# Demo builds (demo: true) are byte-identical to the pre-conversion golden: the
+# client-mode chrome (provenance footer, draft watermark, auto-limitations) is
+# gated OFF when is_demo is TRUE, and every demo value equals the former hardcode.
+#
+# Env overrides (set by a render wrapper for a real engagement):
+#   ENGAGEMENT_CONFIG  path to the engagement.yml to use   (default: auto-detect)
+#   ENGAGEMENT_FINAL   "true" to drop the DRAFT watermark   (default: draft)
+
+suppressPackageStartupMessages(library(yaml))
+
+load_engagement <- function(root = "..") {
+  explicit <- Sys.getenv("ENGAGEMENT_CONFIG", unset = "")
+  path <- if (nzchar(explicit)) explicit else {
+    active <- file.path(root, "engagement.yml")
+    demo   <- file.path(root, "engagement.demo.yml")
+    if (file.exists(active)) active else demo
+  }
+  if (!file.exists(path))
+    stop("engagement config not found: ", path,
+         " (add engagement.demo.yml or set ENGAGEMENT_CONFIG)", call. = FALSE)
+  y <- yaml::read_yaml(path)
+
+  final_env <- tolower(Sys.getenv("ENGAGEMENT_FINAL", unset = "false"))
+  list(
+    source_path   = path,
+    client_name   = y$client$name,
+    client_short  = y$client$short_name %||% y$client$name,
+    revenue_desc  = y$client$revenue_description %||% "",
+    engagement_id = y$engagement$id %||% "",
+    as_of_date    = as.character(y$as_of_date),
+    prepared_by   = y$prepared_by %||% "Lailara LLC",
+    is_demo       = isTRUE(y$demo),
+    is_final      = final_env %in% c("true", "1", "yes"),
+    retailers     = unlist(y$retailers) %||% character(0),
+    trade_spend_proxy = y$rates$trade_spend_proxy %||% list(),
+    margin_basis  = y$basis$margin %||% "contribution",
+    scan_basis    = y$basis$scan_basis %||% "retail",
+    window_months = y$basis$window_months %||% NA_integer_,
+    window_label  = y$basis$window_label %||% "",
+    config_raw    = y
+  )
+}
+
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
+
+# ---- Provenance footer ------------------------------------------------------
+# Markdown block for a `results: asis` chunk. Inputs come from the preflight
+# token when a client run produced one; otherwise the pipeline source is named.
+
+eng_provenance_md <- function(eng, tool, version, root = "..") {
+  tok_path <- file.path(root, "output", "preflight", "PREFLIGHT_STATUS.json")
+  inputs_line <- "Source: cached pipeline frames (output/frames/)."
+  config_hash <- "n/a"
+  status <- "n/a"
+  if (file.exists(tok_path) && requireNamespace("jsonlite", quietly = TRUE)) {
+    tok <- jsonlite::fromJSON(tok_path)
+    config_hash <- tok$config_hash_short %||% "n/a"
+    status <- tok$status %||% "n/a"
+    if (!is.null(tok$inputs) && nrow(as.data.frame(tok$inputs))) {
+      im <- as.data.frame(tok$inputs)
+      inputs_line <- paste(
+        sprintf("%s (sha256 %s…, %s rows)",
+                im$filename, substr(im$sha256, 1, 12), im$n_rows),
+        collapse = "; ")
+    }
+  }
+  paste0(
+    "::: {.provenance-footer}\n",
+    "**Provenance.** ", tool, " v", version, " · ",
+    eng$client_name, " (", eng$engagement_id, ") · ",
+    "as-of ", eng$as_of_date, " · ",
+    "config ", config_hash, " · ",
+    "margin basis: ", eng$margin_basis, " · ",
+    "window: ", eng$window_label, " · ",
+    "validation: ", status, ".  \n",
+    "Inputs: ", inputs_line, "\n",
+    ":::\n")
+}
+
+# ---- Auto data-limitations from preflight -----------------------------------
+# Returns a markdown block enumerating every disclosed assumption / excluded row
+# from the readiness report, or NULL when there is no preflight output (demo).
+
+eng_limitations_md <- function(root = "..") {
+  rep_path <- file.path(root, "output", "preflight", "readiness-findings.json")
+  if (!file.exists(rep_path) || !requireNamespace("jsonlite", quietly = TRUE))
+    return(NULL)
+  f <- jsonlite::fromJSON(rep_path)
+  if (length(f) == 0) return(NULL)
+  lines <- vapply(seq_len(nrow(f)), function(i)
+    sprintf("- **%s** (%s): %s%s", f$column[i], f$severity[i], f$message[i],
+            if (!is.na(f$assumption[i]) && nzchar(f$assumption[i]))
+              paste0(" — *assumption:* ", f$assumption[i]) else ""),
+    character(1))
+  paste0("Preflight surfaced the following data limitations, each carried into ",
+         "this deliverable:\n\n", paste(lines, collapse = "\n"), "\n")
+}
+
+# ---- Draft watermark --------------------------------------------------------
+# A visible banner for a `results: asis` chunk. Shown only for non-final client
+# builds; empty for demo or --final. A diagonal page watermark can be layered in
+# on the R host via draftwatermark (PDF) — this banner is the format-portable core.
+
+eng_watermark_md <- function(eng) {
+  if (eng$is_demo || eng$is_final) return("")
+  paste0(
+    "::: {.draft-banner}\n",
+    "**DRAFT — not for distribution.** Prepared for ", eng$client_name,
+    " (", eng$engagement_id, "), as-of ", eng$as_of_date,
+    ". Rebuild with `ENGAGEMENT_FINAL=true` for the final deliverable.\n",
+    ":::\n")
+}

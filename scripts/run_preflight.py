@@ -142,6 +142,25 @@ def main(argv: list[str] | None = None) -> int:
     with open(os.path.join(args.out, STATUS_FILE), "w", encoding="utf-8") as fh:
         json.dump(status_payload, fh, indent=2)
 
+    # Machine-readable findings for the report's auto-generated "Data limitations"
+    # appendix (R/engagement.R: eng_limitations_md). Warnings/info become disclosed
+    # limitations carried into the deliverable; errors are the block reason.
+    findings_out = []
+    for key, _basename, _read, report in reports:
+        for f in report.findings:
+            findings_out.append({
+                "role": key,
+                "severity": f.severity,
+                "category": f.category,
+                "column": f.column or "",
+                "message": f.message,
+                "assumption": f.assumption or "",
+                "spec_ref": f.spec_ref or "",
+                "total": f.total,
+            })
+    with open(os.path.join(args.out, "readiness-findings.json"), "w", encoding="utf-8") as fh:
+        json.dump(findings_out, fh, indent=2)
+
     if not overall_passed:
         print(f"BLOCKED — data not ready. See {args.out}/data-readiness-report-*.html")
         return 2

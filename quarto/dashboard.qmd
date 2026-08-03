@@ -29,6 +29,11 @@ suppressPackageStartupMessages({
 })
 
 source("../R/00_theme.R")  # cinderhaven_palette + theme_cinderhaven_*
+source("../R/engagement.R")
+eng          <- load_engagement("..")
+client_name  <- eng$client_name
+client_short <- eng$client_short
+is_demo      <- eng$is_demo
 
 PROC_DIR <- file.path("..", "output", "frames")
 read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
@@ -83,6 +88,11 @@ velocity <- read_p("velocity") |>
   ) |>
   filter(retailer %in% c("Walmart", "Costco", "Whole Foods")) |>
   arrange(desc(dollars_12w))
+```
+
+```{r draft-watermark}
+#| results: asis
+cat(eng_watermark_md(eng))
 ```
 
 ::: {.panel-tabset}
@@ -244,7 +254,7 @@ reactable(
 > rank. Walmart is #`r rrank("Walmart", "gross_rank")` in gross dollars and #`r rrank("Walmart", "margin_rank")` in net margin percentage.
 > Whole Foods is #`r rrank("Whole Foods", "gross_rank")` in gross dollars and #`r rrank("Whole Foods", "margin_rank")` in net margin. Chargebacks are
 > the only margin component in this chart that is entirely within
-> Cinderhaven's operational control.
+> `r client_short`'s operational control.
 
 ```{r retailer-waterfall}
 #| fig-width: 12
@@ -280,7 +290,7 @@ ggplot(pnl_long, aes(x = value, y = fct_rev(retailer), fill = bar_fill)) +
                      expand = expansion(mult = c(0, 0.08))) +
   facet_wrap(~ component, ncol = 1, scales = "free_x") +
   labs(x = NULL, y = NULL,
-       caption = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
+       caption = src_caption(paste0(client_short, " sales + cost data + chargeback ledger, trailing 12 months"))) +
   theme_cinderhaven_horizontal() +
   theme(axis.text.y = element_text(size = 11),
         strip.text  = element_text(size = 12, face = "bold",
@@ -470,3 +480,8 @@ reactable(
 :::
 
 :::
+
+```{r provenance-footer}
+#| results: asis
+if (!is_demo) cat(eng_provenance_md(eng, "product-data-health-audit", "1.0", ".."))
+```
