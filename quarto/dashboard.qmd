@@ -1,5 +1,5 @@
 ---
-title: "Cinderhaven · Monday Morning Dashboard"
+title: "{{< var dashboard_title >}}"
 subtitle: "Velocity · Retailer P&L · Triage Tracker"
 format:
   html:

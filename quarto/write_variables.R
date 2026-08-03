@@ -14,14 +14,19 @@ root <- ".."
 source(file.path(root, "R", "engagement.R"))
 eng <- load_engagement(root)
 
-subtitle <- eng$config_raw$report$subtitle
-if (is.null(subtitle) || !nzchar(subtitle)) {
-  # Fall back to "<client name>" so a config without report.subtitle still
-  # produces a sensible, non-empty subtitle rather than a blank or a leak.
-  subtitle <- eng$client_name
-}
+# Each front-matter string falls back to the client name so a config without the
+# field still produces a sensible, non-empty value rather than a blank or a leak.
+rpt <- eng$config_raw$report
+pick <- function(x) if (is.null(x) || !nzchar(x)) eng$client_name else x
+subtitle        <- pick(rpt$subtitle)
+dashboard_title <- pick(rpt$dashboard_title)
+tearsheet_title <- pick(rpt$tearsheet_title)
 
 # Write with explicit UTF-8 so the middle-dot separator survives on any locale.
 con <- file("_variables.yml", open = "w", encoding = "UTF-8")
 on.exit(close(con))
-writeLines(sprintf('report_subtitle: "%s"', subtitle), con)
+writeLines(c(
+  sprintf('report_subtitle: "%s"', subtitle),
+  sprintf('dashboard_title: "%s"', dashboard_title),
+  sprintf('tearsheet_title: "%s"', tearsheet_title)
+), con)

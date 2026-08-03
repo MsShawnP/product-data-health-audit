@@ -31,6 +31,8 @@ demo: true
 # value is byte-identical to the pre-conversion golden subtitle.
 report:
   subtitle: "Cinderhaven Provisions  ·  May 2026"
+  dashboard_title: "Cinderhaven · Monday Morning Dashboard"
+  tearsheet_title: "Cinderhaven Provisions · Product Data Readiness"
 
 # ── Retailer roster ──────────────────────────────────────────────────────────
 # The retailers evaluated for readiness and P&L. UNFI/KeHE/DTC are distributors/

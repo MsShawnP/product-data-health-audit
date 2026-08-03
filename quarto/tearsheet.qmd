@@ -1,5 +1,5 @@
 ---
-title: "Cinderhaven Provisions · Product Data Readiness"
+title: "{{< var tearsheet_title >}}"
 subtitle: "Executive Tearsheet · May 2026"
 format:
   pdf:
