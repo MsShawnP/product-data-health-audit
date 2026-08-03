@@ -1,0 +1,51 @@
+sku,product_name,product_line,gtin14,upc,brand_owner,country_of_origin,case_pack_qty,unit_weight_lbs,case_weight_lbs,case_length_in,case_width_in,case_height_in,cogs_per_unit,wholesale_price,msrp,last_updated
+CHP-AS-001,Smoky Chipotle BBQ Sauce,Artisan Sauces,00614140000006,0614140000006,Cinderhaven Provisions,USA,12,1.4231,17.9311,10.2,,7.34,2.1,4.67,8.99,2025-01-15
+CHP-AS-002,Roasted Garlic Marinara,Artisan Sauces,00614140000013,0614140000013,Cinderhaven Provisions,USA,12,1.5784,19.8878,15.41,13.35,6.52,1.85,3.89,7.49,2025-01-15
+CHP-AS-003,Spicy Habanero Hot Sauce,Artisan Sauces,00614140000029,0614140000029,Cinderhaven Provisions,USA,24,1.0751,27.0925,10.24,9.31,,1.45,3.63,6.99,2025-01-15
+CHP-AS-004,Sweet Thai Chili Sauce,Artisan Sauces,00614140000037,0614140000037,Cinderhaven Provisions,USA,12,0.4425,5.5755,11.59,11.9,9.27,1.9,4.15,7.99,2025-01-15
+CHP-AS-005,Classic Tomato Basil,Artisan Sauces,00614140000049,0614140000049,Cinderhaven Provisions,USA,12,0.7527,9.484,14.71,12.86,6.04,1.6,3.37,6.49,2025-01-15
+CHP-AS-006,Balsamic Fig Glaze,Artisan Sauces,00614140000051,0614140000051,Cinderhaven Provisions,USA,12,1.6893,21.2852,15.59,10.04,,2.4,5.19,9.99,2025-01-15
+CHP-AS-007,Lemon Herb Chimichurri,Artisan Sauces,00614140000068,0614140000068,Cinderhaven Provisions,USA,12,1.9315,24.3369,12.69,8.56,6.58,2.0,4.41,8.49,2025-01-15
+CHP-AS-008,Mango Jalapeño Salsa,Artisan Sauces,00614140000070,0614140000070,Cinderhaven Provisions,USA,12,1.756,22.1256,14.83,12.84,,1.55,3.63,6.99,2025-01-15
+CHP-AS-009,Truffle Mushroom Sauce,Artisan Sauces,00614140000082,0614140000082,Cinderhaven Provisions,USA,12,1.258,15.8508,17.78,10.27,9.31,3.2,6.23,11.99,2025-01-15
+CHP-AS-010,Carolina Gold BBQ,Artisan Sauces,00614140000099,0614140000099,Cinderhaven Provisions,USA,12,1.727,21.7602,14.95,13.17,9.46,2.05,4.41,8.49,2025-01-15
+CHP-DG-001,Wild Rice Blend,Dried Goods,00614140000304,0614140000304,Cinderhaven Provisions,USA,12,1.62,20.412,14.32,12.67,9.18,1.85,4.15,7.99,2025-01-15
+CHP-DG-002,Quinoa Medley,Dried Goods,00614140000310,0614140000310,Cinderhaven Provisions,USA,12,0.4009,5.0513,,8.12,11.57,2.0,4.41,8.49,2025-01-15
+CHP-DG-003,Steel Cut Oats,Dried Goods,00614140000323,0614140000323,Cinderhaven Provisions,USA,24,1.806,45.5112,16.65,9.85,6.35,1.1,2.85,5.49,2025-01-15
+CHP-DG-004,Organic Lentils,Dried Goods,00614140000334,0614140000334,Cinderhaven Provisions,USA,24,1.8048,45.481,17.58,8.51,8.92,0.95,2.59,4.99,2025-01-15
+CHP-DG-005,Sun-Dried Tomatoes,Dried Goods,00614140000341,0614140000341,Cinderhaven Provisions,USA,12,,,16.08,12.6,6.77,2.6,5.19,9.99,2025-01-15
+CHP-DG-006,Roasted Chickpeas,Dried Goods,00614140000358,0614140000358,Cinderhaven Provisions,USA,12,1.1605,14.6223,,9.59,11.23,1.4,3.37,6.49,2025-01-15
+CHP-DG-007,Trail Mix Premium,Dried Goods,00614140000360,0614140000360,Cinderhaven Provisions,USA,12,1.077,13.5702,,11.24,10.38,2.3,4.67,8.99,2025-01-15
+CHP-DG-008,Dried Mango Slices,Dried Goods,00614140000372,0614140000372,Cinderhaven Provisions,USA,12,0.7218,9.0947,12.49,13.97,9.9,1.75,3.89,7.49,2025-01-15
+CHP-DG-009,Coconut Flakes Unsweetened,Dried Goods,00614140000389,0614140000389,Cinderhaven Provisions,USA,12,1.101,13.8726,14.14,8.73,7.35,1.25,3.11,5.99,2025-01-15
+CHP-DG-010,Mixed Nut Butter Granola,Dried Goods,00614140000396,0614140000396,Cinderhaven Provisions,USA,12,,11.8553,14.71,9.38,7.32,2.45,4.93,9.49,2025-01-15
+CHP-PS-001,Stone Ground Mustard,Pantry Staples,00614140000105,0614140000105,Cinderhaven Provisions,USA,12,1.5273,19.244,10.37,9.37,7.74,1.3,3.11,5.99,2025-01-15
+CHP-PS-002,Wildflower Honey,Pantry Staples,00614140000112,0614140000112,Cinderhaven Provisions,USA,12,0.5277,6.649,11.86,8.61,7.67,2.8,5.19,9.99,2025-01-15
+CHP-PS-003,Apple Cider Vinegar,Pantry Staples,00614140000129,0614140000129,Cinderhaven Provisions,USA,12,1.4171,,,,7.26,1.4,3.37,6.49,2025-01-15
+CHP-PS-004,Extra Virgin Olive Oil,Pantry Staples,00614140000136,0614140000136,Cinderhaven Provisions,USA,6,0.8272,5.2114,17.49,11.89,,4.5,6.75,12.99,2025-01-15
+CHP-PS-005,Sea Salt Blend,Pantry Staples,00614140000143,0614140000143,Cinderhaven Provisions,USA,24,0.6738,16.9798,15.83,8.98,8.28,0.9,2.59,4.99,2025-01-15
+CHP-PS-006,Cracked Black Pepper,Pantry Staples,00614140000150,0614140000150,Cinderhaven Provisions,USA,24,1.9832,49.9766,15.12,11.34,10.11,1.0,2.85,5.49,2025-01-15
+CHP-PS-007,Smoked Paprika,Pantry Staples,00614140000167,0614140000167,Cinderhaven Provisions,USA,24,1.7486,44.0647,16.21,9.37,6.19,1.1,3.11,5.99,2025-01-15
+CHP-PS-008,Italian Seasoning Blend,Pantry Staples,00614140000174,0614140000174,Cinderhaven Provisions,USA,24,0.9047,22.7984,12.14,9.27,,0.85,2.33,4.49,2025-01-15
+CHP-PS-009,Maple Syrup Grade A,Pantry Staples,00614140000181,0614140000181,Cinderhaven Provisions,USA,12,1.8022,22.7077,,11.93,8.37,3.5,5.97,11.49,2025-01-15
+CHP-PS-010,Raw Agave Nectar,Pantry Staples,00614140000198,0614140000198,Cinderhaven Provisions,USA,12,1.8633,23.4776,13.67,9.59,7.48,2.2,4.15,7.99,2025-01-15
+CHP-SB-001,Dark Chocolate Sea Salt Bites,Snack Bites,00614140000402,0614140000402,Cinderhaven Provisions,USA,24,0.5136,12.9427,15.05,9.37,11.43,1.5,3.63,6.99,2025-01-15
+CHP-SB-002,Almond Butter Protein Bites,Snack Bites,00614140000412,0614140000412,Cinderhaven Provisions,USA,24,1.7754,44.7401,10.57,9.43,10.01,1.8,4.15,7.99,2025-01-15
+CHP-SB-003,Coconut Cashew Clusters,Snack Bites,00614140000426,0614140000426,Cinderhaven Provisions,USA,12,0.7428,9.3593,11.06,13.61,9.43,2.1,4.41,8.49,2025-01-15
+CHP-SB-004,Spicy Sriracha Crackers,Snack Bites,00614140000433,0614140000433,Cinderhaven Provisions,USA,24,1.1563,29.1388,,12.84,7.14,0.95,2.59,4.99,2025-01-15
+CHP-SB-005,Rosemary Olive Oil Crisps,Snack Bites,00614140000440,0614140000440,Cinderhaven Provisions,USA,24,0.5551,13.9885,13.45,10.54,8.8,1.05,2.85,5.49,2025-01-15
+CHP-SB-006,Honey Walnut Bites,Snack Bites,00614140000457,0614140000457,Cinderhaven Provisions,USA,12,1.5665,19.7379,,13.9,6.59,1.7,3.89,7.49,2025-01-15
+CHP-SB-007,Cheddar Herb Popcorn,Snack Bites,00614140000464,0614140000464,Cinderhaven Provisions,USA,24,1.0442,,12.71,13.17,7.49,0.85,2.33,4.49,2025-01-15
+CHP-SB-008,Maple Pecan Clusters,Snack Bites,00614140000471,0614140000471,Cinderhaven Provisions,USA,12,0.7043,8.8742,13.59,10.53,7.67,2.25,4.67,8.99,2025-01-15
+CHP-SB-009,Everything Seasoning Pretzels,Snack Bites,00614140000488,0614140000488,Cinderhaven Provisions,USA,24,0.7997,20.1524,17.39,10.66,11.17,1.15,3.11,5.99,2025-01-15
+CHP-SB-010,Tahini Date Energy Bites,Snack Bites,00614140000494,0614140000494,Cinderhaven Provisions,USA,12,1.2805,16.1343,10.4,14.0,11.02,1.9,4.15,7.99,2025-01-15
+CHP-SC-001,Bourbon Bacon Jam,Specialty Condiments,00614140000204,0614140000204,Cinderhaven Provisions,USA,12,,16.3573,12.1,,11.39,2.6,5.19,9.99,2025-01-15
+CHP-SC-002,Caramelized Onion Spread,Specialty Condiments,00614140000211,0614140000211,Cinderhaven Provisions,USA,12,1.039,13.0914,11.75,13.99,9.06,2.15,4.41,8.49,2025-01-15
+CHP-SC-003,Pickled Jalapeño Relish,Specialty Condiments,00614140000228,0614140000228,Cinderhaven Provisions,USA,12,0.5455,6.8733,10.38,,9.76,1.5,3.63,6.99,2025-01-15
+CHP-SC-004,Sun-Dried Tomato Tapenade,Specialty Condiments,00614140000232,0614140000232,Cinderhaven Provisions,,12,1.6673,21.008,13.38,8.38,,2.3,4.67,8.99,2025-01-15
+CHP-SC-005,Roasted Red Pepper Hummus,Specialty Condiments,00614140000242,0614140000242,Cinderhaven Provisions,USA,12,1.9938,25.1219,14.23,13.83,11.16,1.35,3.11,5.99,2025-01-15
+CHP-SC-006,Artichoke Spinach Dip,Specialty Condiments,00614140000250,0614140000250,Cinderhaven Provisions,USA,12,0.4184,5.2718,,12.09,9.22,1.95,3.89,7.49,2025-01-15
+CHP-SC-007,Everything Bagel Spread,Specialty Condiments,00614140000260,0614140000260,Cinderhaven Provisions,USA,12,0.8269,10.4189,,8.67,8.61,1.55,3.63,6.99,2025-01-15
+CHP-SC-008,Herb Compound Butter,Specialty Condiments,00614140000270,0614140000270,Cinderhaven Provisions,USA,6,1.126,7.0938,17.63,13.26,7.58,2.4,4.15,7.99,2025-01-15
+CHP-SC-009,Raspberry Chipotle Glaze,Specialty Condiments,00614140000280,0614140000280,Cinderhaven Provisions,USA,12,1.2009,15.1313,11.43,13.48,11.22,2.25,4.67,8.99,2025-01-15
+CHP-SC-010,Lemon Curd,Specialty Condiments,00614140000297,0614140000297,Cinderhaven Provisions,USA,12,0.8775,11.0565,15.11,,6.92,1.8,3.89,7.49,2025-01-15

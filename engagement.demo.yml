@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# engagement.demo.yml — Cinderhaven Provisions (DEMO)
+#
+# Ships the demo values as data, so there is zero Cinderhaven residue hardcoded on
+# the client path. Every value here reproduces the current published output: a demo
+# render on this config must match the golden (build timestamps aside).
+#
+# `demo: true` marks this safe to deploy. A real client copies
+# engagement-template/engagement.example.yml to `engagement.yml` (demo: false),
+# which the deploy guard refuses to deploy and which keeps client data runtime-only.
+# ─────────────────────────────────────────────────────────────────────────────
+
+client:
+  name: "Cinderhaven Provisions"
+  short_name: "Cinderhaven"                 # data.output_prefix / file naming
+  revenue_description: "$33.2 million specialty food brand"
+
+engagement:
+  id: "CHP-DEMO-2026-05"
+
+# The reporting date the analysis is anchored to. NEVER today's date.
+as_of_date: "2026-05-03"
+
+prepared_by: "Shawn Phillips | Lailara LLC"
+
+demo: true
+
+# ── Retailer roster ──────────────────────────────────────────────────────────
+# The retailers evaluated for readiness and P&L. UNFI/KeHE/DTC are distributors/
+# channels, not retailers, and are excluded from the roster (build_frames drops them).
+retailers:
+  - "Walmart"
+  - "Costco"
+  - "Whole Foods"
+  - "Sprouts"
+  - "Kroger"
+  - "Regional Group"
+
+# ── Rate table ───────────────────────────────────────────────────────────────
+# Trade-spend rates normally live per-SKU in the item master
+# (trade_spend_pct_<retailer>). A retailer with no rate column falls back to the
+# proxy named here, and that proxy is disclosed on the retailer-P&L output.
+rates:
+  trade_spend_proxy:
+    Kroger: "Regional Group"    # item master carries no trade_spend_pct_kroger
+
+# ── Basis choices (CFO-visible; printed next to the numbers they drive) ───────
+basis:
+  margin: "contribution"        # net margin % = net_contribution / gross_revenue
+  scan_basis: "retail"          # scan revenue basis
+  window_months: 37             # chargeback observation window (2023-01 .. 2026-01)
+  window_label: "Jan 2023 – Jan 2026"
+
+# ── Column mapping ───────────────────────────────────────────────────────────
+# The demo extracts already use canonical headers (see INPUT-SPEC.md), so no
+# mapping is needed. A client whose headers differ maps them here.
+columns: {}
+
+# ── Hard-fail thresholds ─────────────────────────────────────────────────────
+thresholds:
+  max_blank_fraction_required: 0.02
+  max_type_violation_fraction: 0.0
+  fail_on_missing_required_column: true
+  fail_on_duplicate_keys: true
+  example_limit: 5

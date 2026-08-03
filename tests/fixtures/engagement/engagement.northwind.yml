@@ -1,0 +1,41 @@
+# Synthetic client engagement config — "Northwind Naturals" (TEST FIXTURE).
+# Different brand and retailer roster from the demo; the item-master extract renames
+# product_name -> "Item Description" (mapped below) and OMITS cogs_per_unit, so the
+# preflight blocks with a Data Readiness Report naming the missing required column.
+# demo: false, but this file lives under tests/fixtures/ and carries no real client data.
+
+client:
+  name: "Northwind Naturals"
+  short_name: "Northwind"
+
+engagement:
+  id: "NWN-TEST-2026-08"
+
+as_of_date: "2026-06-30"
+prepared_by: "Shawn Phillips | Lailara LLC"
+demo: false
+
+retailers:
+  - "Kroger"
+  - "Publix"
+  - "Wegmans"
+  - "HEB"
+  - "Ahold Delhaize"
+  - "Northeast Co-op"
+
+basis:
+  margin: "contribution"
+  scan_basis: "retail"
+  window_months: 37
+  window_label: "Jan 2023 – Jan 2026"
+
+# product_name arrives as "Item Description" in this client's export.
+columns:
+  product_name: "Item Description"
+
+thresholds:
+  max_blank_fraction_required: 0.02
+  max_type_violation_fraction: 0.0
+  fail_on_missing_required_column: true
+  fail_on_duplicate_keys: true
+  example_limit: 5

@@ -1,0 +1,601 @@
+chargeback_id,sku,retailer,amount,reason,month,triggered_by_field
+1,NWN-SC-004,Kroger,764.23,damaged,2023-01,missing_case_dims
+2,NWN-SC-008,Kroger,1428.18,label_fine,2023-01,upc_valid
+3,NWN-SB-010,HEB,784.12,label_fine,2023-01,upc_valid
+4,NWN-SC-001,HEB,1962.76,damaged,2023-01,missing_case_dims
+5,NWN-SC-007,HEB,1944.58,damaged,2023-01,missing_case_dims
+6,NWN-AS-008,Northeast Co-op,1467.0,label_fine,2023-01,gtin_valid
+7,NWN-DG-002,Northeast Co-op,252.25,damaged,2023-01,missing_case_dims
+8,NWN-DG-007,Northeast Co-op,686.83,label_fine,2023-01,gtin_valid
+9,NWN-SC-006,Kroger,1450.9,label_fine,2023-02,upc_valid
+10,NWN-DG-003,Kroger,1721.57,label_fine,2023-02,gtin_valid
+11,NWN-DG-001,Wegmans,120.41,label_fine,2023-02,upc_valid
+12,NWN-SC-007,Wegmans,1724.47,label_fine,2023-02,upc_valid
+13,NWN-DG-007,HEB,1956.57,damaged,2023-02,missing_case_dims
+14,NWN-AS-003,Ahold Delhaize,1604.81,label_fine,2023-02,upc_valid
+15,NWN-SB-002,Ahold Delhaize,1498.75,label_fine,2023-02,upc_valid
+16,NWN-AS-003,Ahold Delhaize,1686.32,damaged,2023-02,missing_case_dims
+17,NWN-SC-004,Kroger,767.07,pricing_error,2023-03,missing_country
+18,NWN-SC-006,Publix,1334.01,damaged,2023-03,missing_case_dims
+19,NWN-SC-004,Publix,133.35,label_fine,2023-03,gtin_valid
+20,NWN-SC-006,Publix,689.63,label_fine,2023-03,upc_valid
+21,NWN-SC-006,Wegmans,844.1,damaged,2023-03,missing_case_dims
+22,NWN-SB-002,Wegmans,1224.07,label_fine,2023-03,upc_valid
+23,NWN-AS-008,Northeast Co-op,1059.76,damaged,2023-03,missing_case_dims
+24,NWN-DG-001,Kroger,143.34,label_fine,2023-04,upc_valid
+25,NWN-DG-002,Kroger,198.08,damaged,2023-04,missing_case_dims
+26,NWN-AS-003,Publix,1374.94,label_fine,2023-04,gtin_valid
+27,NWN-SC-001,Wegmans,667.8,damaged,2023-04,missing_case_dims
+28,NWN-SC-006,Wegmans,1795.07,damaged,2023-04,missing_case_dims
+29,NWN-SC-001,Northeast Co-op,1952.68,damaged,2023-04,missing_case_dims
+30,NWN-SB-010,Northeast Co-op,266.45,label_fine,2023-04,gtin_valid
+31,NWN-AS-003,Publix,1939.53,damaged,2023-05,missing_case_dims
+32,NWN-AS-003,Publix,306.83,damaged,2023-05,missing_case_dims
+33,NWN-SC-007,Publix,543.83,label_fine,2023-05,gtin_valid
+34,NWN-SC-007,Wegmans,1303.7,damaged,2023-05,missing_case_dims
+35,NWN-SC-006,HEB,1351.66,damaged,2023-05,missing_case_dims
+36,NWN-PS-003,Ahold Delhaize,1484.02,damaged,2023-05,missing_case_dims
+37,NWN-AS-008,Ahold Delhaize,1876.51,damaged,2023-05,missing_case_dims
+38,NWN-SC-004,Kroger,776.7,pricing_error,2023-06,missing_country
+39,NWN-SC-001,Kroger,974.88,damaged,2023-06,missing_case_dims
+40,NWN-SC-004,Publix,836.46,label_fine,2023-06,gtin_valid
+41,NWN-AS-003,Publix,1196.89,damaged,2023-06,missing_case_dims
+42,NWN-DG-003,Wegmans,184.85,label_fine,2023-06,upc_valid
+43,NWN-SC-004,HEB,773.58,pricing_error,2023-06,missing_country
+44,NWN-SC-008,Ahold Delhaize,388.0,label_fine,2023-06,gtin_valid
+45,NWN-SB-002,Northeast Co-op,370.68,label_fine,2023-06,upc_valid
+46,NWN-SC-004,Northeast Co-op,1560.61,pricing_error,2023-06,missing_country
+47,NWN-SC-006,Northeast Co-op,1532.41,damaged,2023-06,missing_case_dims
+48,NWN-SC-006,Kroger,217.02,label_fine,2023-07,upc_valid
+49,NWN-AS-008,Kroger,1108.56,label_fine,2023-07,upc_valid
+50,NWN-SC-010,Publix,1870.35,damaged,2023-07,missing_case_dims
+51,NWN-SB-006,Wegmans,634.37,damaged,2023-07,missing_case_dims
+52,NWN-SC-007,HEB,580.63,label_fine,2023-07,gtin_valid
+53,NWN-SC-004,Ahold Delhaize,1865.0,pricing_error,2023-07,missing_country
+54,NWN-SC-007,Northeast Co-op,557.0,damaged,2023-07,missing_case_dims
+55,NWN-DG-007,Publix,1075.46,damaged,2023-08,missing_case_dims
+56,NWN-DG-003,Publix,560.74,label_fine,2023-08,gtin_valid
+57,NWN-DG-007,Wegmans,1058.47,damaged,2023-08,missing_case_dims
+58,NWN-DG-001,HEB,817.97,label_fine,2023-08,upc_valid
+59,NWN-DG-007,HEB,1720.07,label_fine,2023-08,gtin_valid
+60,NWN-SC-006,Ahold Delhaize,1823.41,label_fine,2023-08,upc_valid
+61,NWN-SB-002,Northeast Co-op,835.62,label_fine,2023-08,gtin_valid
+62,NWN-PS-003,Kroger,917.71,damaged,2023-09,missing_case_dims
+63,NWN-AS-003,Publix,1119.74,damaged,2023-09,missing_case_dims
+64,NWN-SB-010,Wegmans,1054.49,label_fine,2023-09,upc_valid
+65,NWN-PS-008,Wegmans,1614.83,damaged,2023-09,missing_case_dims
+66,NWN-SC-006,Wegmans,225.66,damaged,2023-09,missing_case_dims
+67,NWN-SC-006,HEB,1482.7,label_fine,2023-09,upc_valid
+68,NWN-DG-005,HEB,1517.49,damaged,2023-09,missing_case_weight
+69,NWN-DG-002,Ahold Delhaize,588.63,damaged,2023-09,missing_case_dims
+70,NWN-SC-007,Ahold Delhaize,1309.36,label_fine,2023-09,upc_valid
+71,NWN-AS-005,Northeast Co-op,1041.71,label_fine,2023-09,gtin_valid
+72,NWN-SC-006,Kroger,742.53,label_fine,2023-10,gtin_valid
+73,NWN-SB-007,Publix,895.04,damaged,2023-10,missing_case_weight
+74,NWN-AS-008,HEB,1842.38,damaged,2023-10,missing_case_dims
+75,NWN-SC-004,HEB,1902.74,label_fine,2023-10,gtin_valid
+76,NWN-SC-006,Ahold Delhaize,1773.29,damaged,2023-10,missing_case_dims
+77,NWN-SC-004,Ahold Delhaize,1698.05,damaged,2023-10,missing_case_dims
+78,NWN-PS-003,Ahold Delhaize,683.85,damaged,2023-10,missing_case_dims
+79,NWN-SC-007,Kroger,1307.96,damaged,2023-11,missing_case_dims
+80,NWN-SB-002,Kroger,241.72,label_fine,2023-11,gtin_valid
+81,NWN-SC-004,HEB,362.82,label_fine,2023-11,gtin_valid
+82,NWN-SC-004,HEB,1002.6,pricing_error,2023-11,missing_country
+83,NWN-PS-003,Publix,1519.49,damaged,2023-12,missing_case_weight
+84,NWN-SC-007,Publix,1907.49,damaged,2023-12,missing_case_dims
+85,NWN-AS-008,HEB,981.72,label_fine,2023-12,gtin_valid
+86,NWN-SC-007,Ahold Delhaize,808.03,damaged,2023-12,missing_case_dims
+87,NWN-AS-005,Ahold Delhaize,65.46,label_fine,2023-12,gtin_valid
+88,NWN-DG-003,Ahold Delhaize,1219.0,label_fine,2023-12,upc_valid
+89,NWN-DG-003,Northeast Co-op,381.25,label_fine,2023-12,upc_valid
+90,NWN-SC-004,Northeast Co-op,692.78,label_fine,2023-12,gtin_valid
+91,NWN-DG-003,Kroger,1600.89,label_fine,2024-01,gtin_valid
+92,NWN-PS-003,Publix,1710.53,damaged,2024-01,missing_case_dims
+93,NWN-SC-008,Publix,73.25,label_fine,2024-01,upc_valid
+94,NWN-SC-008,Publix,1482.86,label_fine,2024-01,gtin_valid
+95,NWN-SC-004,Publix,1238.8,pricing_error,2024-01,missing_country
+96,NWN-DG-007,Wegmans,1576.04,damaged,2024-01,missing_case_dims
+97,NWN-DG-007,Wegmans,66.6,damaged,2024-01,missing_case_dims
+98,NWN-SC-007,Wegmans,1529.05,label_fine,2024-01,gtin_valid
+99,NWN-SC-004,Wegmans,1980.75,damaged,2024-01,missing_case_dims
+100,NWN-PS-008,HEB,327.11,damaged,2024-01,missing_case_dims
+101,NWN-AS-008,HEB,616.9,label_fine,2024-01,upc_valid
+102,NWN-SC-006,Ahold Delhaize,562.63,damaged,2024-01,missing_case_dims
+103,NWN-PS-003,Northeast Co-op,1615.73,damaged,2024-01,missing_case_weight
+104,NWN-DG-005,Northeast Co-op,1390.03,damaged,2024-01,missing_case_weight
+105,NWN-AS-008,Kroger,818.68,damaged,2024-02,missing_case_dims
+106,NWN-AS-003,Kroger,311.69,label_fine,2024-02,gtin_valid
+107,NWN-SC-008,Kroger,282.26,label_fine,2024-02,gtin_valid
+108,NWN-SC-008,Publix,408.31,label_fine,2024-02,gtin_valid
+109,NWN-DG-003,Publix,917.57,label_fine,2024-02,upc_valid
+110,NWN-AS-003,Wegmans,1255.83,label_fine,2024-02,gtin_valid
+111,NWN-SC-001,Ahold Delhaize,1708.66,damaged,2024-02,missing_case_dims
+112,NWN-DG-003,Northeast Co-op,939.9,label_fine,2024-02,gtin_valid
+113,NWN-SC-004,Kroger,1608.12,label_fine,2024-03,upc_valid
+114,NWN-SC-004,Wegmans,998.87,label_fine,2024-03,upc_valid
+115,NWN-SC-006,Ahold Delhaize,1762.46,damaged,2024-03,missing_case_dims
+116,NWN-SC-007,Northeast Co-op,790.57,damaged,2024-03,missing_case_dims
+117,NWN-AS-003,Northeast Co-op,1471.7,label_fine,2024-03,gtin_valid
+118,NWN-DG-007,Kroger,700.82,label_fine,2024-04,gtin_valid
+119,NWN-AS-003,Publix,1044.83,label_fine,2024-04,gtin_valid
+120,NWN-DG-007,Publix,1647.51,label_fine,2024-04,upc_valid
+121,NWN-SB-002,Publix,66.97,label_fine,2024-04,gtin_valid
+122,NWN-DG-007,Ahold Delhaize,1469.65,label_fine,2024-04,gtin_valid
+123,NWN-AS-008,Northeast Co-op,454.75,label_fine,2024-04,upc_valid
+124,NWN-AS-003,Northeast Co-op,312.41,damaged,2024-04,missing_case_dims
+125,NWN-DG-001,Kroger,1737.08,label_fine,2024-05,gtin_valid
+126,NWN-SC-006,Wegmans,212.47,damaged,2024-05,missing_case_dims
+127,NWN-SC-006,HEB,1080.13,label_fine,2024-05,gtin_valid
+128,NWN-SC-004,Ahold Delhaize,1082.25,pricing_error,2024-05,missing_country
+129,NWN-DG-001,Northeast Co-op,1202.19,label_fine,2024-05,upc_valid
+130,NWN-DG-003,Northeast Co-op,816.61,label_fine,2024-05,gtin_valid
+131,NWN-DG-001,Kroger,1962.86,label_fine,2024-06,upc_valid
+132,NWN-SC-006,Kroger,1098.33,damaged,2024-06,missing_case_dims
+133,NWN-SC-007,Kroger,925.67,damaged,2024-06,missing_case_dims
+134,NWN-AS-005,Wegmans,1475.94,label_fine,2024-06,upc_valid
+135,NWN-SC-006,Wegmans,507.19,damaged,2024-06,missing_case_dims
+136,NWN-SB-010,HEB,114.01,label_fine,2024-06,upc_valid
+137,NWN-SC-004,Ahold Delhaize,1694.94,pricing_error,2024-06,missing_country
+138,NWN-AS-008,Ahold Delhaize,1972.16,label_fine,2024-06,upc_valid
+139,NWN-SC-006,Northeast Co-op,1347.99,damaged,2024-06,missing_case_dims
+140,NWN-PS-003,Kroger,1743.69,damaged,2024-07,missing_case_dims
+141,NWN-SC-007,Kroger,503.37,damaged,2024-07,missing_case_dims
+142,NWN-SC-006,Publix,1114.1,damaged,2024-07,missing_case_dims
+143,NWN-AS-008,Ahold Delhaize,1196.6,label_fine,2024-07,gtin_valid
+144,NWN-AS-005,Kroger,981.99,label_fine,2024-08,upc_valid
+145,NWN-SC-006,Kroger,843.06,damaged,2024-08,missing_case_dims
+146,NWN-SC-006,Publix,967.71,damaged,2024-08,missing_case_dims
+147,NWN-SC-007,Wegmans,1062.95,label_fine,2024-08,upc_valid
+148,NWN-SC-008,HEB,1431.53,label_fine,2024-08,upc_valid
+149,NWN-SC-006,HEB,700.27,label_fine,2024-08,gtin_valid
+150,NWN-SC-006,Ahold Delhaize,939.27,label_fine,2024-08,upc_valid
+151,NWN-SC-008,Ahold Delhaize,566.03,label_fine,2024-08,gtin_valid
+152,NWN-DG-007,Northeast Co-op,1739.68,damaged,2024-08,missing_case_dims
+153,NWN-SC-006,Northeast Co-op,1940.88,label_fine,2024-08,upc_valid
+154,NWN-SC-008,Kroger,748.84,label_fine,2024-09,upc_valid
+155,NWN-SC-006,Kroger,1895.3,damaged,2024-09,missing_case_dims
+156,NWN-AS-008,Kroger,146.45,damaged,2024-09,missing_case_dims
+157,NWN-SC-008,Publix,1598.79,label_fine,2024-09,gtin_valid
+158,NWN-DG-007,Publix,1672.75,label_fine,2024-09,upc_valid
+159,NWN-SC-004,Ahold Delhaize,101.37,label_fine,2024-09,gtin_valid
+160,NWN-DG-003,Northeast Co-op,84.31,label_fine,2024-09,upc_valid
+161,NWN-SC-006,Kroger,1080.23,damaged,2024-10,missing_case_dims
+162,NWN-AS-008,Publix,891.23,damaged,2024-10,missing_case_dims
+163,NWN-AS-005,Wegmans,1466.26,label_fine,2024-10,gtin_valid
+164,NWN-AS-008,HEB,418.69,damaged,2024-10,missing_case_dims
+165,NWN-DG-001,Ahold Delhaize,1045.37,label_fine,2024-10,gtin_valid
+166,NWN-SC-001,Ahold Delhaize,236.36,damaged,2024-10,missing_case_dims
+167,NWN-AS-003,Ahold Delhaize,860.12,damaged,2024-10,missing_case_dims
+168,NWN-SC-008,Kroger,1223.04,label_fine,2024-11,gtin_valid
+169,NWN-SC-004,Kroger,1781.23,damaged,2024-11,missing_case_dims
+170,NWN-SC-006,Wegmans,1552.5,damaged,2024-11,missing_case_dims
+171,NWN-SC-007,Wegmans,1059.07,label_fine,2024-11,gtin_valid
+172,NWN-DG-001,Wegmans,74.52,label_fine,2024-11,upc_valid
+173,NWN-SC-007,Wegmans,1706.1,label_fine,2024-11,upc_valid
+174,NWN-SC-004,Ahold Delhaize,1902.71,damaged,2024-11,missing_case_dims
+175,NWN-SC-004,Kroger,714.42,label_fine,2024-12,gtin_valid
+176,NWN-AS-005,Publix,395.8,label_fine,2024-12,gtin_valid
+177,NWN-DG-003,Publix,1082.8,label_fine,2024-12,gtin_valid
+178,NWN-SC-007,Wegmans,1613.59,damaged,2024-12,missing_case_dims
+179,NWN-SC-004,HEB,280.3,label_fine,2024-12,upc_valid
+180,NWN-SC-003,HEB,1995.09,damaged,2024-12,missing_case_dims
+181,NWN-SB-010,HEB,364.29,label_fine,2024-12,upc_valid
+182,NWN-SB-010,Ahold Delhaize,1453.03,label_fine,2024-12,upc_valid
+183,NWN-SC-007,Northeast Co-op,1863.08,damaged,2024-12,missing_case_dims
+184,NWN-AS-003,Northeast Co-op,587.18,label_fine,2024-12,upc_valid
+185,NWN-SC-007,Kroger,1007.38,damaged,2025-01,missing_case_dims
+186,NWN-SC-008,Publix,958.47,label_fine,2025-01,upc_valid
+187,NWN-DG-007,HEB,683.81,label_fine,2025-01,gtin_valid
+188,NWN-DG-007,HEB,1857.02,label_fine,2025-01,gtin_valid
+189,NWN-PS-003,Ahold Delhaize,1263.0,damaged,2025-01,missing_case_weight
+190,NWN-SC-004,Ahold Delhaize,1976.81,label_fine,2025-01,gtin_valid
+191,NWN-DG-007,Ahold Delhaize,1642.96,damaged,2025-01,missing_case_dims
+192,NWN-SC-008,Ahold Delhaize,804.42,label_fine,2025-01,gtin_valid
+193,NWN-SC-007,Northeast Co-op,1809.25,damaged,2025-01,missing_case_dims
+194,NWN-SC-001,Kroger,878.18,damaged,2025-02,missing_case_dims
+195,NWN-AS-005,Kroger,1019.34,label_fine,2025-02,upc_valid
+196,NWN-DG-001,Publix,333.13,label_fine,2025-02,gtin_valid
+197,NWN-SC-008,HEB,281.42,label_fine,2025-02,gtin_valid
+198,NWN-SC-004,Ahold Delhaize,1296.78,damaged,2025-02,missing_case_dims
+199,NWN-SC-004,Northeast Co-op,1541.63,damaged,2025-02,missing_case_dims
+200,NWN-SC-007,Kroger,1458.36,label_fine,2025-03,upc_valid
+201,NWN-DG-003,Kroger,1180.33,label_fine,2025-03,upc_valid
+202,NWN-SC-006,Publix,1036.65,label_fine,2025-03,upc_valid
+203,NWN-SC-006,Wegmans,356.42,damaged,2025-03,missing_case_dims
+204,NWN-SC-004,Ahold Delhaize,1619.39,pricing_error,2025-03,missing_country
+205,NWN-SC-010,Northeast Co-op,1301.48,damaged,2025-03,missing_case_dims
+206,NWN-AS-008,Publix,1241.75,label_fine,2025-04,upc_valid
+207,NWN-AS-008,Publix,258.02,damaged,2025-04,missing_case_dims
+208,NWN-SC-004,Publix,1117.2,label_fine,2025-04,gtin_valid
+209,NWN-SC-004,Publix,1392.5,pricing_error,2025-04,missing_country
+210,NWN-SC-007,Wegmans,1161.98,damaged,2025-04,missing_case_dims
+211,NWN-SB-002,Ahold Delhaize,1061.89,label_fine,2025-04,upc_valid
+212,NWN-AS-003,Northeast Co-op,62.93,damaged,2025-04,missing_case_dims
+213,NWN-AS-005,Kroger,1560.05,label_fine,2025-05,upc_valid
+214,NWN-SC-004,Publix,1655.54,label_fine,2025-05,gtin_valid
+215,NWN-PS-008,Publix,788.86,damaged,2025-05,missing_case_dims
+216,NWN-DG-003,Wegmans,294.75,label_fine,2025-05,gtin_valid
+217,NWN-SC-004,Wegmans,1535.31,damaged,2025-05,missing_case_dims
+218,NWN-SC-007,HEB,56.14,label_fine,2025-05,upc_valid
+219,NWN-SC-006,Ahold Delhaize,165.96,label_fine,2025-05,upc_valid
+220,NWN-SC-007,Kroger,192.73,label_fine,2025-06,upc_valid
+221,NWN-AS-008,Wegmans,1798.76,damaged,2025-06,missing_case_dims
+222,NWN-AS-003,Wegmans,525.43,damaged,2025-06,missing_case_dims
+223,NWN-SC-007,HEB,1427.74,label_fine,2025-06,gtin_valid
+224,NWN-SC-001,HEB,742.82,damaged,2025-06,missing_case_dims
+225,NWN-DG-002,Ahold Delhaize,1106.5,damaged,2025-06,missing_case_dims
+226,NWN-SC-004,Northeast Co-op,930.98,pricing_error,2025-06,missing_country
+227,NWN-SC-008,Kroger,1052.02,label_fine,2025-07,upc_valid
+228,NWN-SB-007,Kroger,1622.67,damaged,2025-07,missing_case_weight
+229,NWN-AS-001,Kroger,125.59,damaged,2025-07,missing_case_dims
+230,NWN-SC-004,Publix,1970.54,label_fine,2025-07,gtin_valid
+231,NWN-SC-004,Wegmans,249.38,pricing_error,2025-07,missing_country
+232,NWN-DG-007,HEB,258.86,label_fine,2025-07,gtin_valid
+233,NWN-AS-003,Wegmans,433.19,label_fine,2025-08,upc_valid
+234,NWN-SC-004,Wegmans,781.66,label_fine,2025-08,upc_valid
+235,NWN-AS-003,HEB,398.59,label_fine,2025-08,upc_valid
+236,NWN-AS-008,Ahold Delhaize,87.55,label_fine,2025-08,upc_valid
+237,NWN-SC-007,Northeast Co-op,1345.54,damaged,2025-08,missing_case_dims
+238,NWN-SC-003,Kroger,125.89,damaged,2025-09,missing_case_dims
+239,NWN-SC-006,Kroger,884.49,damaged,2025-09,missing_case_dims
+240,NWN-AS-003,Kroger,625.35,label_fine,2025-09,gtin_valid
+241,NWN-SC-001,Wegmans,1342.46,damaged,2025-09,missing_case_dims
+242,NWN-SC-004,HEB,384.53,pricing_error,2025-09,missing_country
+243,NWN-SC-007,Ahold Delhaize,1849.37,damaged,2025-09,missing_case_dims
+244,NWN-SC-006,Ahold Delhaize,1294.04,label_fine,2025-09,upc_valid
+245,NWN-AS-008,Kroger,1262.92,damaged,2025-10,missing_case_dims
+246,NWN-DG-007,Publix,1823.39,label_fine,2025-10,gtin_valid
+247,NWN-SC-004,Publix,779.32,pricing_error,2025-10,missing_country
+248,NWN-DG-003,Publix,1600.5,label_fine,2025-10,gtin_valid
+249,NWN-AS-008,Publix,1830.62,damaged,2025-10,missing_case_dims
+250,NWN-PS-008,Wegmans,1022.75,damaged,2025-10,missing_case_dims
+251,NWN-DG-001,Wegmans,1641.48,label_fine,2025-10,upc_valid
+252,NWN-SC-006,Ahold Delhaize,1686.24,label_fine,2025-10,upc_valid
+253,NWN-SC-004,Publix,1706.43,label_fine,2025-11,gtin_valid
+254,NWN-SC-006,Publix,563.72,damaged,2025-11,missing_case_dims
+255,NWN-DG-006,Wegmans,1543.07,damaged,2025-11,missing_case_dims
+256,NWN-DG-007,HEB,157.1,damaged,2025-11,missing_case_dims
+257,NWN-SC-006,Ahold Delhaize,1267.47,damaged,2025-11,missing_case_dims
+258,NWN-SB-010,Northeast Co-op,270.22,label_fine,2025-11,gtin_valid
+259,NWN-SC-010,Northeast Co-op,249.96,damaged,2025-11,missing_case_dims
+260,NWN-SB-010,Northeast Co-op,145.87,label_fine,2025-11,gtin_valid
+261,NWN-SC-006,Publix,850.58,damaged,2025-12,missing_case_dims
+262,NWN-SC-004,Ahold Delhaize,298.02,label_fine,2025-12,upc_valid
+263,NWN-DG-007,Northeast Co-op,1117.65,label_fine,2025-12,upc_valid
+264,NWN-SC-007,Northeast Co-op,707.34,damaged,2025-12,missing_case_dims
+265,NWN-SC-007,Northeast Co-op,1459.87,damaged,2025-12,missing_case_dims
+266,NWN-AS-008,Kroger,1686.42,damaged,2026-01,missing_case_dims
+267,NWN-SB-010,Kroger,1201.86,label_fine,2026-01,upc_valid
+268,NWN-AS-003,Publix,161.4,label_fine,2026-01,gtin_valid
+269,NWN-DG-001,Publix,1648.25,label_fine,2026-01,upc_valid
+270,NWN-SC-004,Wegmans,918.44,pricing_error,2026-01,missing_country
+271,NWN-DG-007,HEB,578.34,damaged,2026-01,missing_case_dims
+272,NWN-PS-003,HEB,75.31,damaged,2026-01,missing_case_weight
+273,NWN-SC-006,Ahold Delhaize,1409.93,damaged,2026-01,missing_case_dims
+274,NWN-AS-008,Northeast Co-op,444.79,damaged,2026-01,missing_case_dims
+275,NWN-SC-008,Northeast Co-op,193.74,label_fine,2026-01,upc_valid
+276,NWN-SC-003,Kroger,50.0,short_ship,2023-01,
+277,NWN-AS-004,Kroger,50.0,short_ship,2023-01,
+278,NWN-DG-010,Kroger,70.98,short_ship,2023-01,
+279,NWN-SB-007,Publix,50.0,short_ship,2023-01,
+280,NWN-DG-010,Ahold Delhaize,50.0,short_ship,2023-01,
+281,NWN-SC-008,Kroger,50.0,short_ship,2023-01,
+282,NWN-AS-004,Kroger,50.0,short_ship,2023-01,
+283,NWN-AS-010,Wegmans,50.0,short_ship,2023-01,
+284,NWN-PS-004,Ahold Delhaize,50.0,short_ship,2023-01,
+285,NWN-SB-002,Ahold Delhaize,50.0,short_ship,2023-01,
+286,NWN-SC-009,Kroger,50.0,short_ship,2023-01,
+287,NWN-PS-004,Publix,50.0,short_ship,2023-01,
+288,NWN-DG-010,Wegmans,50.0,short_ship,2023-01,
+289,NWN-PS-005,Wegmans,50.0,short_ship,2023-01,
+290,NWN-SC-009,Ahold Delhaize,50.0,short_ship,2023-01,
+291,NWN-SC-009,Ahold Delhaize,50.0,short_ship,2023-01,
+292,NWN-DG-001,Kroger,50.0,short_ship,2023-02,
+293,NWN-SB-010,Kroger,50.0,short_ship,2023-02,
+294,NWN-PS-009,Kroger,50.0,short_ship,2023-02,
+295,NWN-SB-010,Kroger,50.0,short_ship,2023-02,
+296,NWN-DG-007,Wegmans,50.0,short_ship,2023-02,
+297,NWN-AS-004,HEB,50.0,short_ship,2023-02,
+298,NWN-SB-010,HEB,50.0,short_ship,2023-02,
+299,NWN-SB-003,HEB,50.0,short_ship,2023-02,
+300,NWN-SC-003,Ahold Delhaize,50.0,short_ship,2023-02,
+301,NWN-PS-006,Ahold Delhaize,50.0,short_ship,2023-01,
+302,NWN-SC-010,Northeast Co-op,50.0,short_ship,2023-01,
+303,NWN-SC-004,Northeast Co-op,50.0,short_ship,2023-02,
+304,NWN-SB-001,Kroger,50.0,short_ship,2023-02,
+305,NWN-PS-005,Kroger,50.0,short_ship,2023-02,
+306,NWN-AS-004,Kroger,50.0,short_ship,2023-02,
+307,NWN-AS-003,Kroger,50.0,short_ship,2023-02,
+308,NWN-AS-003,Kroger,50.0,short_ship,2023-02,
+309,NWN-PS-006,Kroger,50.0,short_ship,2023-02,
+310,NWN-SB-005,Wegmans,50.0,short_ship,2023-02,
+311,NWN-AS-006,Wegmans,50.0,short_ship,2023-02,
+312,NWN-AS-008,Wegmans,50.0,short_ship,2023-02,
+313,NWN-AS-007,Ahold Delhaize,50.0,short_ship,2023-02,
+314,NWN-PS-006,Ahold Delhaize,50.0,short_ship,2023-02,
+315,NWN-SC-008,Kroger,50.0,short_ship,2023-02,
+316,NWN-PS-009,Kroger,50.0,short_ship,2023-02,
+317,NWN-SC-006,Kroger,50.0,short_ship,2023-02,
+318,NWN-SB-008,Kroger,50.0,short_ship,2023-02,
+319,NWN-AS-009,Publix,50.0,short_ship,2023-02,
+320,NWN-SB-008,Publix,50.0,short_ship,2023-02,
+321,NWN-SC-006,Publix,50.0,short_ship,2023-02,
+322,NWN-SC-006,Wegmans,50.0,short_ship,2023-02,
+323,NWN-PS-010,HEB,50.0,short_ship,2023-02,
+324,NWN-SC-010,HEB,50.0,short_ship,2023-02,
+325,NWN-AS-004,HEB,50.0,short_ship,2023-02,
+326,NWN-AS-003,Ahold Delhaize,50.0,short_ship,2023-02,
+327,NWN-DG-002,Ahold Delhaize,50.0,short_ship,2023-02,
+328,NWN-PS-007,Ahold Delhaize,50.0,short_ship,2023-02,
+329,NWN-DG-002,Kroger,50.0,short_ship,2023-02,
+330,NWN-PS-004,Kroger,50.0,short_ship,2023-02,
+331,NWN-SC-010,Kroger,50.0,short_ship,2023-02,
+332,NWN-DG-007,Kroger,50.0,short_ship,2023-02,
+333,NWN-DG-010,Kroger,50.0,short_ship,2023-02,
+334,NWN-SC-003,Kroger,57.4,short_ship,2023-02,
+335,NWN-SB-009,HEB,50.0,short_ship,2023-02,
+336,NWN-PS-009,Ahold Delhaize,50.0,short_ship,2023-02,
+337,NWN-SB-001,Ahold Delhaize,50.0,short_ship,2023-02,
+338,NWN-SC-010,Ahold Delhaize,50.0,short_ship,2023-02,
+339,NWN-PS-004,Northeast Co-op,50.0,short_ship,2023-02,
+340,NWN-DG-007,Kroger,50.0,short_ship,2023-03,
+341,NWN-SB-003,Kroger,50.0,short_ship,2023-03,
+342,NWN-SB-010,Kroger,50.0,short_ship,2023-03,
+343,NWN-PS-002,Kroger,50.0,short_ship,2023-03,
+344,NWN-SC-007,Kroger,50.0,short_ship,2023-03,
+345,NWN-DG-005,HEB,50.0,short_ship,2023-03,
+346,NWN-DG-002,Ahold Delhaize,50.0,short_ship,2023-03,
+347,NWN-SC-004,Ahold Delhaize,50.0,short_ship,2023-03,
+348,NWN-AS-010,Ahold Delhaize,50.0,short_ship,2023-03,
+349,NWN-SC-001,Ahold Delhaize,50.0,short_ship,2023-03,
+350,NWN-SB-008,Kroger,50.0,short_ship,2023-03,
+351,NWN-SB-008,Kroger,50.0,short_ship,2023-03,
+352,NWN-PS-004,Kroger,50.0,short_ship,2023-03,
+353,NWN-SC-009,Kroger,50.0,short_ship,2023-03,
+354,NWN-DG-002,HEB,50.0,short_ship,2023-03,
+355,NWN-DG-009,Ahold Delhaize,50.0,short_ship,2023-03,
+356,NWN-SC-010,Ahold Delhaize,50.0,short_ship,2023-03,
+357,NWN-AS-001,Kroger,50.0,short_ship,2023-03,
+358,NWN-SB-004,Kroger,50.0,short_ship,2023-03,
+359,NWN-DG-010,Kroger,50.0,short_ship,2023-03,
+360,NWN-SC-009,Kroger,50.0,short_ship,2023-03,
+361,NWN-DG-005,Kroger,50.0,short_ship,2023-03,
+362,NWN-AS-009,Kroger,50.0,short_ship,2023-03,
+363,NWN-DG-003,Kroger,50.0,short_ship,2023-03,
+364,NWN-DG-008,Kroger,50.0,short_ship,2023-03,
+365,NWN-SC-001,HEB,50.0,short_ship,2023-03,
+366,NWN-AS-003,HEB,50.0,short_ship,2023-03,
+367,NWN-AS-005,Ahold Delhaize,50.0,short_ship,2023-03,
+368,NWN-SC-001,Ahold Delhaize,50.0,short_ship,2023-03,
+369,NWN-SC-004,Ahold Delhaize,50.0,short_ship,2023-03,
+370,NWN-PS-006,Ahold Delhaize,50.0,short_ship,2023-03,
+371,NWN-SC-005,Kroger,50.0,short_ship,2023-03,
+372,NWN-SB-003,Kroger,50.0,short_ship,2023-03,
+373,NWN-SC-006,Kroger,50.0,short_ship,2023-03,
+374,NWN-SC-008,HEB,50.0,short_ship,2023-03,
+375,NWN-SC-001,Ahold Delhaize,50.0,short_ship,2023-03,
+376,NWN-AS-003,Ahold Delhaize,50.0,short_ship,2023-03,
+377,NWN-AS-005,Ahold Delhaize,71.98,short_ship,2023-03,
+378,NWN-SB-002,Kroger,50.0,short_ship,2023-04,
+379,NWN-SC-003,Kroger,50.0,short_ship,2023-03,
+380,NWN-PS-010,Kroger,50.0,short_ship,2023-04,
+381,NWN-SB-002,HEB,50.0,short_ship,2023-04,
+382,NWN-SC-009,HEB,50.0,short_ship,2023-03,
+383,NWN-AS-009,Ahold Delhaize,50.0,short_ship,2023-03,
+384,NWN-DG-004,Ahold Delhaize,50.0,short_ship,2023-04,
+385,NWN-SC-001,Kroger,50.0,short_ship,2023-04,
+386,NWN-AS-006,Kroger,50.0,short_ship,2023-04,
+387,NWN-SB-004,Kroger,50.0,short_ship,2023-04,
+388,NWN-SB-010,Publix,50.0,short_ship,2023-04,
+389,NWN-SC-004,Publix,50.0,short_ship,2023-04,
+390,NWN-AS-005,Publix,50.0,short_ship,2023-04,
+391,NWN-PS-007,Wegmans,50.0,short_ship,2023-04,
+392,NWN-AS-005,HEB,50.0,short_ship,2023-04,
+393,NWN-AS-009,Ahold Delhaize,50.0,short_ship,2023-04,
+394,NWN-AS-010,Ahold Delhaize,50.0,short_ship,2023-04,
+395,NWN-SB-002,Ahold Delhaize,50.0,short_ship,2023-04,
+396,NWN-AS-004,Ahold Delhaize,50.0,short_ship,2023-04,
+397,NWN-SB-008,Northeast Co-op,50.0,short_ship,2023-04,
+398,NWN-SC-009,Northeast Co-op,50.0,short_ship,2023-04,
+399,NWN-SC-007,Kroger,50.0,short_ship,2023-04,
+400,NWN-SB-010,Kroger,50.0,short_ship,2023-04,
+401,NWN-SB-009,Kroger,50.0,short_ship,2023-04,
+402,NWN-DG-008,Kroger,50.0,short_ship,2023-04,
+403,NWN-SB-008,Kroger,50.0,short_ship,2023-04,
+404,NWN-AS-005,Wegmans,50.0,short_ship,2023-04,
+405,NWN-PS-009,Wegmans,50.0,short_ship,2023-04,
+406,NWN-AS-002,HEB,50.0,short_ship,2023-04,
+407,NWN-SC-001,HEB,50.0,short_ship,2023-04,
+408,NWN-SC-010,HEB,50.0,short_ship,2023-04,
+409,NWN-AS-001,Kroger,50.0,short_ship,2023-04,
+410,NWN-DG-003,Kroger,50.0,short_ship,2023-04,
+411,NWN-PS-009,Kroger,50.0,short_ship,2023-04,
+412,NWN-AS-004,Kroger,50.0,short_ship,2023-04,
+413,NWN-SC-001,Kroger,50.0,short_ship,2023-04,
+414,NWN-SC-004,Publix,50.0,short_ship,2023-04,
+415,NWN-AS-001,Publix,50.0,short_ship,2023-04,
+416,NWN-AS-007,Wegmans,50.0,short_ship,2023-04,
+417,NWN-PS-009,Wegmans,50.0,short_ship,2023-04,
+418,NWN-SB-001,HEB,50.0,short_ship,2023-04,
+419,NWN-DG-009,HEB,50.0,short_ship,2023-04,
+420,NWN-AS-004,HEB,50.0,short_ship,2023-04,
+421,NWN-AS-002,Ahold Delhaize,50.0,short_ship,2023-04,
+422,NWN-AS-006,Ahold Delhaize,50.0,short_ship,2023-04,
+423,NWN-DG-007,Ahold Delhaize,50.0,short_ship,2023-04,
+424,NWN-SC-005,Ahold Delhaize,50.0,short_ship,2023-04,
+425,NWN-AS-009,Ahold Delhaize,50.0,short_ship,2023-04,
+426,NWN-DG-005,Ahold Delhaize,50.0,short_ship,2023-04,
+427,NWN-AS-005,Ahold Delhaize,50.0,short_ship,2023-04,
+428,NWN-SC-007,Ahold Delhaize,62.53,short_ship,2023-04,
+429,NWN-SB-003,Northeast Co-op,50.0,short_ship,2023-04,
+430,NWN-DG-005,Kroger,50.0,short_ship,2023-04,
+431,NWN-PS-007,Kroger,50.0,short_ship,2023-04,
+432,NWN-DG-006,Kroger,50.0,short_ship,2023-04,
+433,NWN-AS-007,Publix,50.0,short_ship,2023-04,
+434,NWN-AS-006,Wegmans,50.0,short_ship,2023-04,
+435,NWN-AS-004,Wegmans,50.0,short_ship,2023-04,
+436,NWN-SC-001,HEB,50.0,short_ship,2023-04,
+437,NWN-AS-006,HEB,50.0,short_ship,2023-05,
+438,NWN-AS-008,Ahold Delhaize,50.0,short_ship,2023-05,
+439,NWN-SB-001,Northeast Co-op,50.0,short_ship,2023-05,
+440,NWN-SB-002,Kroger,50.0,short_ship,2023-05,
+441,NWN-AS-008,Kroger,50.0,short_ship,2023-05,
+442,NWN-DG-004,Kroger,50.0,short_ship,2023-05,
+443,NWN-PS-002,Kroger,50.0,short_ship,2023-05,
+444,NWN-SC-003,Kroger,50.0,short_ship,2023-05,
+445,NWN-PS-010,Publix,50.0,short_ship,2023-05,
+446,NWN-SB-004,Publix,50.0,short_ship,2023-05,
+447,NWN-SC-002,Publix,50.0,short_ship,2023-05,
+448,NWN-PS-004,Publix,50.0,short_ship,2023-05,
+449,NWN-AS-007,Wegmans,50.0,short_ship,2023-05,
+450,NWN-AS-004,Wegmans,92.19,short_ship,2023-05,
+451,NWN-SC-010,Wegmans,50.0,short_ship,2023-05,
+452,NWN-DG-009,HEB,50.0,short_ship,2023-05,
+453,NWN-SC-004,Ahold Delhaize,50.0,short_ship,2023-05,
+454,NWN-SC-006,Northeast Co-op,50.0,short_ship,2023-05,
+455,NWN-DG-005,Kroger,50.0,short_ship,2023-05,
+456,NWN-SB-008,Kroger,50.0,short_ship,2023-05,
+457,NWN-SB-002,Kroger,50.0,short_ship,2023-05,
+458,NWN-SB-007,Publix,50.0,short_ship,2023-05,
+459,NWN-SC-001,HEB,50.0,short_ship,2023-05,
+460,NWN-SB-001,Ahold Delhaize,50.0,short_ship,2023-05,
+461,NWN-SC-006,Ahold Delhaize,60.68,short_ship,2023-05,
+462,NWN-PS-002,Ahold Delhaize,50.0,short_ship,2023-05,
+463,NWN-DG-005,Kroger,50.0,short_ship,2023-05,
+464,NWN-SC-009,Kroger,50.0,short_ship,2023-05,
+465,NWN-DG-007,Kroger,50.0,short_ship,2023-05,
+466,NWN-AS-006,Kroger,55.34,short_ship,2023-05,
+467,NWN-SC-002,Kroger,50.0,short_ship,2023-05,
+468,NWN-SB-008,Publix,50.0,short_ship,2023-05,
+469,NWN-DG-001,Publix,50.0,short_ship,2023-05,
+470,NWN-DG-001,Publix,59.3,short_ship,2023-05,
+471,NWN-AS-004,Wegmans,50.0,short_ship,2023-05,
+472,NWN-AS-003,Wegmans,50.0,short_ship,2023-05,
+473,NWN-SC-004,HEB,50.0,short_ship,2023-05,
+474,NWN-DG-006,HEB,50.0,short_ship,2023-05,
+475,NWN-SC-006,Ahold Delhaize,50.0,short_ship,2023-05,
+476,NWN-DG-001,Northeast Co-op,50.0,short_ship,2023-05,
+477,NWN-SB-005,Kroger,50.0,short_ship,2023-05,
+478,NWN-AS-001,Kroger,50.0,short_ship,2023-05,
+479,NWN-PS-006,Kroger,50.0,short_ship,2023-05,
+480,NWN-DG-004,Kroger,50.0,short_ship,2023-05,
+481,NWN-DG-008,Wegmans,50.0,short_ship,2023-05,
+482,NWN-AS-006,Wegmans,50.0,short_ship,2023-05,
+483,NWN-SC-001,HEB,50.0,short_ship,2023-05,
+484,NWN-SC-009,Ahold Delhaize,50.0,short_ship,2023-05,
+485,NWN-AS-007,Ahold Delhaize,50.0,short_ship,2023-05,
+486,NWN-SB-004,Ahold Delhaize,50.0,short_ship,2023-05,
+487,NWN-PS-010,Ahold Delhaize,50.0,short_ship,2023-05,
+488,NWN-SB-003,Kroger,50.0,short_ship,2023-05,
+489,NWN-SC-007,Kroger,50.0,short_ship,2023-06,
+490,NWN-SB-008,Kroger,50.0,short_ship,2023-05,
+491,NWN-AS-010,Kroger,50.0,short_ship,2023-06,
+492,NWN-AS-006,Kroger,50.0,short_ship,2023-06,
+493,NWN-DG-010,Publix,50.0,short_ship,2023-06,
+494,NWN-AS-010,Wegmans,50.0,short_ship,2023-06,
+495,NWN-SB-002,HEB,50.0,short_ship,2023-06,
+496,NWN-SB-003,Ahold Delhaize,50.0,short_ship,2023-06,
+497,NWN-AS-002,Ahold Delhaize,50.0,short_ship,2023-06,
+498,NWN-PS-009,Ahold Delhaize,50.0,short_ship,2023-06,
+499,NWN-PS-008,Ahold Delhaize,50.0,short_ship,2023-06,
+500,NWN-PS-002,Northeast Co-op,50.0,short_ship,2023-06,
+501,NWN-DG-007,Kroger,50.0,short_ship,2023-06,
+502,NWN-PS-005,Kroger,50.0,short_ship,2023-06,
+503,NWN-PS-010,Wegmans,50.0,short_ship,2023-06,
+504,NWN-AS-001,HEB,50.0,short_ship,2023-06,
+505,NWN-SB-002,Ahold Delhaize,50.0,short_ship,2023-06,
+506,NWN-DG-010,Ahold Delhaize,50.0,short_ship,2023-06,
+507,NWN-PS-010,Ahold Delhaize,50.0,short_ship,2023-06,
+508,NWN-PS-009,Ahold Delhaize,50.0,short_ship,2023-06,
+509,NWN-PS-007,Ahold Delhaize,50.0,short_ship,2023-06,
+510,NWN-DG-005,Kroger,50.0,short_ship,2023-06,
+511,NWN-AS-007,Kroger,50.0,short_ship,2023-06,
+512,NWN-SB-008,Kroger,50.0,short_ship,2023-06,
+513,NWN-SC-004,Kroger,50.0,short_ship,2023-06,
+514,NWN-DG-006,Kroger,50.0,short_ship,2023-06,
+515,NWN-AS-010,Publix,50.0,short_ship,2023-06,
+516,NWN-PS-004,Publix,50.0,short_ship,2023-06,
+517,NWN-SC-006,Publix,50.0,short_ship,2023-06,
+518,NWN-SC-007,Publix,50.0,short_ship,2023-06,
+519,NWN-AS-005,Wegmans,50.0,short_ship,2023-06,
+520,NWN-AS-003,Wegmans,50.0,short_ship,2023-06,
+521,NWN-SC-007,HEB,50.0,short_ship,2023-06,
+522,NWN-AS-001,HEB,50.0,short_ship,2023-06,
+523,NWN-SC-007,Ahold Delhaize,50.0,short_ship,2023-06,
+524,NWN-PS-004,Kroger,50.0,short_ship,2023-06,
+525,NWN-AS-009,Kroger,50.0,short_ship,2023-06,
+526,NWN-SB-002,Wegmans,50.0,short_ship,2023-06,
+527,NWN-DG-008,Wegmans,50.0,short_ship,2023-06,
+528,NWN-SC-001,Ahold Delhaize,50.0,short_ship,2023-06,
+529,NWN-SB-009,Ahold Delhaize,50.0,short_ship,2023-06,
+530,NWN-AS-009,Ahold Delhaize,50.0,short_ship,2023-06,
+531,NWN-SC-004,Ahold Delhaize,50.0,short_ship,2023-06,
+532,NWN-SB-002,Northeast Co-op,50.0,short_ship,2023-06,
+533,NWN-DG-010,Kroger,50.0,short_ship,2023-06,
+534,NWN-SC-010,Kroger,50.0,short_ship,2023-06,
+535,NWN-SB-001,Kroger,50.0,short_ship,2023-07,
+536,NWN-AS-009,Kroger,50.0,short_ship,2023-06,
+537,NWN-AS-003,Wegmans,50.0,short_ship,2023-07,
+538,NWN-SC-002,Wegmans,50.0,short_ship,2023-06,
+539,NWN-AS-007,HEB,50.0,short_ship,2023-07,
+540,NWN-SB-003,Ahold Delhaize,50.0,short_ship,2023-06,
+541,NWN-PS-010,Ahold Delhaize,50.0,short_ship,2023-07,
+542,NWN-AS-004,Ahold Delhaize,50.0,short_ship,2023-06,
+543,NWN-DG-006,Ahold Delhaize,50.0,short_ship,2023-07,
+544,NWN-DG-004,Kroger,50.0,short_ship,2023-07,
+545,NWN-SC-004,Kroger,50.0,short_ship,2023-07,
+546,NWN-DG-001,Kroger,50.0,short_ship,2023-07,
+547,NWN-PS-002,Kroger,50.0,short_ship,2023-07,
+548,NWN-SB-005,Wegmans,50.0,short_ship,2023-07,
+549,NWN-PS-006,HEB,50.0,short_ship,2023-07,
+550,NWN-SC-005,Ahold Delhaize,50.0,short_ship,2023-07,
+551,NWN-AS-006,Ahold Delhaize,50.0,short_ship,2023-07,
+552,NWN-DG-006,Ahold Delhaize,50.0,short_ship,2023-07,
+553,NWN-SB-003,Ahold Delhaize,50.0,short_ship,2023-07,
+554,NWN-SB-004,Ahold Delhaize,50.0,short_ship,2023-07,
+555,NWN-AS-010,Ahold Delhaize,50.0,short_ship,2023-07,
+556,NWN-AS-009,Kroger,50.0,short_ship,2023-07,
+557,NWN-SB-006,Kroger,50.0,short_ship,2023-07,
+558,NWN-PS-010,Kroger,50.0,short_ship,2023-07,
+559,NWN-DG-006,Kroger,50.0,short_ship,2023-07,
+560,NWN-SC-004,Kroger,50.0,short_ship,2023-07,
+561,NWN-SC-006,Kroger,50.0,short_ship,2023-07,
+562,NWN-SB-010,Kroger,50.0,short_ship,2023-07,
+563,NWN-DG-004,Wegmans,50.0,short_ship,2023-07,
+564,NWN-PS-003,Northeast Co-op,50.0,short_ship,2023-07,
+565,NWN-AS-008,Kroger,50.0,short_ship,2023-07,
+566,NWN-PS-004,Kroger,50.0,short_ship,2023-07,
+567,NWN-SB-006,Kroger,50.0,short_ship,2023-07,
+568,NWN-PS-009,Publix,50.0,short_ship,2023-07,
+569,NWN-AS-001,Wegmans,50.0,short_ship,2023-07,
+570,NWN-SB-005,Wegmans,50.0,short_ship,2023-07,
+571,NWN-DG-001,Wegmans,50.0,short_ship,2023-07,
+572,NWN-PS-005,Wegmans,50.0,short_ship,2023-07,
+573,NWN-AS-005,HEB,50.0,short_ship,2023-07,
+574,NWN-SB-008,Ahold Delhaize,50.0,short_ship,2023-07,
+575,NWN-PS-005,Kroger,50.0,short_ship,2023-07,
+576,NWN-AS-004,Kroger,50.0,short_ship,2023-07,
+577,NWN-DG-003,Publix,50.0,short_ship,2023-07,
+578,NWN-SC-008,Ahold Delhaize,50.0,short_ship,2023-07,
+579,NWN-SC-002,Ahold Delhaize,50.0,short_ship,2023-07,
+580,NWN-DG-002,Kroger,50.0,short_ship,2023-08,
+581,NWN-SC-003,Kroger,50.0,short_ship,2023-08,
+582,NWN-AS-009,Kroger,50.0,short_ship,2023-08,
+583,NWN-SB-005,Kroger,50.0,short_ship,2023-08,
+584,NWN-AS-003,Publix,50.0,short_ship,2023-08,
+585,NWN-PS-009,Wegmans,50.0,short_ship,2023-08,
+586,NWN-AS-008,Wegmans,50.0,short_ship,2023-08,
+587,NWN-PS-002,Wegmans,74.75,short_ship,2023-08,
+588,NWN-PS-004,HEB,50.0,short_ship,2023-08,
+589,NWN-SC-001,Ahold Delhaize,50.0,short_ship,2023-08,
+590,NWN-SC-003,Ahold Delhaize,50.0,short_ship,2023-08,
+591,NWN-PS-007,Kroger,50.0,short_ship,2023-08,
+592,NWN-PS-001,Kroger,50.0,short_ship,2023-08,
+593,NWN-AS-010,Kroger,50.0,short_ship,2023-08,
+594,NWN-DG-010,Kroger,50.0,short_ship,2023-08,
+595,NWN-SB-010,Kroger,50.0,short_ship,2023-08,
+596,NWN-DG-001,Publix,50.0,short_ship,2023-08,
+597,NWN-DG-001,HEB,50.0,short_ship,2023-08,
+598,NWN-SB-009,Ahold Delhaize,50.0,short_ship,2023-08,
+599,NWN-SC-003,Ahold Delhaize,50.0,short_ship,2023-08,
+600,NWN-PS-010,Ahold Delhaize,50.0,short_ship,2023-08,
