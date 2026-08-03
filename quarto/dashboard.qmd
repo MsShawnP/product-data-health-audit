@@ -48,6 +48,24 @@ dollar_cell <- function(value) {
 }
 
 
+# ---- computed narrative figures (so dashboard prose can't drift) --------
+
+# Retailer gross-revenue and net-margin ranks across the full roster.
+rank_tbl <- retailer_pnl |>
+  mutate(gross_rank  = rank(-gross_revenue, ties.method = "min"),
+         margin_rank = rank(-net_margin_pct_of_gross_revenue, ties.method = "min"))
+rrank <- function(ret, col) rank_tbl |> filter(retailer == ret) |> pull(!!sym(col))
+
+# The six highest-return quick wins from the triage list.
+qw <- sku_master_full |>
+  filter(savings_per_hour > 0) |>
+  arrange(desc(savings_per_hour)) |>
+  slice(1:6)
+n_qw     <- nrow(qw)
+qw_hours <- sum(qw$est_fix_hours, na.rm = TRUE)
+qw_min   <- min(qw$savings_per_hour, na.rm = TRUE)
+qw_max   <- max(qw$savings_per_hour, na.rm = TRUE)
+
 # ---- velocity (canonical frame from R/02_build_frames.R) ----------------
 
 velocity <- read_p("velocity") |>
@@ -223,8 +241,8 @@ reactable(
 > Trade spend and chargebacks are the two things subtracted in between.
 >
 > **What to look for:** The gap between gross revenue rank and net margin
-> rank. Walmart is #1 in gross dollars and #4 in net margin percentage.
-> Whole Foods is #4 in gross dollars and #1 in net margin. Chargebacks are
+> rank. Walmart is #`r rrank("Walmart", "gross_rank")` in gross dollars and #`r rrank("Walmart", "margin_rank")` in net margin percentage.
+> Whole Foods is #`r rrank("Whole Foods", "gross_rank")` in gross dollars and #`r rrank("Whole Foods", "margin_rank")` in net margin. Chargebacks are
 > the only margin component in this chart that is entirely within
 > Cinderhaven's operational control.
 
@@ -345,8 +363,9 @@ reactable(
 >
 > **What to do with it:** Use the composite column to set the quarterly
 > cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
-> with the six quick-win SKUs (20 minutes each). They take two hours
-> combined and recover roughly $9,000–$16,000 per fix-hour.
+> with the `r n_qw` highest-return fixes at the top of the savings-per-hour
+> column. Together they take about `r round(qw_hours, 1)` hours and recover
+> roughly `r dollar_cell(qw_min)`–`r dollar_cell(qw_max)` per fix-hour.
 
 ::: {.wide-table-container}
 

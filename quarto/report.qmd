@@ -223,6 +223,15 @@ rev_defect_skus <- sum(defect_skus$ttm_revenue, na.rm = TRUE)
 n_dq_100 <- sum(smf$data_quality_score == 100, na.rm = TRUE)
 dq_min   <- min(smf$data_quality_score, na.rm = TRUE)
 dq_step  <- round(100 / 6, 1)
+# Barcode-failure counts (computed so barcode prose can't drift):
+#   n_barcode_fail      = SKUs with an invalid GTIN-14 OR an invalid UPC
+#   n_both_barcode_fail = SKUs failing BOTH check digits
+n_barcode_fail      <- sum(!smf$gtin_valid | !smf$upc_valid, na.rm = TRUE)
+n_both_barcode_fail <- sum(!smf$gtin_valid & !smf$upc_valid, na.rm = TRUE)
+n_barcode_valid     <- n_skus - n_barcode_fail
+# Do the five costliest-chargeback SKUs all carry an invalid UPC check digit?
+top5_cb_skus     <- smf |> arrange(desc(chargeback_total)) |> slice(1:5)
+top5_upc_invalid <- sum(!top5_cb_skus$upc_valid, na.rm = TRUE)
 # Fix-scope counts (case dimensions and weight share one 30-min measurement)
 n_case_fix   <- sum(smf$missing_case_dims | smf$missing_case_weight, na.rm = TRUE)
 n_ctry_fix   <- sum(smf$missing_country, na.rm = TRUE)
@@ -274,7 +283,7 @@ The chargebacks arrive under five headings: label and barcode fines, pricing err
 
 ![Chargeback dollars by reason.](`r chart("14_chargeback_by_reason")`){fig-alt="Horizontal bar chart breaking down chargeback dollars by reason."}
 
-`r n_50pct` SKUs generate half of that bill. `r n_80pct` generate 80%. Within the data-defect slice the concentration is tighter: 27 of 50 SKUs carry at least one data defect, and those 27 account for the vast majority of the data-defect dollars — the bounded portion this audit fixes. But some SKUs generate far more than others. Here are the names:
+`r n_50pct` SKUs generate half of that bill. `r n_80pct` generate 80%. Within the data-defect slice the concentration is tighter: `r n_defect_skus` of `r n_skus` SKUs carry at least one data defect, and those `r n_defect_skus` account for the vast majority of the data-defect dollars — the bounded portion this audit fixes. But some SKUs generate far more than others. Here are the names:
 
 ```{r top5-cb-table}
 #| results: asis
@@ -290,7 +299,7 @@ cat(kable(top5, format = if (knitr::is_html_output()) "pipe" else "pipe",
 
 ![Chargeback Pareto: a small number of SKUs drive most of the cost.](`r chart("01_chargeback_pareto")`){fig-alt="Pareto curve showing a small number of SKUs account for the majority of chargeback dollars."}
 
-Every one of these carries an invalid UPC check digit. That is not the only reason they generate chargebacks — fulfillment-driven penalties also contribute — but it is the reason with a known fix and a fixed effort. The barcode defect is the portion of each SKU's chargeback cost that disappears with a data correction rather than an operational change.
+`r if (top5_upc_invalid == 5) "Every one of these carries an invalid UPC check digit." else paste0(top5_upc_invalid, " of these five carry an invalid UPC check digit.")` That is not the only reason they generate chargebacks — fulfillment-driven penalties also contribute — but it is the reason with a known fix and a fixed effort. The barcode defect is the portion of each SKU's chargeback cost that disappears with a data correction rather than an operational change.
 
 ## What a wrong barcode costs when nobody is counting
 
@@ -368,7 +377,7 @@ top10_rev_total <- smf |> arrange(desc(ttm_revenue)) |> slice(1:10) |>
   summarise(r = sum(ttm_revenue, na.rm = TRUE)) |> pull(r)
 ```
 
-`r n_sku_fail_all` of Cinderhaven's `r n_skus` SKUs fail every retailer's required-field check. 12 of 50 products in the catalog carry invalid barcodes — the same 12 fail both GTIN-14 and UPC validation, so no product could be submitted to a retailer that checks both without data work first. The expansion pipeline is blocked by barcode validation failures.
+`r n_sku_fail_all` of Cinderhaven's `r n_skus` SKUs fail every retailer's required-field check. `r n_barcode_fail` of `r n_skus` products in the catalog carry invalid barcodes`r if (n_both_barcode_fail == n_barcode_fail) paste0(" — every one failing both GTIN-14 and UPC validation") else paste0(", and ", n_both_barcode_fail, " fail both GTIN-14 and UPC validation")`, so no product could be submitted to a retailer that checks both without data work first. The expansion pipeline is blocked by barcode validation failures.
 
 All `r n_authorized` currently authorized SKUs are shipping to retailers and generating revenue. They were authorized before the requirements tightened, or before anyone checked. They are generating revenue on borrowed time.
 
@@ -403,13 +412,13 @@ sku_ret_pass <- rrs |>
 
 CHP-DG-007, Trail Mix Premium, is the sixth-best-selling product in the Cinderhaven catalog. `r ds(dg007$ttm_revenue)` in trailing twelve-month revenue. `r dg007$auth_count` stores across every channel. It represents `r ds(dg007$annual_gross_margin)` in annual gross margin.
 
-It fails every retailer's readiness check. Zero of six.
+It fails every retailer's readiness check. Zero of `r n_retailers`.
 
 The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated `r dg007_events` chargeback events over `r n_chargeback_months` months — `r ds(dg007$chargeback_total)` in penalties. `r dg007$deauth_count` of its `r dg007$auth_count` store authorizations have been revoked. Those slots are gone.
 
 The chargebacks are not the point. At `r ds(dg007_annual)` a year, they barely register against `r ds(dg007$ttm_revenue)` in revenue. What registers is the deauthorization risk. A retailer's automated readiness check does not distinguish between a `r ds(dg007_annual)`-a-year chargeback product and a $70-a-year one. It checks the barcode. The digit fails. The product is flagged.
 
-Fixing CHP-DG-007 takes 50 minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of six retailers passing to a candidate for all six.
+Fixing CHP-DG-007 takes `r round(dg007$est_fix_hours * 60)` minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of `r n_retailers` retailers passing to a candidate for all `r n_retailers`.
 
 The same pattern repeats across the top of the catalog:
 
@@ -778,7 +787,7 @@ The 90 minutes are not optimized. They are gone. The ops manager's Monday mornin
 
 The work described in this report is three phases of specific, bounded tasks. The total calendar time is approximately one week. The total effort is approximately `r round(total_fix_hours)` hours of data entry and two to three days of process and tooling work.
 
-Phase one takes two days. Correct all `r n_upc_fail` invalid UPC check digits and all `r n_gtin_fail` invalid GTIN-14 check digits. Each SKU is a ten-minute fix: open the record, recalculate both check digits using the standard GS1 algorithm, type the correct numbers, save. Phase one also includes entering case dimensions for the 19 SKUs missing them — pull the product, measure, type four numbers. When phase one is done, every SKU in the catalog passes all `r n_retailers` retailers' readiness checks. The `r ds(total_ttm_rev)` in at-risk revenue is secured. The first clean settlement statement arrives within 30 to 60 days.
+Phase one takes two days. Correct all `r n_upc_fail` invalid UPC check digits and all `r n_gtin_fail` invalid GTIN-14 check digits. Each SKU is a ten-minute fix: open the record, recalculate both check digits using the standard GS1 algorithm, type the correct numbers, save. Phase one also includes entering case dimensions for the `r n_dims_only` SKUs missing them — pull the product, measure, type four numbers. When phase one is done, every SKU in the catalog passes all `r n_retailers` retailers' readiness checks. The `r ds(total_ttm_rev)` in at-risk revenue is secured. The first clean settlement statement arrives within 30 to 60 days.
 
 Phase two takes two days. This is the phase that prevents phase one from being wasted. Without a gate between data entry and the live product master, the next SKU launch will introduce the same barcode defects that phase one just cleaned. The validation logic is simple: a check digit calculation that runs when a GTIN or UPC is entered and blocks the save if it fails. The GS1 algorithm is a single modulo operation. The technology is trivial. The discipline is the deliverable.
 
@@ -809,7 +818,7 @@ Chart 5 shows nine data defect categories ranked by the share of TTM revenue the
 
 ![Revenue-weighted field completeness.](`r chart("05_revenue_weighted_completeness")`){fig-alt="Paired-bar chart of nine defect categories, comparing share of SKUs (grey) to share of TTM revenue (red)."}
 
-The chart reveals a concentrated defect pattern. Invalid UPC check digits affect `r round(100 * n_upc_fail / n_skus)`% of SKUs. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`% — and they are the same 12 SKUs. The remaining 38 have both valid. No other barcode defect category registers: brand owner, country of origin (with one exception), and case weight are complete across the catalog. Case dimensions are missing for 19 of 50 SKUs — part of the fix scope.
+The chart reveals a concentrated defect pattern. Invalid UPC check digits affect `r round(100 * n_upc_fail / n_skus)`% of SKUs. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`% — `r if (n_both_barcode_fail == n_gtin_fail && n_both_barcode_fail == n_upc_fail) paste0("and they are the same ", n_both_barcode_fail, " SKUs") else paste0("with ", n_both_barcode_fail, " SKUs failing both")`. The remaining `r n_barcode_valid` have both valid. No other barcode defect category registers: brand owner is present on all `r n_skus`, `r if (n_ctry_fix == 0) "country of origin is complete," else paste0("country of origin is blank on ", n_ctry_fix, ",")` and case weight is complete. Case dimensions are missing for `r n_dims_only` of `r n_skus` SKUs — part of the fix scope.
 
 ::: {.content-visible when-format="pdf"}
 \newpage

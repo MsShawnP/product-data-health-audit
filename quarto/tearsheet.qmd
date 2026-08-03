@@ -134,6 +134,12 @@ stage3_cb <- round(annual_cb * (stage3_skus / n_skus) * (12 / n_retailers))
 
 total_fix_hours <- sum(smf$est_fix_hours, na.rm = TRUE)
 
+# Fix-effort split, computed so the day-plan hours can't drift from the data.
+# Each check-digit correction is ~10 min; each case measurement ~30 min.
+n_case_fix  <- sum(smf$missing_case_dims | smf$missing_case_weight, na.rm = TRUE)
+hrs_barcode <- (n_gtin_fail + n_upc_fail) * 10 / 60
+hrs_case    <- n_case_fix * 30 / 60
+
 data_defect_pct <- cbe |>
   mutate(is_data = !is.na(triggered_by_field) & nzchar(triggered_by_field)) |>
   summarise(pct = round(100 * sum(amount[is_data]) / sum(amount))) |> pull(pct)
@@ -228,11 +234,11 @@ cat(kable(triage, format = "latex", booktabs = TRUE,
 
 ## The crown jewel
 
-CHP-DG-007, Trail Mix Premium, is among the ten highest-revenue SKUs in the catalog (`r ds2(dg007$ttm_revenue)` TTM) and fails every retailer's readiness check — zero of `r n_retailers`. `r dg007_events` chargeback events across `r n_chargeback_months` months, `r dsd(dg007$chargeback_total)` in penalties, `r dg007$deauth_count` store authorizations revoked. It carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. Fixing all three takes 50 minutes. A `r ds2(dg007$ttm_revenue)` product that fails every retailer it sells to is less than an hour of clerical work from full compliance.
+CHP-DG-007, Trail Mix Premium, is among the ten highest-revenue SKUs in the catalog (`r ds2(dg007$ttm_revenue)` TTM) and fails every retailer's readiness check — zero of `r n_retailers`. `r dg007_events` chargeback events across `r n_chargeback_months` months, `r dsd(dg007$chargeback_total)` in penalties, `r dg007$deauth_count` store authorizations revoked. It carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. Fixing all three takes `r round(dg007$est_fix_hours * 60)` minutes. A `r ds2(dg007$ttm_revenue)` product that fails every retailer it sells to is less than an hour of clerical work from full compliance.
 
 ## A one-week turnaround
 
-- **Days 1–2:** Correct the barcode check digits (UPC and GTIN-14) on the `r n_gtin_fail` failing SKUs (~4 hours), then measure and enter the missing case dimensions and weights (~11 hours). About `r round(sum(smf$est_fix_hours, na.rm = TRUE))` hours total — that closes the entire data-defect scope behind the chargebacks and the readiness failures.
+- **Days 1–2:** Correct the barcode check digits (UPC and GTIN-14) on the `r n_gtin_fail` failing SKUs (~`r round(hrs_barcode)` hours), then measure and enter the missing case dimensions and weights on the `r n_case_fix` SKUs that lack them (~`r round(hrs_case)` hours). About `r round(total_fix_hours)` hours total — that closes the entire data-defect scope behind the chargebacks and the readiness failures.
 - **Days 3–4:** Implement a check-digit validation gate on every data entry path. The GS1 algorithm is a single modulo operation — block saves when the digit is wrong.
 - **Day 5:** Deploy the Monday Morning Dashboard. Establish a monthly 30-minute data quality review.
 - **Result:** The product master supports GS1 Sunrise 2027 compliance, FSMA Rule 204 traceability, and retailer expansion without compounding data debt.
