@@ -354,12 +354,17 @@ p9_base <- function(use_interactive) {
   # central-tendency story.
   p <- ggplot(c9, aes(x = quality_tier, y = mean_days_to_scan,
                       color = quality_tier))
+  # Seeded jitter positions so the layout is deterministic run-to-run (this chart
+  # is otherwise nondeterministic even on main). position_jitter(seed=) pins the
+  # RNG at draw time, which a bare set.seed() at construction cannot; the same
+  # seed makes the static and interactive versions share one layout.
   if (use_interactive) {
     p <- p + geom_jitter_interactive(aes(tooltip = tooltip, data_id = sku),
-                                     width = 0.18, height = 0,
+                                     position = position_jitter(width = 0.18, height = 0, seed = 42),
                                      alpha = 0.75, size = 2.4)
   } else {
-    p <- p + geom_jitter(width = 0.18, height = 0, alpha = 0.75, size = 2.0)
+    p <- p + geom_jitter(position = position_jitter(width = 0.18, height = 0, seed = 42),
+                         alpha = 0.75, size = 2.0)
   }
   p +
     # Tier-mean reference line (black tick) + label.
@@ -386,6 +391,7 @@ p9_base <- function(use_interactive) {
     theme(axis.text.x = element_text(size = 11, face = "bold"))
 }
 
+set.seed(42)  # belt-and-suspenders: pin any RNG consumed while drawing this pair
 save_pair(p9_base(FALSE), to_girafe(p9_base(TRUE)),
           "09_time_to_shelf_by_quality")
 

@@ -1,6 +1,6 @@
 ---
 title: "Product Data Readiness Audit"
-subtitle: "Cinderhaven Provisions  ·  May 2026"
+subtitle: "{{< var report_subtitle >}}"
 author: "Shawn Phillips | Lailara LLC"
 date: "2026-05-03"
 format:
@@ -146,6 +146,13 @@ ds_short <- function(x) {
                 paste0("$", formatC(round(x), big.mark = ",", format = "d"))))
 }
 fmt_d <- function(x) formatC(round(x), big.mark = ",", format = "d")
+# Spell out small whole numbers in prose (golden convention: words for <= ten).
+num_word <- function(n) {
+  words <- c("zero", "one", "two", "three", "four", "five",
+             "six", "seven", "eight", "nine", "ten")
+  if (length(n) == 1 && !is.na(n) && n == round(n) && n >= 0 && n <= 10)
+    words[n + 1] else as.character(n)
+}
 
 rr_stats <- rrs |>
   group_by(retailer) |>
@@ -392,7 +399,7 @@ top10_rev_total <- smf |> arrange(desc(ttm_revenue)) |> slice(1:10) |>
   summarise(r = sum(ttm_revenue, na.rm = TRUE)) |> pull(r)
 ```
 
-`r n_sku_fail_all` of `r client_short`'s `r n_skus` SKUs fail every retailer's required-field check. `r n_barcode_fail` of `r n_skus` products in the catalog carry invalid barcodes`r if (n_both_barcode_fail == n_barcode_fail) paste0(" — every one failing both GTIN-14 and UPC validation") else paste0(", and ", n_both_barcode_fail, " fail both GTIN-14 and UPC validation")`, so no product could be submitted to a retailer that checks both without data work first. The expansion pipeline is blocked by barcode validation failures.
+`r n_sku_fail_all` of `r client_short`'s `r n_skus` SKUs fail every retailer's required-field check. `r n_barcode_fail` of `r n_skus` products in the catalog carry invalid barcodes`r if (n_both_barcode_fail == n_barcode_fail) paste0(" — the same ", n_both_barcode_fail, " fail both GTIN-14 and UPC validation") else paste0(", and ", n_both_barcode_fail, " fail both GTIN-14 and UPC validation")`, so no product could be submitted to a retailer that checks both without data work first. The expansion pipeline is blocked by barcode validation failures.
 
 All `r n_authorized` currently authorized SKUs are shipping to retailers and generating revenue. They were authorized before the requirements tightened, or before anyone checked. They are generating revenue on borrowed time.
 
@@ -427,13 +434,13 @@ sku_ret_pass <- rrs |>
 
 CHP-DG-007, Trail Mix Premium, is the sixth-best-selling product in the `r client_short` catalog. `r ds(dg007$ttm_revenue)` in trailing twelve-month revenue. `r dg007$auth_count` stores across every channel. It represents `r ds(dg007$annual_gross_margin)` in annual gross margin.
 
-It fails every retailer's readiness check. Zero of `r n_retailers`.
+It fails every retailer's readiness check. Zero of `r num_word(n_retailers)`.
 
 The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated `r dg007_events` chargeback events over `r n_chargeback_months` months — `r ds(dg007$chargeback_total)` in penalties. `r dg007$deauth_count` of its `r dg007$auth_count` store authorizations have been revoked. Those slots are gone.
 
 The chargebacks are not the point. At `r ds(dg007_annual)` a year, they barely register against `r ds(dg007$ttm_revenue)` in revenue. What registers is the deauthorization risk. A retailer's automated readiness check does not distinguish between a `r ds(dg007_annual)`-a-year chargeback product and a $70-a-year one. It checks the barcode. The digit fails. The product is flagged.
 
-Fixing CHP-DG-007 takes `r round(dg007$est_fix_hours * 60)` minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of `r n_retailers` retailers passing to a candidate for all `r n_retailers`.
+Fixing CHP-DG-007 takes `r round(dg007$est_fix_hours * 60)` minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of `r num_word(n_retailers)` retailers passing to a candidate for all `r num_word(n_retailers)`.
 
 The same pattern repeats across the top of the catalog:
 

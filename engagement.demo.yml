@@ -25,6 +25,13 @@ prepared_by: "Shawn Phillips | Lailara LLC"
 
 demo: true
 
+# Report front-matter driven from config (so client identity never hardcodes into
+# a .qmd title block). The pre-render step quarto/write_variables.R writes this to
+# quarto/_variables.yml for the `{{< var report_subtitle >}}` shortcode. The demo
+# value is byte-identical to the pre-conversion golden subtitle.
+report:
+  subtitle: "Cinderhaven Provisions  ·  May 2026"
+
 # ── Retailer roster ──────────────────────────────────────────────────────────
 # The retailers evaluated for readiness and P&L. UNFI/KeHE/DTC are distributors/
 # channels, not retailers, and are excluded from the roster (build_frames drops them).

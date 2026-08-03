@@ -25,7 +25,28 @@ load_engagement <- function(root = "..") {
   if (!file.exists(path))
     stop("engagement config not found: ", path,
          " (add engagement.demo.yml or set ENGAGEMENT_CONFIG)", call. = FALSE)
-  y <- yaml::read_yaml(path)
+
+  # Read with EXPLICIT UTF-8 so box-drawing comments etc. never trip a locale-
+  # dependent "invalid input on connection" that silently degrades the parse.
+  y <- tryCatch(
+    yaml::read_yaml(text = readLines(path, encoding = "UTF-8", warn = FALSE)),
+    error = function(e)
+      stop("engagement config could not be parsed as UTF-8 YAML: ", path,
+           " (", conditionMessage(e), ")", call. = FALSE))
+
+  # Fail CLOSED. A config that can't prove it is a demo must never be treated as
+  # an active client engagement (that flipped the demo build into broken client
+  # mode with empty client names — see PDHA-RENDER-VERIFICATION.md P1).
+  if (is.null(y) || !is.list(y))
+    stop("engagement config did not parse as a mapping: ", path, call. = FALSE)
+  client_name <- y$client$name
+  if (is.null(client_name) || !is.character(client_name) ||
+      length(client_name) != 1 || !nzchar(trimws(client_name)))
+    stop("engagement config has no non-empty client$name: ", path, call. = FALSE)
+  if (!("demo" %in% names(y)) || !is.logical(y$demo) ||
+      length(y$demo) != 1 || is.na(y$demo))
+    stop("engagement config must set 'demo:' to true or false (a bare logical): ",
+         path, call. = FALSE)
 
   final_env <- tolower(Sys.getenv("ENGAGEMENT_FINAL", unset = "false"))
   list(

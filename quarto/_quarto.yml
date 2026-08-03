@@ -5,6 +5,10 @@
 project:
   type: default
   output-dir: .
+  # Writes _variables.yml from the active engagement config before rendering, so
+  # report.qmd's subtitle is driven by engagement.yml (not a hardcoded title
+  # block). See quarto/write_variables.R.
+  pre-render: write_variables.R
 
 # Defaults that apply across every .qmd in this directory.
 execute:
