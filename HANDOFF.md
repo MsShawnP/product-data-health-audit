@@ -1,5 +1,41 @@
 # Handoff — Product Data Health Audit
 
+## 2026-08-03 — Client-mode conversion (branch `client-mode-2026-08`, not pushed)
+
+Converting this into the parameterized flagship paid-audit report. **R is not installed
+locally**, so R/Quarto edits are source-verified only; the Python preflight is fully tested.
+
+**Done (committed on `client-mode-2026-08`):**
+1. **Narrative-drift fixes** — every hardcoded numeric data-claim in report/tearsheet/
+   dashboard prose is now a computed inline expression, verified against `output/frames/*.csv`.
+   Caught two real stale claims: dashboard quick-wins ("two hours / $9,000–$16,000" → actual
+   4.0h / $12k–$18k) and Walmart/Whole-Foods net-margin ranks (were #4/#1, actually #6/#3).
+2. **Preflight wiring (Python, tested)** — `INPUT-SPEC.md`, `engagement.demo.yml`,
+   `scripts/preflight_spec.py`, `scripts/run_preflight.py` (branded readiness report + validated
+   handoff + `PREFLIGHT_STATUS.json` token; `--final` drops watermark), `R/00_preflight_gate.R`
+   wired into `run_all.R` (active client engagement can't render on unvalidated input; demo
+   unbroken). Synthetic fixtures + `tests/test_preflight_wiring.py` (3 pass).
+3. **Parameterization + client-mode chrome** — `R/engagement.R` is the single param source;
+   prose client name reads `client_short`; gated (`!is_demo`) provenance footer, draft watermark,
+   and auto "Data limitations" appendix; `02_build_frames.R` trade-spend proxy from config.
+   Demo stays byte-identical by gating (user decision: byte-identical demo).
+
+**Remaining / needs an R host to verify:**
+- Render the golden on demo params and diff vs. current published output (must match modulo
+  timestamp). Then render the Northwind fixture's *clean* variant end-to-end (the missing-column
+  variant already blocks at preflight — that path is proven in Python).
+- Confirm inline-expression syntax in the three `.qmd` files evaluates (esp. the new
+  `if/else paste0` prose expressions and `eng_*` block calls).
+- Deeper item-2 parameterization not yet done: YAML titles (render-fragile), full retailer-roster
+  validation against `eng$retailers`, and margin-basis *formula* switching (only the label +
+  proxy are config-driven so far).
+- Wiring the validated handoff to actually *feed* `01_load_raw.R` (currently the gate enforces
+  validation; frame-building still reads the SQLite DB for the demo). Client-mode needs the
+  remaining extracts (stores/scans/distribution/promotions/requirements) added to the spec.
+- Client-mode uses `jsonlite` (already in `renv.lock`).
+
+---
+
 ## Status: Stable / Published
 
 The full pipeline builds, all reports render, CI is green, and the site is live on GitHub Pages.
