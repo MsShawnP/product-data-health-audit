@@ -20,13 +20,34 @@ locally**, so R/Quarto edits are source-verified only; the Python preflight is f
    and auto "Data limitations" appendix; `02_build_frames.R` trade-spend proxy from config.
    Demo stays byte-identical by gating (user decision: byte-identical demo).
 
-**Remaining / needs an R host to verify:**
-- Render the golden on demo params and diff vs. current published output (must match modulo
-  timestamp). Then render the Northwind fixture's *clean* variant end-to-end (the missing-column
-  variant already blocks at preflight — that path is proven in Python).
-- Confirm inline-expression syntax in the three `.qmd` files evaluates (esp. the new
-  `if/else paste0` prose expressions and `eng_*` block calls).
-- Deeper item-2 parameterization not yet done: YAML titles (render-fragile), full retailer-roster
+**Render-verified on R host (PDHA-RENDER-VERIFICATION.md, 2026-08-03):** pipeline
+runs clean on both branches, demo render byte-identical to main except intended
+fixes, gate + client chrome behave per spec. Four findings fixed this session (commit
+`b1818b5`):
+- **P1** — `load_engagement` now reads explicit UTF-8 and fails closed (stop() unless
+  parseable + non-empty `client$name` + logical `demo`). Regression test
+  `tests/test_engagement_loader.R`.
+- **P2** — three report.qmd computed-prose sites realigned to golden; `num_word()`
+  helper spells out ≤ ten.
+- **P3** — report.qmd subtitle driven from `engagement.yml` via a pre-render
+  `_variables.yml` (`quarto/write_variables.R`, `{{< var report_subtitle >}}`).
+- Golden harness: seeded `09_time_to_shelf` jitter; `scripts/golden_normalize.py`
+  (htmlwidget/ggiraph id + xlsx docProps normalization) with tests.
+- Dashboard drift corrections (Walmart #6, WF #3; quick-wins 4.0h/$12k–$18k)
+  **approved by Shawn as the new golden** — re-baseline before push.
+
+**Still needs an R-host re-render to confirm (small):**
+- The `{{< var report_subtitle >}}` shortcode resolves in the subtitle metadata
+  field and the demo subtitle is byte-identical (P3 mechanism).
+- `Rscript tests/test_engagement_loader.R` passes on the R host.
+- **Sibling leak (same class as P3, not yet fixed):** `tearsheet.qmd` /
+  `dashboard.qmd` YAML *titles* still embed "Cinderhaven". They can take the same
+  `{{< var >}}` treatment — Shawn's call whether to fix now.
+
+**Deeper items still open:**
+- Render the Northwind fixture's *clean* variant end-to-end (the missing-column variant already
+  blocks at preflight — that path is proven in Python; the demo golden was already render-verified).
+- Deeper item-2 parameterization not yet done: full retailer-roster
   validation against `eng$retailers`, and margin-basis *formula* switching (only the label +
   proxy are config-driven so far).
 - Wiring the validated handoff to actually *feed* `01_load_raw.R` (currently the gate enforces
