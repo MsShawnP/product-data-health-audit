@@ -45,8 +45,10 @@ a Northwind client render has **zero Cinderhaven** in the report body/subtitle.
 - **Sibling title leak fixed** — `dashboard.qmd` / `tearsheet.qmd` YAML titles now
   use `{{< var dashboard_title >}}` / `{{< var tearsheet_title >}}` from
   engagement.yml (byte-identical demo values). No hardcoded "Cinderhaven" remains in
-  any `.qmd`. Needs the same one-render confirm as P3 (dashboard renders; tearsheet
-  is PDF — confirm on a TeX host).
+  any `.qmd`. **Still needs an R host to confirm:** a demo render of both
+  deliverables (titles byte-identical to golden) plus a client-config render of
+  `dashboard.qmd` expecting **zero Cinderhaven** in the `<title>` and `<h1>`
+  (tearsheet is PDF — confirm on a TeX host).
 - **Country-of-origin re-baseline** (report.qmd ~line 442) approved by Shawn and
   logged in `DECISIONS.md` alongside the two dashboard corrections — computed text,
   not drift; re-capture goldens before push.
