@@ -36,13 +36,20 @@ fixes, gate + client chrome behave per spec. Four findings fixed this session (c
 - Dashboard drift corrections (Walmart #6, WF #3; quick-wins 4.0h/$12k–$18k)
   **approved by Shawn as the new golden** — re-baseline before push.
 
-**Still needs an R-host re-render to confirm (small):**
-- The `{{< var report_subtitle >}}` shortcode resolves in the subtitle metadata
-  field and the demo subtitle is byte-identical (P3 mechanism).
-- `Rscript tests/test_engagement_loader.R` passes on the R host.
-- **Sibling leak (same class as P3, not yet fixed):** `tearsheet.qmd` /
-  `dashboard.qmd` YAML *titles* still embed "Cinderhaven". They can take the same
-  `{{< var >}}` treatment — Shawn's call whether to fix now.
+**Round-2 R-host verification (PDHA-RENDER-VERIFICATION-2.md, commit `b819cf2`):**
+all three fixes confirmed on real renders — P1 loader test 10/10; P2 prose matches
+golden; P3 `{{< var >}}` resolves via the production `run_all.R` invocation path and
+a Northwind client render has **zero Cinderhaven** in the report body/subtitle.
+
+**Follow-ups done this session (commits `b82d034`, DECISIONS.md):**
+- **Sibling title leak fixed** — `dashboard.qmd` / `tearsheet.qmd` YAML titles now
+  use `{{< var dashboard_title >}}` / `{{< var tearsheet_title >}}` from
+  engagement.yml (byte-identical demo values). No hardcoded "Cinderhaven" remains in
+  any `.qmd`. Needs the same one-render confirm as P3 (dashboard renders; tearsheet
+  is PDF — confirm on a TeX host).
+- **Country-of-origin re-baseline** (report.qmd ~line 442) approved by Shawn and
+  logged in `DECISIONS.md` alongside the two dashboard corrections — computed text,
+  not drift; re-capture goldens before push.
 
 **Deeper items still open:**
 - Render the Northwind fixture's *clean* variant end-to-end (the missing-column variant already
