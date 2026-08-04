@@ -25,14 +25,12 @@ prepared_by: "Shawn Phillips | Lailara LLC"
 
 demo: true
 
-# Report front-matter driven from config (so client identity never hardcodes into
-# a .qmd title block). The pre-render step quarto/write_variables.R writes this to
-# quarto/_variables.yml for the `{{< var report_subtitle >}}` shortcode. The demo
-# value is byte-identical to the pre-conversion golden subtitle.
-report:
-  subtitle: "Cinderhaven Provisions  ·  May 2026"
-  dashboard_title: "Cinderhaven · Monday Morning Dashboard"
-  tearsheet_title: "Cinderhaven Provisions · Product Data Readiness"
+# Deliverable titles are COMPOSED from client name + as_of_date by
+# compose_titles() (R/engagement.R) and written to quarto/_variables.yml by the
+# pre-render, so a title can never carry a stale client name. The composed demo
+# strings are byte-identical to the pre-conversion golden. To override the default
+# wording for a client, set report.subtitle / report.dashboard_title /
+# report.tearsheet_title here; otherwise leave them unset.
 
 # ── Retailer roster ──────────────────────────────────────────────────────────
 # The retailers evaluated for readiness and P&L. UNFI/KeHE/DTC are distributors/

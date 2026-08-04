@@ -69,6 +69,39 @@ load_engagement <- function(root = "..") {
   )
 }
 
+# ---- Deliverable title strings ----------------------------------------------
+# Compose the three front-matter strings from the client identity + a fixed
+# suffix, so a title can never carry the wrong client name. A present-but-stale
+# literal is the failure mode a plain `report.subtitle: "..."` invites (round-3
+# verification: a config with client.name updated but dashboard_title left alone
+# rendered a client deliverable titled with the demo client's name). An explicit
+# report.* value is honored as an OVERRIDE for custom wording; otherwise the
+# composed default wins. The composed demo strings are byte-identical to golden.
+compose_titles <- function(eng) {
+  dot <- "\u00b7"  # middle dot via \u escape so byte output is encoding-independent
+  months <- c("January", "February", "March", "April", "May", "June", "July",
+              "August", "September", "October", "November", "December")
+  d <- tryCatch(as.Date(eng$as_of_date), error = function(e) as.Date(NA))
+  month_year <- if (!is.na(d))
+    paste(months[as.integer(format(d, "%m"))], format(d, "%Y")) else ""
+
+  defaults <- list(
+    report_subtitle = paste0(eng$client_name, "  ", dot, "  ", month_year),
+    dashboard_title = paste0(eng$client_short, " ", dot, " Monday Morning Dashboard"),
+    tearsheet_title = paste0(eng$client_name, " ", dot, " Product Data Readiness")
+  )
+
+  rpt <- eng$config_raw$report
+  override <- function(val, default)
+    if (is.null(val) || !is.character(val) || !nzchar(val)) default else val
+
+  list(
+    report_subtitle = override(rpt$subtitle,        defaults$report_subtitle),
+    dashboard_title = override(rpt$dashboard_title, defaults$dashboard_title),
+    tearsheet_title = override(rpt$tearsheet_title, defaults$tearsheet_title)
+  )
+}
+
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 
 # ---- Provenance footer ------------------------------------------------------
