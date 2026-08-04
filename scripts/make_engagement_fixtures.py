@@ -29,10 +29,13 @@ ITEM_COLS = [
 ]
 CB_COLS = ["chargeback_id", "sku", "retailer", "amount", "reason", "month", "triggered_by_field"]
 
-# Northwind uses a different retailer roster; remap Cinderhaven's retailers onto it.
+# Northwind uses a different retailer roster. These are deliberately fictional
+# (like the demo's "Regional Group") — never real chains: fabricated data must not
+# assert anything about a real third party. See ENGAGEMENT-READY-CHECKLIST.md.
 RETAILER_MAP = {
-    "Walmart": "Kroger", "Costco": "Publix", "Whole Foods": "Wegmans",
-    "Sprouts": "HEB", "Kroger": "Ahold Delhaize", "Regional Group": "Northeast Co-op",
+    "Walmart": "Midstate Grocers", "Costco": "Harborline Markets",
+    "Whole Foods": "Cedarwood Foods", "Sprouts": "Summit Provisions Group",
+    "Kroger": "Valleybrook Markets", "Regional Group": "Northeast Co-op",
 }
 
 
