@@ -148,3 +148,24 @@ hr { border: 0; border-top: 1px solid var(--ll-gridline); margin: 2rem 0; }
 @media print {
   body { background-color: #ffffff; }
 }
+
+/* ── Client-mode chrome (engagement.yml demo:false only) ──────────────────
+   These classes appear only on client deliverables; demo output has no
+   elements with these classes, so the published golden is unaffected. */
+.draft-banner {
+  border: 2px solid #cc100a;
+  background: #fbeaea;
+  color: #7a1410;
+  font-weight: 600;
+  padding: 0.6rem 0.9rem;
+  margin: 0 0 1.2rem 0;
+  border-radius: 4px;
+}
+.provenance-footer {
+  border-top: 1px solid #d9d9d9;
+  margin-top: 2.5rem;
+  padding-top: 0.8rem;
+  font-size: 0.78rem;
+  color: #595959;
+  line-height: 1.45;
+}

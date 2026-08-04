@@ -146,3 +146,11 @@ Durable choices with rationale. These should hold across future sessions.
 - **Why:** `retailer_pnl` subtracted the full multi-month `chargeback_total` from trailing-twelve-month revenue, overstating chargeback-%-of-revenue ~3x and making per-retailer rates irreconcilable with the report's ~0.43% headline.
 - **Scope:** `R/02_build_frames.R` `retailer_pnl` — `chargeback_annual = chargeback_total * 12 / n_chargeback_months` drives `net_contribution` and `chargeback_pct_of_revenue`.
 - **Do not:** Mix a multi-month chargeback numerator with a 12-month revenue denominator in any P&L. Keep both on the same clock.
+
+### 2026-08-03 — Approved golden re-baselines from the client-mode narrative-drift work (Shawn)
+- **Why:** The client-mode conversion (`client-mode-2026-08`) replaced several hardcoded prose claims with computed text. Three of these changed *published* wording on deploy, so they are not "drift" — they are corrections Shawn explicitly approved as the new golden after the R-host verifications (`PDHA-RENDER-VERIFICATION.md`, `-2.md`). Each was verified against the frames.
+- **Approved corrections (the golden now matches these):**
+  1. **Dashboard net-margin ranks** — Walmart #4 → **#6**, Whole Foods #1 → **#3** (computed `rrank()` over `retailer_pnl`; the old hardcoded ranks were stale).
+  2. **Dashboard quick-wins** — "two hours / $9,000–$16,000 per fix-hour" → **4.0 h / $12.4k–$17.8k** (computed from the top-6 `savings_per_hour`; old figures were stale).
+  3. **report.qmd country-of-origin sentence (~line 442)** — "…brand owner, country of origin (with one exception), and case weight are complete across the catalog." → **"brand owner is present on all `r n_skus`, country of origin is blank on `r n_ctry_fix`, and case weight is complete."** Verified against the frame: brand_owner blank 0/50, country_of_origin blank 1/50, case measurements complete. The golden's "complete … (with one exception)" was self-contradictory.
+- **Do not:** Treat these three as regressions in a golden diff. They are the new baseline; the golden files/screenshots should be re-captured to include them before the next push/deploy.

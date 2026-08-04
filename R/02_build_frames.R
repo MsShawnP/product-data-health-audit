@@ -20,6 +20,11 @@ ROOT    <- normalizePath(
   winslash = "/", mustWork = FALSE)
 OUT_DIR <- file.path(ROOT, "output", "frames")
 dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
+
+# Engagement parameters — retailer roster, trade-spend rate proxy, margin basis
+# come from engagement.yml (demo: engagement.demo.yml), not hardcoded here.
+source(file.path(ROOT, "R", "engagement.R"))
+eng <- load_engagement(ROOT)
 raw <- tryCatch(
   readRDS(file.path(OUT_DIR, "raw_tables.rds")),
   error = function(e) stop(
@@ -165,12 +170,26 @@ sku_revenue <- scan_ttm |>
 scan_with_retailer <- scan_ttm |>
   left_join(stores |> select(store_id, retailer), by = "store_id")
 
-# NOTE: the product master carries no trade_spend_pct_kroger column, so any
-# retailer without a mapped rate (Kroger) falls back to the Regional Group
-# rate below. The report's retailer P&L discloses this proxy in a
-# methodology note — keep that note in sync if this fallback changes.
+# Trade-spend proxy: a retailer with no per-SKU rate column (e.g. Kroger) falls
+# back to a proxy retailer's rate. The proxy comes from engagement.yml
+# (rates.trade_spend_proxy), defaulting to "Regional Group" so the demo is
+# unchanged. The report's retailer P&L discloses this proxy in a methodology note.
+retailer_ts_col <- c(
+  "Walmart"        = "trade_spend_pct_walmart",
+  "Costco"         = "trade_spend_pct_costco",
+  "Whole Foods"    = "trade_spend_pct_whole_foods",
+  "Sprouts"        = "trade_spend_pct_sprouts",
+  "Regional Group" = "trade_spend_pct_regional",
+  "KeHE"           = "trade_spend_pct_kehe",
+  "DTC"            = "trade_spend_pct_dtc")
+proxy_target <- if (length(eng$trade_spend_proxy))
+  as.character(eng$trade_spend_proxy[[1]]) else "Regional Group"
+proxy_col <- retailer_ts_col[[proxy_target]]
+if (is.null(proxy_col) || !proxy_col %in% names(product_master))
+  stop("trade-spend proxy retailer '", proxy_target,
+       "' has no rate column in the product master.", call. = FALSE)
 regional_trade_spend <- product_master |>
-  select(sku, trade_spend_pct = trade_spend_pct_regional)
+  select(sku, trade_spend_pct = all_of(proxy_col))
 
 sku_retailer_revenue <- scan_with_retailer |>
   group_by(sku, retailer) |>

@@ -1,6 +1,6 @@
 ---
 title: "Product Data Readiness Audit"
-subtitle: "Cinderhaven Provisions  ·  May 2026"
+subtitle: "{{< var report_subtitle >}}"
 author: "Shawn Phillips | Lailara LLC"
 date: "2026-05-03"
 format:
@@ -101,6 +101,15 @@ suppressPackageStartupMessages({
   library(dplyr); library(knitr); library(scales); library(lubridate)
 })
 
+# Engagement parameters — client identity, basis, demo/final flags. Every
+# client-specific value flows from engagement.yml (demo: engagement.demo.yml),
+# so there is no hardcoded client residue on the client path.
+source("../R/engagement.R")
+eng          <- load_engagement("..")
+client_name  <- eng$client_name
+client_short <- eng$client_short
+is_demo      <- eng$is_demo
+
 chart_ext <- if (knitr::is_html_output()) "svg" else "png"
 chart <- function(name) paste0("../output/charts/", name, ".", chart_ext)
 
@@ -137,6 +146,13 @@ ds_short <- function(x) {
                 paste0("$", formatC(round(x), big.mark = ",", format = "d"))))
 }
 fmt_d <- function(x) formatC(round(x), big.mark = ",", format = "d")
+# Spell out small whole numbers in prose (golden convention: words for <= ten).
+num_word <- function(n) {
+  words <- c("zero", "one", "two", "three", "four", "five",
+             "six", "seven", "eight", "nine", "ten")
+  if (length(n) == 1 && !is.na(n) && n == round(n) && n >= 0 && n <= 10)
+    words[n + 1] else as.character(n)
+}
 
 rr_stats <- rrs |>
   group_by(retailer) |>
@@ -223,6 +239,15 @@ rev_defect_skus <- sum(defect_skus$ttm_revenue, na.rm = TRUE)
 n_dq_100 <- sum(smf$data_quality_score == 100, na.rm = TRUE)
 dq_min   <- min(smf$data_quality_score, na.rm = TRUE)
 dq_step  <- round(100 / 6, 1)
+# Barcode-failure counts (computed so barcode prose can't drift):
+#   n_barcode_fail      = SKUs with an invalid GTIN-14 OR an invalid UPC
+#   n_both_barcode_fail = SKUs failing BOTH check digits
+n_barcode_fail      <- sum(!smf$gtin_valid | !smf$upc_valid, na.rm = TRUE)
+n_both_barcode_fail <- sum(!smf$gtin_valid & !smf$upc_valid, na.rm = TRUE)
+n_barcode_valid     <- n_skus - n_barcode_fail
+# Do the five costliest-chargeback SKUs all carry an invalid UPC check digit?
+top5_cb_skus     <- smf |> arrange(desc(chargeback_total)) |> slice(1:5)
+top5_upc_invalid <- sum(!top5_cb_skus$upc_valid, na.rm = TRUE)
 # Fix-scope counts (case dimensions and weight share one 30-min measurement)
 n_case_fix   <- sum(smf$missing_case_dims | smf$missing_case_weight, na.rm = TRUE)
 n_ctry_fix   <- sum(smf$missing_country, na.rm = TRUE)
@@ -233,17 +258,23 @@ hrs_case <- n_case_fix  * 30 / 60
 hrs_ctry <- n_ctry_fix  * 30 / 60
 ```
 
+```{r draft-watermark}
+#| results: asis
+# DRAFT banner for non-final client builds; empty for demo or ENGAGEMENT_FINAL=true.
+cat(eng_watermark_md(eng))
+```
+
 ::: {.bottom-line}
-**Bottom line.** Cinderhaven loses **`r ds(data_defect_annual)` a year** in retailer chargebacks traced to product-data defects, with another **`r ds(non_data_annual)`** a year in fulfillment penalties landing on the same SKUs. **`r n_gtin_fail` of `r n_skus` SKUs** carry invalid barcodes and **`r n_sku_fail_all`** fail every retailer's readiness check today — putting **`r ds(rev_defect_skus)`** of trailing-twelve-month revenue at risk as GS1 Sunrise 2027 and FSMA Rule 204 take effect. The data-side fix is **`r round(total_fix_hours)` hours** of data entry. This report shows where the money goes, which SKUs to fix first, and in what order.
+**Bottom line.** `r client_short` loses **`r ds(data_defect_annual)` a year** in retailer chargebacks traced to product-data defects, with another **`r ds(non_data_annual)`** a year in fulfillment penalties landing on the same SKUs. **`r n_gtin_fail` of `r n_skus` SKUs** carry invalid barcodes and **`r n_sku_fail_all`** fail every retailer's readiness check today — putting **`r ds(rev_defect_skus)`** of trailing-twelve-month revenue at risk as GS1 Sunrise 2027 and FSMA Rule 204 take effect. The data-side fix is **`r round(total_fix_hours)` hours** of data entry. This report shows where the money goes, which SKUs to fix first, and in what order.
 :::
 
 # Part 1: The Money
 
-By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of Cinderhaven's `r n_skus` SKUs carry GTIN-14s that do not pass. `r n_upc_fail` carry invalid UPC check digits. `r if (n_both_barcode_valid == 0) "Not a single SKU has both a valid GTIN and a valid UPC." else paste0(n_skus - n_both_barcode_valid, " SKUs carry at least one invalid barcode check digit.")` Those SKUs cannot participate in the transition until someone corrects the digits.
+By the end of 2027, every barcode in American retail will change. GS1 Sunrise 2027 transitions the industry from linear barcodes to 2D barcodes built on GS1 Digital Link: a QR code whose foundation is a valid GTIN. Not a GTIN that looks right to a human eye. A GTIN that passes algorithmic validation. `r n_gtin_fail` of `r client_short`'s `r n_skus` SKUs carry GTIN-14s that do not pass. `r n_upc_fail` carry invalid UPC check digits. `r if (n_both_barcode_valid == 0) "Not a single SKU has both a valid GTIN and a valid UPC." else paste0(n_skus - n_both_barcode_valid, " SKUs carry at least one invalid barcode check digit.")` Those SKUs cannot participate in the transition until someone corrects the digits.
 
 Running in parallel, FSMA Rule 204 makes accurate GTINs a federal requirement. FDA food traceability mandates them as the product identifier backbone for tracking food through the supply chain. The barcode that used to be a scanning convenience is becoming the regulatory infrastructure for food safety. This is not a retailer preference. It is law.
 
-All figures in this report are computed from Cinderhaven's transaction data covering `r cb_start_date` through `r cb_end_date` — `r n_chargeback_months` months of chargebacks, scan data, and distribution records.
+All figures in this report are computed from `r client_short`'s transaction data covering `r cb_start_date` through `r cb_end_date` — `r n_chargeback_months` months of chargebacks, scan data, and distribution records.
 
 These two deadlines land on a company whose product master is split: `r n_sku_pass_all` of `r n_skus` SKUs pass readiness checks at every retailer, `r n_sku_mixed` pass at some retailers but not others, and `r n_sku_fail_all` fail all `r n_retailers`. The failing SKUs share the same defect profile — invalid barcode check digits and missing case dimensions — and no retailer's requirements are lenient enough to let them through. Retailer pass rates range from `r min(rr_stats$pass_rate)`% to `r max(rr_stats$pass_rate)`%, which means the catalog is not uniformly broken, but the broken portion is completely blocked. `r ds(total_ttm_rev)` in trailing twelve-month revenue includes products on both sides of that line.
 
@@ -268,13 +299,13 @@ Of the `r ds(annual_cb)` in annual chargebacks, `r ds(data_defect_annual)` trace
 
 ## The `r ds(annual_cb)` you already pay
 
-Cinderhaven's `r n_retailers` retailers deducted `r ds(total_cb_36mo)` in chargebacks from settlement payments over the past `r n_chargeback_months` months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
+`r client_short`'s `r n_retailers` retailers deducted `r ds(total_cb_36mo)` in chargebacks from settlement payments over the past `r n_chargeback_months` months. Annualized, that's `r ds(annual_cb)` a year in revenue that left the building before it reached the bank account.
 
 The chargebacks arrive under five headings: label and barcode fines, pricing errors, damaged goods, late deliveries, and short shipments. But the reason on the chargeback isn't the same as its cause. Tracing each charge to the field that triggered it, `r data_defect_pct`% of the dollars trace to a product-data defect — a wrong barcode, a bad case dimension, a missing required field — even when the charge was filed as a receiving discrepancy or a short shipment. The other `r 100 - data_defect_pct`% are genuine fulfillment failures. This audit scopes to the data side. Not because the logistics side is smaller. Because the data side is bounded, clerical work — check digit corrections measured in hours per SKU, with a quantifiable effort and a predictable outcome. Fixing a short-ship rate is an operational overhaul with neither. Both matter. This report addresses the one where the scope, effort, and return are known before the work starts.
 
 ![Chargeback dollars by reason.](`r chart("14_chargeback_by_reason")`){fig-alt="Horizontal bar chart breaking down chargeback dollars by reason."}
 
-`r n_50pct` SKUs generate half of that bill. `r n_80pct` generate 80%. Within the data-defect slice the concentration is tighter: 27 of 50 SKUs carry at least one data defect, and those 27 account for the vast majority of the data-defect dollars — the bounded portion this audit fixes. But some SKUs generate far more than others. Here are the names:
+`r n_50pct` SKUs generate half of that bill. `r n_80pct` generate 80%. Within the data-defect slice the concentration is tighter: `r n_defect_skus` of `r n_skus` SKUs carry at least one data defect, and those `r n_defect_skus` account for the vast majority of the data-defect dollars — the bounded portion this audit fixes. But some SKUs generate far more than others. Here are the names:
 
 ```{r top5-cb-table}
 #| results: asis
@@ -290,7 +321,7 @@ cat(kable(top5, format = if (knitr::is_html_output()) "pipe" else "pipe",
 
 ![Chargeback Pareto: a small number of SKUs drive most of the cost.](`r chart("01_chargeback_pareto")`){fig-alt="Pareto curve showing a small number of SKUs account for the majority of chargeback dollars."}
 
-Every one of these carries an invalid UPC check digit. That is not the only reason they generate chargebacks — fulfillment-driven penalties also contribute — but it is the reason with a known fix and a fixed effort. The barcode defect is the portion of each SKU's chargeback cost that disappears with a data correction rather than an operational change.
+`r if (top5_upc_invalid == 5) "Every one of these carries an invalid UPC check digit." else paste0(top5_upc_invalid, " of these five carry an invalid UPC check digit.")` That is not the only reason they generate chargebacks — fulfillment-driven penalties also contribute — but it is the reason with a known fix and a fixed effort. The barcode defect is the portion of each SKU's chargeback cost that disappears with a data correction rather than an operational change.
 
 ## What a wrong barcode costs when nobody is counting
 
@@ -302,7 +333,7 @@ top_cb_6mo <- cbe |> filter(sku == top_cb$sku,
 top_cb_monthly <- round(top_cb_6mo / 6)
 ```
 
-`r top_cb$sku`, `r top_cb$product_name`, leads the chargeback ranking at `r ds(top_cb$chargeback_total)` over `r n_chargeback_months` months. It carries `r ds(top_cb$ttm_revenue)` in trailing twelve-month revenue across `r top_cb$auth_count` stores. `r top_cb_events` chargeback events spread across `r n_chargeback_months` months, arriving at roughly `r ds(top_cb_monthly)` a month on settlement statements from multiple retailers. Nobody at Cinderhaven has connected these monthly line items to each other, because nobody has a process for tracing chargebacks back to specific fields in the product master. The charges look like separate problems at separate retailers. They are the same underlying barcode defect, repeated.
+`r top_cb$sku`, `r top_cb$product_name`, leads the chargeback ranking at `r ds(top_cb$chargeback_total)` over `r n_chargeback_months` months. It carries `r ds(top_cb$ttm_revenue)` in trailing twelve-month revenue across `r top_cb$auth_count` stores. `r top_cb_events` chargeback events spread across `r n_chargeback_months` months, arriving at roughly `r ds(top_cb_monthly)` a month on settlement statements from multiple retailers. Nobody at `r client_short` has connected these monthly line items to each other, because nobody has a process for tracing chargebacks back to specific fields in the product master. The charges look like separate problems at separate retailers. They are the same underlying barcode defect, repeated.
 
 Fixing a check digit takes ten minutes. Open the product master. Recalculate the check digit using the standard GS1 algorithm. Type the correct number. Save. Ten minutes against `r ds(top_cb_annual)` a year. That ratio does not require a business case. It requires someone to know the connection exists.
 
@@ -343,11 +374,11 @@ The cost of a deauthorization is not the lost revenue at that store. It is the c
 
 ## The $`r as005_per_ret_mo`-a-month problem nobody sees
 
-The `r n_gtin_fail` invalid GTIN check digits, `r n_upc_fail` invalid UPC check digits, and `r sum(smf$missing_case_dims)` missing case dimension records in Cinderhaven's product master have been wrong since the day each SKU was entered. In that time, nobody corrected a single one. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
+The `r n_gtin_fail` invalid GTIN check digits, `r n_upc_fail` invalid UPC check digits, and `r sum(smf$missing_case_dims)` missing case dimension records in `r client_short`'s product master have been wrong since the day each SKU was entered. In that time, nobody corrected a single one. Not because anyone decided the chargebacks were acceptable. Because nobody knew the chargebacks and the digits were connected.
 
 The chain of visibility works like this. A retailer's automated system validates the barcode on an inbound shipment or a data feed submission. The check digit fails. The system generates a compliance penalty. The penalty appears as a line item on the next settlement statement, categorized under a heading like "vendor compliance deductions" or "label/barcode fine." The settlement statement is 40 pages long. It contains hundreds of line items. The compliance penalties are scattered across pages, interleaved with promotional deductions, logistics credits, and payment adjustments. An individual penalty is small. It does not trigger an investigation. It does not cross an approval threshold. It does not generate an alert.
 
-On the other side, the product master sits in whatever system Cinderhaven uses to manage product data. The GTIN-14 and UPC fields contain numbers that were typed once, by whoever set up each SKU, and have not been opened since. Nobody reviews barcode fields. Nobody runs check digit validations. Nobody has a process for connecting a chargeback on a settlement statement to a digit in the product master.
+On the other side, the product master sits in whatever system `r client_short` uses to manage product data. The GTIN-14 and UPC fields contain numbers that were typed once, by whoever set up each SKU, and have not been opened since. Nobody reviews barcode fields. Nobody runs check digit validations. Nobody has a process for connecting a chargeback on a settlement statement to a digit in the product master.
 
 The ops team is not negligent. They are fully occupied. Six retailer portals. Broker coordination. Velocity reports rebuilt by hand every Monday. Trade spend reconciliation. New SKU launches. Promotional planning. Data cleanup is on the list. It is always on the list. It sits between "update the trade spend template" and "fix the label printer" and it never reaches the top because the chargebacks arrive in amounts too small to demand attention and too steady to ever stop on their own.
 
@@ -368,7 +399,7 @@ top10_rev_total <- smf |> arrange(desc(ttm_revenue)) |> slice(1:10) |>
   summarise(r = sum(ttm_revenue, na.rm = TRUE)) |> pull(r)
 ```
 
-`r n_sku_fail_all` of Cinderhaven's `r n_skus` SKUs fail every retailer's required-field check. 12 of 50 products in the catalog carry invalid barcodes — the same 12 fail both GTIN-14 and UPC validation, so no product could be submitted to a retailer that checks both without data work first. The expansion pipeline is blocked by barcode validation failures.
+`r n_sku_fail_all` of `r client_short`'s `r n_skus` SKUs fail every retailer's required-field check. `r n_barcode_fail` of `r n_skus` products in the catalog carry invalid barcodes`r if (n_both_barcode_fail == n_barcode_fail) paste0(" — the same ", n_both_barcode_fail, " fail both GTIN-14 and UPC validation") else paste0(", and ", n_both_barcode_fail, " fail both GTIN-14 and UPC validation")`, so no product could be submitted to a retailer that checks both without data work first. The expansion pipeline is blocked by barcode validation failures.
 
 All `r n_authorized` currently authorized SKUs are shipping to retailers and generating revenue. They were authorized before the requirements tightened, or before anyone checked. They are generating revenue on borrowed time.
 
@@ -385,7 +416,7 @@ cat(kable(top10_tbl_simple, format = "pipe", align = c("l", "l", "r", "r")), sep
 
 `r ds(top10_rev_total)` in revenue from the top 10 SKUs alone, all riding on data that most retailers' systems would reject. These products are already generating chargebacks. The risk and the cost are happening simultaneously.
 
-If Cinderhaven wants to pitch a line extension at any retailer, and at `r ds(total_ttm_rev)` in revenue and growing, that pitch is coming, every SKU in the pitch needs clean data before the conversation starts — and `r n_defect_skus` of `r n_skus` do not have it. Not during the conversation. Before. A retailer's category team does not fix vendor data. They evaluate what's submitted. If the submission fails their automated checks, the conversation ends before a human being ever sees the product.
+If `r client_short` wants to pitch a line extension at any retailer, and at `r ds(total_ttm_rev)` in revenue and growing, that pitch is coming, every SKU in the pitch needs clean data before the conversation starts — and `r n_defect_skus` of `r n_skus` do not have it. Not during the conversation. Before. A retailer's category team does not fix vendor data. They evaluate what's submitted. If the submission fails their automated checks, the conversation ends before a human being ever sees the product.
 
 The gap between "blocked" and "ready" is barcode check digits and case dimensions. The work is measured in hours, not weeks. `r n_defect_skus` failing SKUs are not `r n_defect_skus` product development problems. They are `r n_defect_skus` data entry tasks. The difference between `r ds(rev_defect_skus)` in at-risk revenue and `r ds(rev_defect_skus)` in expansion-ready revenue is `r round(total_fix_hours)` hours of clerical work.
 
@@ -401,15 +432,15 @@ sku_ret_pass <- rrs |>
   summarise(n_pass = sum(overall_pass), n_total = n(), .groups = "drop")
 ```
 
-CHP-DG-007, Trail Mix Premium, is the sixth-best-selling product in the Cinderhaven catalog. `r ds(dg007$ttm_revenue)` in trailing twelve-month revenue. `r dg007$auth_count` stores across every channel. It represents `r ds(dg007$annual_gross_margin)` in annual gross margin.
+CHP-DG-007, Trail Mix Premium, is the sixth-best-selling product in the `r client_short` catalog. `r ds(dg007$ttm_revenue)` in trailing twelve-month revenue. `r dg007$auth_count` stores across every channel. It represents `r ds(dg007$annual_gross_margin)` in annual gross margin.
 
-It fails every retailer's readiness check. Zero of six.
+It fails every retailer's readiness check. Zero of `r num_word(n_retailers)`.
 
 The product carries three defects: an invalid GTIN-14 check digit, an invalid UPC check digit, and missing case dimensions. It has generated `r dg007_events` chargeback events over `r n_chargeback_months` months — `r ds(dg007$chargeback_total)` in penalties. `r dg007$deauth_count` of its `r dg007$auth_count` store authorizations have been revoked. Those slots are gone.
 
 The chargebacks are not the point. At `r ds(dg007_annual)` a year, they barely register against `r ds(dg007$ttm_revenue)` in revenue. What registers is the deauthorization risk. A retailer's automated readiness check does not distinguish between a `r ds(dg007_annual)`-a-year chargeback product and a $70-a-year one. It checks the barcode. The digit fails. The product is flagged.
 
-Fixing CHP-DG-007 takes 50 minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of six retailers passing to a candidate for all six.
+Fixing CHP-DG-007 takes `r round(dg007$est_fix_hours * 60)` minutes. Correct the GTIN check digit. Correct the UPC check digit. Measure and enter the case dimensions. When that is done, `r dg007$deauth_count` lost store authorizations stop compounding, and a `r ds(dg007$ttm_revenue)` product moves from zero of `r num_word(n_retailers)` retailers passing to a candidate for all `r num_word(n_retailers)`.
 
 The same pattern repeats across the top of the catalog:
 
@@ -427,7 +458,7 @@ top10_dq <- smf |>
 cat(kable(top10_dq, format = "pipe", align = c("r","l","r","r","r","c")), sep = "\n")
 ```
 
-The difference is not commercial attention. Everyone at Cinderhaven knows what Trail Mix Premium sells. Nobody knows that its GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
+The difference is not commercial attention. Everyone at `r client_short` knows what Trail Mix Premium sells. Nobody knows that its GTIN-14 check digit is wrong. Those are two different kinds of knowing, and only the first one happens naturally.
 
 The risk of leaving CHP-DG-007 unfixed is not the `r ds(dg007_annual)`. The risk is that a retailer runs the check. Walmart does not send a chargeback for a readiness failure. Walmart sends a deauthorization. And when a `r ds(dg007$ttm_revenue)` product — one that already fails every retailer it ships to — loses shelf space at its largest account, the conversation is not with the data team. It is with the board.
 
@@ -449,7 +480,7 @@ The fix is structural: a gate between data entry and the live product master. A 
 
 The catalog is not uniformly broken. It is split: `r n_clean_skus` clean SKUs and `r n_defect_skus` with defects. But the `r n_defect_skus` carry defects of the same type. `r n_upc_fail` have invalid UPC check digits. `r n_gtin_fail` have invalid GTIN-14 check digits. `r n_dims_only` have missing case dimensions. The remaining completeness checks are nearly clean — brand owner is present on all `r n_skus`, country of origin is blank on `r n_ctry_fix`, and a few case weights are missing. The barcodes are present and the right length. They just fail check-digit validation, which is what retailers actually run. The case dimensions were never entered.
 
-The instinct is to assume the big sellers would have been cleaned up by now. The assumption is wrong because it confuses commercial attention with data attention. Everyone at Cinderhaven knows that Trail Mix Premium sells `r ds(dg007$ttm_revenue)` a year. Nobody at Cinderhaven knows that its GTIN-14 check digit is wrong and its case dimensions are blank. Those are two different kinds of knowing, and only the first one happens naturally.
+The instinct is to assume the big sellers would have been cleaned up by now. The assumption is wrong because it confuses commercial attention with data attention. Everyone at `r client_short` knows that Trail Mix Premium sells `r ds(dg007$ttm_revenue)` a year. Nobody at `r client_short` knows that its GTIN-14 check digit is wrong and its case dimensions are blank. Those are two different kinds of knowing, and only the first one happens naturally.
 
 ```{r clean-dirty-comparison}
 #| include: false
@@ -624,7 +655,7 @@ cat(kable(broken_tbl, format = "pipe",
 
 `r n_still_broken` SKUs in total carry unfixed defects that are actively generating charges. The ten above account for `r ds(top10_broken_total)` in the last six months. Of the `r ds(total_recent)` in total chargebacks during that period, `r broken_pct`% trace to defects that remain in the product master today.
 
-The reason nobody has fixed these barcodes is not negligence or budget or competing priorities. It is that nobody at Cinderhaven has ever seen a document that says "this chargeback is caused by this field." The settlement statement says "label/barcode fine, $287." The product master says "GTIN-14: 10614141000415." Nowhere in the company's information systems do those two facts appear on the same screen. This table is that screen.
+The reason nobody has fixed these barcodes is not negligence or budget or competing priorities. It is that nobody at `r client_short` has ever seen a document that says "this chargeback is caused by this field." The settlement statement says "label/barcode fine, $287." The product master says "GTIN-14: 10614141000415." Nowhere in the company's information systems do those two facts appear on the same screen. This table is that screen.
 
 ## How to read the triage list
 
@@ -758,7 +789,7 @@ reactable(
 
 ## Monday morning
 
-Here is what Monday morning looks like today at Cinderhaven.
+Here is what Monday morning looks like today at `r client_short`.
 
 The ops manager opens six retailer portals, downloads CSV files with different column headers, pastes them into the Excel workbook she built six months ago, adjusts column mappings because Costco changed their export format after a system update, refreshes the pivot table, and spends fifteen minutes before the meeting reconciling a number that doesn't match the broker's Friday email. The discrepancy is a store count definition. She doesn't have time to find out which one is right. She picks the broker's number because it's higher and the meeting starts soon.
 
@@ -778,7 +809,7 @@ The 90 minutes are not optimized. They are gone. The ops manager's Monday mornin
 
 The work described in this report is three phases of specific, bounded tasks. The total calendar time is approximately one week. The total effort is approximately `r round(total_fix_hours)` hours of data entry and two to three days of process and tooling work.
 
-Phase one takes two days. Correct all `r n_upc_fail` invalid UPC check digits and all `r n_gtin_fail` invalid GTIN-14 check digits. Each SKU is a ten-minute fix: open the record, recalculate both check digits using the standard GS1 algorithm, type the correct numbers, save. Phase one also includes entering case dimensions for the 19 SKUs missing them — pull the product, measure, type four numbers. When phase one is done, every SKU in the catalog passes all `r n_retailers` retailers' readiness checks. The `r ds(total_ttm_rev)` in at-risk revenue is secured. The first clean settlement statement arrives within 30 to 60 days.
+Phase one takes two days. Correct all `r n_upc_fail` invalid UPC check digits and all `r n_gtin_fail` invalid GTIN-14 check digits. Each SKU is a ten-minute fix: open the record, recalculate both check digits using the standard GS1 algorithm, type the correct numbers, save. Phase one also includes entering case dimensions for the `r n_dims_only` SKUs missing them — pull the product, measure, type four numbers. When phase one is done, every SKU in the catalog passes all `r n_retailers` retailers' readiness checks. The `r ds(total_ttm_rev)` in at-risk revenue is secured. The first clean settlement statement arrives within 30 to 60 days.
 
 Phase two takes two days. This is the phase that prevents phase one from being wasted. Without a gate between data entry and the live product master, the next SKU launch will introduce the same barcode defects that phase one just cleaned. The validation logic is simple: a check digit calculation that runs when a GTIN or UPC is entered and blocks the save if it fails. The GS1 algorithm is a single modulo operation. The technology is trivial. The discipline is the deliverable.
 
@@ -791,7 +822,7 @@ These three phases address the data-attributable chargebacks — `r ds(annual_cb
 The total: `r round(total_fix_hours)` hours of data entry addresses the entire barcode cleanup. Two days of process work prevents recurrence. Two days of tooling work makes the system visible. The cost of dirty data at the current scale is `r ds(annual_cb - non_data_annual)` a year in chargebacks, and it scales with the catalog as the brand grows. The cost of fixing it is one week.
 
 ::: {.callout-tip appearance="minimal" icon=false}
-*The same five inputs that produced the `r ds(data_defect_annual)` figure for Cinderhaven — SKU count, retailer count, annual chargebacks, data quality pass rate, and revenue per SKU — work for any specialty food brand. Plug in your own numbers and see your own annual cost, scale projection, and data-debt density score:* [**Estimate your own data debt →**](https://calculator.lailarallc.com/)
+*The same five inputs that produced the `r ds(data_defect_annual)` figure for `r client_short` — SKU count, retailer count, annual chargebacks, data quality pass rate, and revenue per SKU — work for any specialty food brand. Plug in your own numbers and see your own annual cost, scale projection, and data-debt density score:* [**Estimate your own data debt →**](https://calculator.lailarallc.com/)
 :::
 
 ::: {.content-visible when-format="pdf"}
@@ -809,7 +840,7 @@ Chart 5 shows nine data defect categories ranked by the share of TTM revenue the
 
 ![Revenue-weighted field completeness.](`r chart("05_revenue_weighted_completeness")`){fig-alt="Paired-bar chart of nine defect categories, comparing share of SKUs (grey) to share of TTM revenue (red)."}
 
-The chart reveals a concentrated defect pattern. Invalid UPC check digits affect `r round(100 * n_upc_fail / n_skus)`% of SKUs. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`% — and they are the same 12 SKUs. The remaining 38 have both valid. No other barcode defect category registers: brand owner, country of origin (with one exception), and case weight are complete across the catalog. Case dimensions are missing for 19 of 50 SKUs — part of the fix scope.
+The chart reveals a concentrated defect pattern. Invalid UPC check digits affect `r round(100 * n_upc_fail / n_skus)`% of SKUs. Invalid GTIN-14 affects `r round(100 * n_gtin_fail / n_skus)`% — `r if (n_both_barcode_fail == n_gtin_fail && n_both_barcode_fail == n_upc_fail) paste0("and they are the same ", n_both_barcode_fail, " SKUs") else paste0("with ", n_both_barcode_fail, " SKUs failing both")`. The remaining `r n_barcode_valid` have both valid. No other barcode defect category registers: brand owner is present on all `r n_skus`, `r if (n_ctry_fix == 0) "country of origin is complete," else paste0("country of origin is blank on ", n_ctry_fix, ",")` and case weight is complete. Case dimensions are missing for `r n_dims_only` of `r n_skus` SKUs — part of the fix scope.
 
 ::: {.content-visible when-format="pdf"}
 \newpage
@@ -893,7 +924,7 @@ Retailer chargeback rates across consumer packaged goods typically range from 1%
 cb_rate_pct <- round(100 * annual_cb / total_ttm_rev, 2)
 ```
 
-Cinderhaven's overall chargeback rate is `r cb_rate_pct`% of gross revenue (`r ds(annual_cb)` against `r ds(total_ttm_rev)`). This is low by industry standards. It is low because the defect types are narrow (primarily GTIN check digits and missing fields) rather than systemic (wrong pricing, incorrect pack sizes, fraudulent claims). The low rate does not mean the problem is small. It means the problem is concentrated and fixable. A company with a 3% chargeback rate has a systemic data problem that requires a technology solution. Cinderhaven has a clerical problem that requires `r round(total_fix_hours)` hours of data entry.
+`r client_short`'s overall chargeback rate is `r cb_rate_pct`% of gross revenue (`r ds(annual_cb)` against `r ds(total_ttm_rev)`). This is low by industry standards. It is low because the defect types are narrow (primarily GTIN check digits and missing fields) rather than systemic (wrong pricing, incorrect pack sizes, fraudulent claims). The low rate does not mean the problem is small. It means the problem is concentrated and fixable. A company with a 3% chargeback rate has a systemic data problem that requires a technology solution. `r client_short` has a clerical problem that requires `r round(total_fix_hours)` hours of data entry.
 
 ## What this report does not cover
 
@@ -907,7 +938,7 @@ Demand forecasting. Scan data is used to calculate velocity and identify trends.
 
 Supply chain operations. The remaining chargebacks trace to fulfillment operations and are outside the scope of this data audit.
 
-Competitor analysis. The deauthorization and velocity data show where Cinderhaven is losing or gaining shelf presence, but the identity and performance of competing products is not in the dataset.
+Competitor analysis. The deauthorization and velocity data show where `r client_short` is losing or gaining shelf presence, but the identity and performance of competing products is not in the dataset.
 
 ## What changes with real data
 
@@ -934,7 +965,7 @@ db_desc <- paste(
   collapse = ", ")
 ```
 
-The analysis runs against the Cinderhaven Data Platform's dbt mart layer (Postgres) containing `r length(raw)` tables: `r db_desc`.
+The analysis runs against the `r client_short` Data Platform's dbt mart layer (Postgres) containing `r length(raw)` tables: `r db_desc`.
 
 The companion SQL query library (8 queries, available in the product-data-audit-queries repository) covers every analytical frame used in this report. Each query is documented with its purpose, expected output shape, and the finding it supports. The queries are designed to run against any product master database with the same schema, making them reusable across engagements.
 
@@ -942,7 +973,7 @@ The R pipeline (15 analytical frames, 19 charts, and 7 output deliverables) rege
 
 ## Note on dataset construction
 
-The Cinderhaven dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data systems. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
+The `r client_short` dataset is synthetic. It was built to mimic the structure, scale, and defect patterns of a real specialty food company's product data systems. The data generation log (data_generation_log.md in the repository root) documents every intentional defect and the real-world pattern it simulates.
 
 Key design decisions in the synthetic data:
 
@@ -967,4 +998,23 @@ Cost model: this report scopes to the data-attributable portion of annualized ch
 Data quality scoring: each SKU is scored on 6 binary checks (GTIN-14 valid, UPC valid, brand owner present, country of origin present, case weight plausible, case dimensions present). Score = (checks passed / 6) × 100, so each failing check costs `r dq_step` points. Scores range from `r dq_min` to 100, and `r n_dq_100` of `r n_skus` SKUs score 100. The failing checks are barcode validity (GTIN-14 and UPC) and case measurements; the remaining checks pass across nearly the entire catalog.
 
 Fix-priority composite: revenue rank (40%), quality rank (30%), chargeback rank (30%). Ranks are percentile-based (1 = best/highest). Effort is shown separately, not incorporated into the composite. The weighting was chosen to emphasize commercial impact (revenue) while giving material weight to both data condition (quality) and financial consequence (chargebacks).
+
+```{r auto-limitations}
+#| results: asis
+# Auto-generated from the preflight readiness report: every disclosed assumption
+# and excluded row is carried into the deliverable, not left in the console.
+# Demo builds have no preflight output, so this is a no-op and the golden holds.
+if (!is_demo) {
+  lim <- eng_limitations_md("..")
+  if (!is.null(lim)) cat("\n### Data limitations (from preflight)\n\n", lim, "\n", sep = "")
+}
+```
 ::::
+
+```{r provenance-footer}
+#| results: asis
+# Provenance footer for client deliverables. Gated off for demo (byte-identical
+# published output). Prints tool+version, input SHA-256 + row counts, as_of_date,
+# config hash, margin basis, window, and validation status.
+if (!is_demo) cat(eng_provenance_md(eng, "product-data-health-audit", "1.0", ".."))
+```

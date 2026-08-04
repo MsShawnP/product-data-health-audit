@@ -114,3 +114,18 @@ secrets.*
 # OS noise
 .DS_Store
 Thumbs.db
+
+# --- lailara engagement scaffold ---
+# Client engagement data is runtime-only: never commit it, never deploy it.
+client-data/
+client-output/
+/engagement.yml
+/engagement.yaml
+# (engagement.demo.yml and engagement.example.yml stay committable)
+
+# Preflight runtime artifacts (readiness reports, validated handoff, token)
+# — may contain client data on a real run; regenerate from source.
+output/preflight/
+
+# Pre-render generated (per-engagement subtitle); regenerated every render.
+quarto/_variables.yml

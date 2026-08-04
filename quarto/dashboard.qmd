@@ -1,5 +1,5 @@
 ---
-title: "Cinderhaven · Monday Morning Dashboard"
+title: "{{< var dashboard_title >}}"
 subtitle: "Velocity · Retailer P&L · Triage Tracker"
 format:
   html:
@@ -29,6 +29,11 @@ suppressPackageStartupMessages({
 })
 
 source("../R/00_theme.R")  # cinderhaven_palette + theme_cinderhaven_*
+source("../R/engagement.R")
+eng          <- load_engagement("..")
+client_name  <- eng$client_name
+client_short <- eng$client_short
+is_demo      <- eng$is_demo
 
 PROC_DIR <- file.path("..", "output", "frames")
 read_p <- function(name) readRDS(file.path(PROC_DIR, paste0(name, ".rds")))
@@ -48,6 +53,24 @@ dollar_cell <- function(value) {
 }
 
 
+# ---- computed narrative figures (so dashboard prose can't drift) --------
+
+# Retailer gross-revenue and net-margin ranks across the full roster.
+rank_tbl <- retailer_pnl |>
+  mutate(gross_rank  = rank(-gross_revenue, ties.method = "min"),
+         margin_rank = rank(-net_margin_pct_of_gross_revenue, ties.method = "min"))
+rrank <- function(ret, col) rank_tbl |> filter(retailer == ret) |> pull(!!sym(col))
+
+# The six highest-return quick wins from the triage list.
+qw <- sku_master_full |>
+  filter(savings_per_hour > 0) |>
+  arrange(desc(savings_per_hour)) |>
+  slice(1:6)
+n_qw     <- nrow(qw)
+qw_hours <- sum(qw$est_fix_hours, na.rm = TRUE)
+qw_min   <- min(qw$savings_per_hour, na.rm = TRUE)
+qw_max   <- max(qw$savings_per_hour, na.rm = TRUE)
+
 # ---- velocity (canonical frame from R/02_build_frames.R) ----------------
 
 velocity <- read_p("velocity") |>
@@ -65,6 +88,11 @@ velocity <- read_p("velocity") |>
   ) |>
   filter(retailer %in% c("Walmart", "Costco", "Whole Foods")) |>
   arrange(desc(dollars_12w))
+```
+
+```{r draft-watermark}
+#| results: asis
+cat(eng_watermark_md(eng))
 ```
 
 ::: {.panel-tabset}
@@ -223,10 +251,10 @@ reactable(
 > Trade spend and chargebacks are the two things subtracted in between.
 >
 > **What to look for:** The gap between gross revenue rank and net margin
-> rank. Walmart is #1 in gross dollars and #4 in net margin percentage.
-> Whole Foods is #4 in gross dollars and #1 in net margin. Chargebacks are
+> rank. Walmart is #`r rrank("Walmart", "gross_rank")` in gross dollars and #`r rrank("Walmart", "margin_rank")` in net margin percentage.
+> Whole Foods is #`r rrank("Whole Foods", "gross_rank")` in gross dollars and #`r rrank("Whole Foods", "margin_rank")` in net margin. Chargebacks are
 > the only margin component in this chart that is entirely within
-> Cinderhaven's operational control.
+> `r client_short`'s operational control.
 
 ```{r retailer-waterfall}
 #| fig-width: 12
@@ -262,7 +290,7 @@ ggplot(pnl_long, aes(x = value, y = fct_rev(retailer), fill = bar_fill)) +
                      expand = expansion(mult = c(0, 0.08))) +
   facet_wrap(~ component, ncol = 1, scales = "free_x") +
   labs(x = NULL, y = NULL,
-       caption = src_caption("Cinderhaven sales + cost data + chargeback ledger, trailing 12 months")) +
+       caption = src_caption(paste0(client_short, " sales + cost data + chargeback ledger, trailing 12 months"))) +
   theme_cinderhaven_horizontal() +
   theme(axis.text.y = element_text(size = 11),
         strip.text  = element_text(size = 12, face = "bold",
@@ -345,8 +373,9 @@ reactable(
 >
 > **What to do with it:** Use the composite column to set the quarterly
 > cleanup agenda. Use the effort column to fill a Tuesday afternoon. Start
-> with the six quick-win SKUs (20 minutes each). They take two hours
-> combined and recover roughly $9,000–$16,000 per fix-hour.
+> with the `r n_qw` highest-return fixes at the top of the savings-per-hour
+> column. Together they take about `r round(qw_hours, 1)` hours and recover
+> roughly `r dollar_cell(qw_min)`–`r dollar_cell(qw_max)` per fix-hour.
 
 ::: {.wide-table-container}
 
@@ -451,3 +480,8 @@ reactable(
 :::
 
 :::
+
+```{r provenance-footer}
+#| results: asis
+if (!is_demo) cat(eng_provenance_md(eng, "product-data-health-audit", "1.0", ".."))
+```

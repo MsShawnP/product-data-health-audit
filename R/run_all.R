@@ -22,6 +22,12 @@ ROOT <- normalizePath(
   winslash = "/", mustWork = FALSE)
 cfg <- yaml::read_yaml(file.path(ROOT, "config.yml"))
 
+# Refuse to run the analysis on unvalidated client data. In an active client
+# engagement (engagement.yml present) a clean preflight token is required; the
+# demo/legacy flow is left unbroken. See R/00_preflight_gate.R.
+source(file.path(ROOT, "R", "00_preflight_gate.R"))
+assert_preflight_ok(ROOT)
+
 R_SCRIPTS <- c(
   "R/01_load_raw.R",
   "R/02_build_frames.R",

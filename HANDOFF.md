@@ -1,5 +1,80 @@
 # Handoff — Product Data Health Audit
 
+## 2026-08-03 — Client-mode conversion (branch `client-mode-2026-08`, not pushed)
+
+Converting this into the parameterized flagship paid-audit report. **R is not installed
+locally**, so R/Quarto edits are source-verified only; the Python preflight is fully tested.
+
+**Done (committed on `client-mode-2026-08`):**
+1. **Narrative-drift fixes** — every hardcoded numeric data-claim in report/tearsheet/
+   dashboard prose is now a computed inline expression, verified against `output/frames/*.csv`.
+   Caught two real stale claims: dashboard quick-wins ("two hours / $9,000–$16,000" → actual
+   4.0h / $12k–$18k) and Walmart/Whole-Foods net-margin ranks (were #4/#1, actually #6/#3).
+2. **Preflight wiring (Python, tested)** — `INPUT-SPEC.md`, `engagement.demo.yml`,
+   `scripts/preflight_spec.py`, `scripts/run_preflight.py` (branded readiness report + validated
+   handoff + `PREFLIGHT_STATUS.json` token; `--final` drops watermark), `R/00_preflight_gate.R`
+   wired into `run_all.R` (active client engagement can't render on unvalidated input; demo
+   unbroken). Synthetic fixtures + `tests/test_preflight_wiring.py` (3 pass).
+3. **Parameterization + client-mode chrome** — `R/engagement.R` is the single param source;
+   prose client name reads `client_short`; gated (`!is_demo`) provenance footer, draft watermark,
+   and auto "Data limitations" appendix; `02_build_frames.R` trade-spend proxy from config.
+   Demo stays byte-identical by gating (user decision: byte-identical demo).
+
+**Render-verified on R host (PDHA-RENDER-VERIFICATION.md, 2026-08-03):** pipeline
+runs clean on both branches, demo render byte-identical to main except intended
+fixes, gate + client chrome behave per spec. Four findings fixed this session (commit
+`b1818b5`):
+- **P1** — `load_engagement` now reads explicit UTF-8 and fails closed (stop() unless
+  parseable + non-empty `client$name` + logical `demo`). Regression test
+  `tests/test_engagement_loader.R`.
+- **P2** — three report.qmd computed-prose sites realigned to golden; `num_word()`
+  helper spells out ≤ ten.
+- **P3** — report.qmd subtitle driven from `engagement.yml` via a pre-render
+  `_variables.yml` (`quarto/write_variables.R`, `{{< var report_subtitle >}}`).
+- Golden harness: seeded `09_time_to_shelf` jitter; `scripts/golden_normalize.py`
+  (htmlwidget/ggiraph id + xlsx docProps normalization) with tests.
+- Dashboard drift corrections (Walmart #6, WF #3; quick-wins 4.0h/$12k–$18k)
+  **approved by Shawn as the new golden** — re-baseline before push.
+
+**Round-2 R-host verification (PDHA-RENDER-VERIFICATION-2.md, commit `b819cf2`):**
+all three fixes confirmed on real renders — P1 loader test 10/10; P2 prose matches
+golden; P3 `{{< var >}}` resolves via the production `run_all.R` invocation path and
+a Northwind client render has **zero Cinderhaven** in the report body/subtitle.
+
+**Round-3 R-host verification (PDHA-RENDER-VERIFICATION-3.md, commit `60e7d7f`):**
+sibling-title fix confirmed — demo titles byte-identical to golden; a Northwind
+client render of `dashboard.qmd` has **zero Cinderhaven** in `<title>`/`<h1>`;
+tearsheet var resolution proven via an HTML render (only PDF typesetting untested).
+**The R-host checklist from the previous rounds is fully closed.**
+
+**Follow-ups done (commits `b82d034` sibling titles, `3251d0b` DECISIONS, `9ff12a7`
+compose-by-default):**
+- **Sibling title leak fixed + hardened.** `dashboard.qmd` / `tearsheet.qmd` titles
+  and report.qmd subtitle now come from `compose_titles()` (R/engagement.R): each is
+  built from `client_short`/`client_name` + a fixed suffix, so a present-but-stale
+  `report.*` literal can't leak the wrong client name (an explicit value still
+  overrides). engagement.demo.yml no longer carries the literal titles — "Cinderhaven"
+  lives only in `client.name`/`short_name`. Test: `tests/test_engagement_titles.R`.
+  **Still needs an R host to confirm:** a demo render of report + dashboard +
+  tearsheet with titles byte-identical to golden *after this compose change*
+  (composition byte-parity is Python-verified; the R render is the final check).
+- **Country-of-origin re-baseline** (report.qmd ~line 442) approved by Shawn and
+  logged in `DECISIONS.md` alongside the two dashboard corrections — computed text,
+  not drift; re-capture goldens before push.
+
+**Deeper items still open:**
+- Render the Northwind fixture's *clean* variant end-to-end (the missing-column variant already
+  blocks at preflight — that path is proven in Python; the demo golden was already render-verified).
+- Deeper item-2 parameterization not yet done: full retailer-roster
+  validation against `eng$retailers`, and margin-basis *formula* switching (only the label +
+  proxy are config-driven so far).
+- Wiring the validated handoff to actually *feed* `01_load_raw.R` (currently the gate enforces
+  validation; frame-building still reads the SQLite DB for the demo). Client-mode needs the
+  remaining extracts (stores/scans/distribution/promotions/requirements) added to the spec.
+- Client-mode uses `jsonlite` (already in `renv.lock`).
+
+---
+
 ## Status: Stable / Published
 
 The full pipeline builds, all reports render, CI is green, and the site is live on GitHub Pages.
