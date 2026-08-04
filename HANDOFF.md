@@ -41,14 +41,23 @@ all three fixes confirmed on real renders — P1 loader test 10/10; P2 prose mat
 golden; P3 `{{< var >}}` resolves via the production `run_all.R` invocation path and
 a Northwind client render has **zero Cinderhaven** in the report body/subtitle.
 
-**Follow-ups done this session (commits `b82d034`, DECISIONS.md):**
-- **Sibling title leak fixed** — `dashboard.qmd` / `tearsheet.qmd` YAML titles now
-  use `{{< var dashboard_title >}}` / `{{< var tearsheet_title >}}` from
-  engagement.yml (byte-identical demo values). No hardcoded "Cinderhaven" remains in
-  any `.qmd`. **Still needs an R host to confirm:** a demo render of both
-  deliverables (titles byte-identical to golden) plus a client-config render of
-  `dashboard.qmd` expecting **zero Cinderhaven** in the `<title>` and `<h1>`
-  (tearsheet is PDF — confirm on a TeX host).
+**Round-3 R-host verification (PDHA-RENDER-VERIFICATION-3.md, commit `60e7d7f`):**
+sibling-title fix confirmed — demo titles byte-identical to golden; a Northwind
+client render of `dashboard.qmd` has **zero Cinderhaven** in `<title>`/`<h1>`;
+tearsheet var resolution proven via an HTML render (only PDF typesetting untested).
+**The R-host checklist from the previous rounds is fully closed.**
+
+**Follow-ups done (commits `b82d034` sibling titles, `3251d0b` DECISIONS, `9ff12a7`
+compose-by-default):**
+- **Sibling title leak fixed + hardened.** `dashboard.qmd` / `tearsheet.qmd` titles
+  and report.qmd subtitle now come from `compose_titles()` (R/engagement.R): each is
+  built from `client_short`/`client_name` + a fixed suffix, so a present-but-stale
+  `report.*` literal can't leak the wrong client name (an explicit value still
+  overrides). engagement.demo.yml no longer carries the literal titles — "Cinderhaven"
+  lives only in `client.name`/`short_name`. Test: `tests/test_engagement_titles.R`.
+  **Still needs an R host to confirm:** a demo render of report + dashboard +
+  tearsheet with titles byte-identical to golden *after this compose change*
+  (composition byte-parity is Python-verified; the R render is the final check).
 - **Country-of-origin re-baseline** (report.qmd ~line 442) approved by Shawn and
   logged in `DECISIONS.md` alongside the two dashboard corrections — computed text,
   not drift; re-capture goldens before push.
