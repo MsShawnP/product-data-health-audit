@@ -149,3 +149,15 @@ Approaches that didn't work and why, so we don't repeat them.
 - **Fix:** Used Quarto's own `grid:` YAML (body/sidebar/margin widths), removed the conflicting CSS override, and made kable tables scroll within their column (`main.content table.table{display:block;overflow-x:auto}`). Verified no page scroll at 1280 & 1440 via live browser measurement.
 - **Tags:** css, quarto, grid, layout, horizontal-scroll, wrong-hypothesis
 
+### 2026-08-04 — Reported PDHA's drift blocker as PLAN.md from a grep, not the actual 84 Wegmans hits
+- **What happened:** Told Shawn that PDHA #10's canonical-drift failure was `PLAN.md`'s "Cinderhaven Foods" (from a `git grep "Cinderhaven Foods"` that matched PLAN.md). Shawn's Step 1 instruction then targeted PLAN.md. The real failure was 84 "Wegmans" hits in the Northwind test fixture; PLAN.md was never the blocker — it's gitignored, and the drift gate scans only tracked files, so it never saw PLAN.md at all.
+- **Why it failed:** Inferred the cause from a content grep instead of reading the gate's own failure log. The grep found a token that was present but wasn't what the gate flagged.
+- **Fix:** Parsed the actual `gh run view --log-failed` output (the 84 Wegmans hits), corrected the report before acting. Lesson: read the failing check's log for the real cause — a grep for a token is not the gate's verdict.
+- **Tags:** ci, canonical-drift, diagnosis, grep-vs-log, gitignore-blind-spot
+
+### 2026-08-04 — Full-filesystem walk for the blind-spot scan timed out at 2 min
+- **What happened:** First blind-spot scan `os.walk`'d every file in all 38 repos and timed out (renv/, data dumps, large trees).
+- **Why it failed:** Walking + reading every file across 38 repos, including huge data/renv dirs, is O(everything).
+- **Fix:** Switched to `git grep` (tracked files only) + a targeted check of gitignored docs — fast, and it exactly matches the drift gate's own scan model (tracked, ≤2 MB, minus excludes).
+- **Tags:** performance, git-grep, blind-spot-scan, scoping
+
