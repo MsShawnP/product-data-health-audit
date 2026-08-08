@@ -43,6 +43,17 @@ assert("subtitle matches golden bytes",  same_bytes(t$report_subtitle, gold_subt
 assert("dashboard title matches golden bytes", same_bytes(t$dashboard_title, gold_dashboard))
 assert("tearsheet title matches golden bytes", same_bytes(t$tearsheet_title, gold_tearsheet))
 
+cat("\n--- 0.d split: the subtitle month-year is the REPORT date, not data_as_of ---\n")
+split_eng <- list(
+  client_name  = "Cinderhaven Provisions",
+  client_short = "Cinderhaven",
+  data_as_of   = "2026-01-31",
+  report_date  = "2026-05-03",
+  config_raw   = list()
+)
+assert("subtitle uses report_date (May 2026), not data_as_of (January 2026)",
+       same_bytes(compose_titles(split_eng)$report_subtitle, gold_subtitle))
+
 cat("\n--- an explicit report.* value overrides the composed default ---\n")
 ovr_eng <- demo_eng
 ovr_eng$config_raw <- list(report = list(dashboard_title = "Custom Wording Dashboard"))

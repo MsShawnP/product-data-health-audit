@@ -18,14 +18,18 @@ client:
 engagement:
   id: "CHP-DEMO-2026-05"
 
-# The reporting date the analysis is anchored to. NEVER today's date.
-as_of_date: "2026-05-03"
+# data_as_of = when the underlying product/chargeback data ends (analysis window end,
+# Jan 2023 - Jan 2026). report_date = when this deliverable was authored. The document
+# identity subtitle ("... May 2026") and the report date field use the REPORT date, not
+# the data date (see compose_titles in R/engagement.R). NEVER today's date.
+data_as_of: "2026-01-31"
+report_date: "2026-05-03"
 
 prepared_by: "Shawn Phillips | Lailara LLC"
 
 demo: true
 
-# Deliverable titles are COMPOSED from client name + as_of_date by
+# Deliverable titles are COMPOSED from client name + report_date by
 # compose_titles() (R/engagement.R) and written to quarto/_variables.yml by the
 # pre-render, so a title can never carry a stale client name. The composed demo
 # strings are byte-identical to the pre-conversion golden. To override the default
