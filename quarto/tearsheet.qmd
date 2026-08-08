@@ -1,6 +1,6 @@
 ---
 title: "{{< var tearsheet_title >}}"
-subtitle: "Executive Tearsheet · May 2026"
+subtitle: "Executive Tearsheet · {{< var report_month_year >}}"
 format:
   pdf:
     pdf-engine: lualatex

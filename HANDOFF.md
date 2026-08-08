@@ -627,3 +627,15 @@ The full pipeline builds, all reports render, CI is green, and the site is live 
 **State:** Fully shipped, live, verified. Working tree clean, all pushed.
 
 **Next:** No open work. Optional: confirm calculator.lailarallc.com live. Next /improve ~2026-10-29.
+
+## 2026-08-04 — Client-mode flagship shipped + portfolio drift-gate hardening
+
+**Started from:** Convert product-data-health-audit into the parameterized flagship paid-audit report (narrative-drift fixes, preflight, provenance/watermark, fixtures); R not installed locally.
+
+**Did:** Made prose computed across report/tearsheet/dashboard (caught 2 stale published numbers — dashboard margin ranks, quick-win math). Wired `lailara_engagement` preflight in front of the R stage (INPUT-SPEC, engagement.demo.yml, run_preflight.py, R gate, Northwind fixture, tests) + parameterized identity/provenance/watermark/titles. R-host verification rounds 1–3 fixed fail-closed loader (P1), num_word prose parity (P2), subtitle/title var-sourcing (P3, sibling leaks). Global gitignore (.claude/, _to_delete/, .fuse_hidden*); 2 stragglers committed (TQE $25 SQEP threshold, RVDT archive CSV). Pushed Wave 1A + PDHA → PRs; canonical-drift gate caught 2 real errors: "Cinderhaven Foods" (5 repos) + "Wegmans" (fabricated PDHA fixture retailer, 84 hits) — both fixed (renamed to canonical/fictional, NOT allowlisted). Blind-spot audit + binary scan (0/28). **Merged all 5 (PDHA + 4 Wave 1A) to production; audit.lailarallc.com verified live with corrected content.**
+
+**Sibling surfaces:** computed-prose — report/tearsheet/dashboard all swept, dashboard ranks+quick-win fixed. "Cinderhaven Foods" — git-grepped all 38 repos, 5 found/fixed. "Wegmans" — whole Northwind roster renamed, not just the flagged token. gtin lint — client_mode.py only; **sibling repos' client_mode.py NOT checked** for the same unused-import/long-line pattern (only gtin has a lint CI job) → carried as a Next item.
+
+**State:** All 5 PRs merged + deployed. internal-data-anonymizer rename on branch (not merged, per Shawn). Root engagement docs updated on disk (not version-controlled). 38-repo board clean.
+
+**Next:** (1) Prompt 6 — split `as_of_date` → `data_as_of`/`report_date`; add `scan_binaries_for_drift.py`; audit possibly-red Wave 2 drift gates (docs/plans, short-ship-cost); regenerate stale artifacts (data-hygiene-auditor "42", datascope README-vs-sample). (2) Sibling sweep: check other repos' `client_mode.py` for the same unused-import/E501 lint pattern. (3) Optionally merge anonymizer rename; prune merged `client-mode-2026-08` remote branches.

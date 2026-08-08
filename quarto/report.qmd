@@ -2,7 +2,7 @@
 title: "Product Data Readiness Audit"
 subtitle: "{{< var report_subtitle >}}"
 author: "Shawn Phillips | Lailara LLC"
-date: "2026-05-03"
+date: "{{< var report_date >}}"
 format:
   html:
     toc: true

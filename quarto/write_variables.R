@@ -19,11 +19,23 @@ source(file.path(root, "R", "engagement.R"))
 eng    <- load_engagement(root)
 titles <- compose_titles(eng)
 
+# report_date (+ its month-year display) drive the report/tearsheet date fields so those
+# front-matter dates come from engagement.yml, not hardcodes. report_date is the AUTHORING
+# date (document identity), NOT data_as_of. (0.d split.)
+report_date <- eng$report_date %||% eng$as_of_date
+.months <- c("January", "February", "March", "April", "May", "June", "July",
+             "August", "September", "October", "November", "December")
+.rd <- tryCatch(as.Date(report_date), error = function(e) as.Date(NA))
+report_month_year <- if (!is.na(.rd))
+  paste(.months[as.integer(format(.rd, "%m"))], format(.rd, "%Y")) else ""
+
 # Write with explicit UTF-8 so the middle-dot separator survives on any locale.
 con <- file("_variables.yml", open = "w", encoding = "UTF-8")
 on.exit(close(con))
 writeLines(c(
   sprintf('report_subtitle: "%s"', titles$report_subtitle),
   sprintf('dashboard_title: "%s"', titles$dashboard_title),
-  sprintf('tearsheet_title: "%s"', titles$tearsheet_title)
+  sprintf('tearsheet_title: "%s"', titles$tearsheet_title),
+  sprintf('report_date: "%s"', report_date),
+  sprintf('report_month_year: "%s"', report_month_year)
 ), con)

@@ -17,8 +17,8 @@ company:
   revenue_description: "$33.2 million specialty food brand"
 
 audit:
-  date: "2026-05-03"
-  date_display: "May 2026"
+  # Report dates now live in engagement.yml (report_date + data_as_of) and reach the
+  # deliverables via quarto/_variables.yml — not hardcoded here. (0.d split.)
   author: "Shawn Phillips | Lailara LLC"
 
 data:
